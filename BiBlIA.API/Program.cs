@@ -72,8 +72,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// CORS deve vir ANTES do UseHttpsRedirection — o redirect 301/302 não carrega
+// headers CORS e o browser bloqueia o preflight OPTIONS com "Failed to fetch"
 app.UseCors("AllowAngular");
+
+// HTTPS redirect só faz sentido em produção — em dev a API roda em HTTP
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
