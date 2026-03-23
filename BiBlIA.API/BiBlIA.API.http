@@ -1,0 +1,6 @@
+@BiBlIA.API_HostAddress = http://localhost:5239
+
+GET {{BiBlIA.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
