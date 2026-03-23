@@ -54,7 +54,7 @@ public class AppDbContext : DbContext
         // BibleBook → BibleVerses
         modelBuilder.Entity<BibleBook>()
             .HasMany(b => b.Verses)
-            .WithOne()
+            .WithOne(v => v.Book)
             .HasForeignKey(v => v.BookId)
             .OnDelete(DeleteBehavior.Cascade);
 

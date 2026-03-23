@@ -57,11 +57,12 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Cria o banco e popula com dados iniciais se estiver vazio
+// Aplica migrations pendentes e popula com dados iniciais se estiver vazio
+// Migrate() é idempotente: só roda migrations que ainda não foram aplicadas
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
     await DataSeeder.SeedAsync(db);
 }
 
