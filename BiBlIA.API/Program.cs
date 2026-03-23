@@ -50,9 +50,15 @@ builder.Services.AddAuthorization();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyMethod()
-              .AllowAnyHeader());
+        policy.WithOrigins(
+            "http://localhost:4200",     // porta padrão ng serve
+            "http://localhost:60919",    // porta alternativa (se 4200 está ocupada)
+            "http://127.0.0.1:4200",
+            "http://127.0.0.1:60919"
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());  // importante se usar cookies/credentials
 });
 
 var app = builder.Build();
