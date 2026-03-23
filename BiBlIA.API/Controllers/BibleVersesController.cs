@@ -17,52 +17,90 @@ public class BibleVersesController : ControllerBase
         _context = context;
     }
 
+    // GET /api/bibleverses?bookId=1&chapter=3
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<BibleVerseDto>>> GetVerses()
+    public async Task<ActionResult<IEnumerable<BibleVerseDto>>> GetVerses(
+        [FromQuery] int? bookId,
+        [FromQuery] int? chapter)
     {
-        var verses = await _context.BibleVerses.ToListAsync();
-        return Ok(verses.Select(v => MapToDto(v)));
-    }
+        var query = _context.BibleVerses
+            .Include(v => v.Book)
+            .AsQueryable();
 
-    [HttpGet("search")]
-    public async Task<ActionResult<IEnumerable<BibleVerseDto>>> SearchVerse([FromQuery] string book, [FromQuery] int chapter, [FromQuery] int verse)
-    {
-        var verses = await _context.BibleVerses
-            .Where(v => v.Book == book && v.Chapter == chapter && v.Verse == verse)
+        if (bookId.HasValue)
+            query = query.Where(v => v.BookId == bookId.Value);
+
+        if (chapter.HasValue)
+            query = query.Where(v => v.Chapter == chapter.Value);
+
+        var verses = await query
+            .OrderBy(v => v.BookId)
+            .ThenBy(v => v.Chapter)
+            .ThenBy(v => v.Verse)
             .ToListAsync();
 
-        return Ok(verses.Select(v => MapToDto(v)));
+        return Ok(verses.Select(MapToDto));
     }
 
+    // GET /api/bibleverses/search?bookId=1&chapter=3&verse=16
+    [HttpGet("search")]
+    public async Task<ActionResult<BibleVerseDto>> SearchVerse(
+        [FromQuery] int bookId,
+        [FromQuery] int chapter,
+        [FromQuery] int verse)
+    {
+        var v = await _context.BibleVerses
+            .Include(v => v.Book)
+            .FirstOrDefaultAsync(v => v.BookId == bookId && v.Chapter == chapter && v.Verse == verse);
+
+        if (v == null)
+            return NotFound();
+
+        return Ok(MapToDto(v));
+    }
+
+    // GET /api/bibleverses/{id}
     [HttpGet("{id}")]
     public async Task<ActionResult<BibleVerseDto>> GetVerse(int id)
     {
-        var verse = await _context.BibleVerses.FindAsync(id);
+        var verse = await _context.BibleVerses
+            .Include(v => v.Book)
+            .FirstOrDefaultAsync(v => v.Id == id);
+
         if (verse == null)
             return NotFound();
 
         return Ok(MapToDto(verse));
     }
 
+    // POST /api/bibleverses
     [HttpPost]
     public async Task<ActionResult<BibleVerseDto>> CreateVerse(CreateBibleVerseDto dto)
     {
+        var bookExists = await _context.BibleBooks.AnyAsync(b => b.Id == dto.BookId);
+        if (!bookExists)
+            return BadRequest($"Livro com Id {dto.BookId} não encontrado.");
+
         var verse = new BibleVerse
         {
-            Book = dto.Book,
+            BookId = dto.BookId,
             Chapter = dto.Chapter,
             Verse = dto.Verse,
-            Text = dto.Text,
-            Version = dto.Version,
+            TextACF = dto.TextACF,
+            TextKJV = dto.TextKJV,
             CreatedAt = DateTime.UtcNow
         };
 
         _context.BibleVerses.Add(verse);
         await _context.SaveChangesAsync();
 
+        // Recarrega com o Book para mapear o DTO corretamente
+        await _context.Entry(verse).Reference(v => v.Book).LoadAsync();
+
         return CreatedAtAction(nameof(GetVerse), new { id = verse.Id }, MapToDto(verse));
     }
 
+    // DELETE /api/bibleverses/{id}
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteVerse(int id)
     {
@@ -76,16 +114,14 @@ public class BibleVersesController : ControllerBase
         return NoContent();
     }
 
-    private static BibleVerseDto MapToDto(BibleVerse verse)
+    private static BibleVerseDto MapToDto(BibleVerse verse) => new()
     {
-        return new BibleVerseDto
-        {
-            Id = verse.Id,
-            Book = verse.Book,
-            Chapter = verse.Chapter,
-            Verse = verse.Verse,
-            Text = verse.Text,
-            Version = verse.Version
-        };
-    }
+        Id = verse.Id,
+        BookId = verse.BookId,
+        BookName = verse.Book?.Name ?? string.Empty,
+        Chapter = verse.Chapter,
+        Verse = verse.Verse,
+        TextACF = verse.TextACF,
+        TextKJV = verse.TextKJV
+    };
 }

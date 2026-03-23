@@ -1,33 +1,32 @@
 using BíblIA.Api.Data;
+using BíblIA.Api.Seed;
 using BíblIA.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Database
+// SQLite — simples, sem instalação adicional
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// HttpClient para Anthropic
+// HttpClient nomeado para Anthropic
 builder.Services.AddHttpClient();
 
-// Services
+// Services de negócio
 builder.Services.AddScoped<AnthropicService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<AuthService>();
 
-// JWT Authentication
+// JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var secretKey = jwtSettings["SecretKey"];
+var secretKey = jwtSettings["SecretKey"]!;
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -35,7 +34,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
             ValidateIssuer = true,
             ValidIssuer = jwtSettings["Issuer"],
             ValidateAudience = true,
@@ -47,20 +46,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// CORS
+// CORS para o Angular em desenvolvimento
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
-    {
         policy.WithOrigins("http://localhost:4200")
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-    });
+              .AllowAnyMethod()
+              .AllowAnyHeader());
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// Cria o banco e popula com dados iniciais se estiver vazio
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+    await DataSeeder.SeedAsync(db);
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
