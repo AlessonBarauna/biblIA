@@ -65,11 +65,19 @@ namespace BiBlIA.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("TextAA")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("TextACF")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TextKJV")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TextNVI")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

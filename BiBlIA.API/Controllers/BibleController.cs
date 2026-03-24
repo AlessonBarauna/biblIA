@@ -107,13 +107,15 @@ public class BibleController : ControllerBase
 
         return Ok(verses.Select(v => new BibleVerseDto
         {
-            Id = v.Id,
-            BookId = v.BookId,
+            Id       = v.Id,
+            BookId   = v.BookId,
             BookName = book.Name,
-            Chapter = v.Chapter,
-            Verse = v.Verse,
-            TextACF = v.TextACF,
-            TextKJV = v.TextKJV
+            Chapter  = v.Chapter,
+            Verse    = v.Verse,
+            TextKJV  = v.TextKJV,
+            TextAA   = v.TextAA,
+            TextACF  = v.TextACF,
+            TextNVI  = v.TextNVI
         }));
     }
 
@@ -160,9 +162,11 @@ public class BibleController : ControllerBase
             {
                 BookId = bookId,
                 Chapter = dto.Chapter,
-                Verse = dto.Verse,
+                Verse   = dto.Verse,
+                TextKJV = dto.TextKJV,
+                TextAA  = dto.TextAA,
                 TextACF = dto.TextACF,
-                TextKJV = dto.TextKJV
+                TextNVI = dto.TextNVI
             });
 
             // Adiciona ao set para evitar duplicatas dentro do mesmo lote
@@ -199,13 +203,15 @@ public class BibleController : ControllerBase
 
         return Ok(new BibleVerseDto
         {
-            Id = v.Id,
-            BookId = v.BookId,
+            Id       = v.Id,
+            BookId   = v.BookId,
             BookName = book.Name,
-            Chapter = v.Chapter,
-            Verse = v.Verse,
-            TextACF = v.TextACF,
-            TextKJV = v.TextKJV
+            Chapter  = v.Chapter,
+            Verse    = v.Verse,
+            TextKJV  = v.TextKJV,
+            TextAA   = v.TextAA,
+            TextACF  = v.TextACF,
+            TextNVI  = v.TextNVI
         });
     }
 
@@ -223,9 +229,12 @@ public class BibleController : ControllerBase
         limit = Math.Clamp(limit, 1, 50);
         var term = query.ToLower();
 
-        // Compõe a query no IQueryable — o banco faz o filtro, não o C#
+        // Busca em todas as traduções disponíveis
         var verses = await _context.BibleVerses
-            .Where(v => v.TextKJV.ToLower().Contains(term) || v.TextACF.ToLower().Contains(term))
+            .Where(v => v.TextKJV.ToLower().Contains(term)
+                     || v.TextAA.ToLower().Contains(term)
+                     || v.TextACF.ToLower().Contains(term)
+                     || v.TextNVI.ToLower().Contains(term))
             .OrderBy(v => v.BookId).ThenBy(v => v.Chapter).ThenBy(v => v.Verse)
             .Take(limit)
             .Join(_context.BibleBooks,
@@ -233,13 +242,15 @@ public class BibleController : ControllerBase
                   b => b.Id,
                   (v, b) => new BibleVerseDto
                   {
-                      Id      = v.Id,
-                      BookId  = v.BookId,
+                      Id       = v.Id,
+                      BookId   = v.BookId,
                       BookName = b.Name,
-                      Chapter = v.Chapter,
-                      Verse   = v.Verse,
-                      TextACF = v.TextACF,
-                      TextKJV = v.TextKJV
+                      Chapter  = v.Chapter,
+                      Verse    = v.Verse,
+                      TextKJV  = v.TextKJV,
+                      TextAA   = v.TextAA,
+                      TextACF  = v.TextACF,
+                      TextNVI  = v.TextNVI
                   })
             .ToListAsync();
 

@@ -9,8 +9,10 @@ public class BibleVerseDto
     public string BookName { get; set; } = string.Empty;
     public int Chapter { get; set; }
     public int Verse { get; set; }
-    public string TextACF { get; set; } = string.Empty;
     public string TextKJV { get; set; } = string.Empty;
+    public string TextAA  { get; set; } = string.Empty;
+    public string TextACF { get; set; } = string.Empty;
+    public string TextNVI { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -23,8 +25,10 @@ public class ImportVerseDto
     public int BookOrderIndex { get; set; }
     public int Chapter { get; set; }
     public int Verse { get; set; }
-    public string TextACF { get; set; } = string.Empty;
     public string TextKJV { get; set; } = string.Empty;
+    public string TextAA  { get; set; } = string.Empty;
+    public string TextACF { get; set; } = string.Empty;
+    public string TextNVI { get; set; } = string.Empty;
 }
 
 public class ImportResultDto

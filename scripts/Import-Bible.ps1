@@ -9,12 +9,13 @@ param(
 #   .\Import-Bible.ps1 -Testament NT
 #   .\Import-Bible.ps1 -Testament OT
 #
-# Fonte: github.com/aruljohn/Bible-kjv (KJV, dominio publico)
-# 66 requisicoes HTTP (1 por livro) -- sem rate limiting severo.
+# Fontes:
+#   KJV : github.com/aruljohn/Bible-kjv      (66 arquivos, 1 por livro)
+#   AA/ACF/NVI : github.com/thiagobodruk/biblia (3 arquivos, 1 por traducao)
 
 $ErrorActionPreference = "Continue"
 
-# Nomes canonicos dos livros na ordem 1-66 (correspondem aos arquivos do repo)
+# Nomes canonicos na ordem 1-66 (indices 0-65)
 $bookNames = @(
     "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy",
     "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel",
@@ -32,8 +33,7 @@ $bookNames = @(
     "3 John", "Jude", "Revelation"
 )
 
-# Filtro de testamento (orderIndex 1-39 = OT, 40-66 = NT)
-$minIdx = 0  # 0-based
+$minIdx = 0
 $maxIdx = 65
 switch ($Testament.ToUpper()) {
     "NT"  { $minIdx = 39 }
@@ -42,71 +42,121 @@ switch ($Testament.ToUpper()) {
     default { Write-Error "Testament deve ser NT, OT ou ALL"; exit 1 }
 }
 
-$selectedBooks = $bookNames[$minIdx..$maxIdx]
-Write-Host "[BibleIA] $($selectedBooks.Count) livros ($Testament)." -ForegroundColor Cyan
+Write-Host "[BibleIA] Testament=$Testament | batch=$BatchSize" -ForegroundColor Cyan
 
-# Verifica se a API esta acessivel
-Write-Host "[BibleIA] Verificando API em $ApiUrl..." -ForegroundColor DarkGray
+# Verifica API
 try {
     $null = Invoke-RestMethod "$ApiUrl/api/bible/books" -TimeoutSec 5
-    Write-Host "[BibleIA] API ok." -ForegroundColor Green
+    Write-Host "[BibleIA] API ok em $ApiUrl" -ForegroundColor Green
 } catch {
-    Write-Error "API nao acessivel em $ApiUrl. Verifique se a API esta rodando (dotnet run)."
+    Write-Error "API nao acessivel em $ApiUrl."
     exit 1
 }
 
-$baseUrl    = "https://raw.githubusercontent.com/aruljohn/Bible-kjv/master"
-$allVerses  = [System.Collections.Generic.List[hashtable]]::new()
-$booksDone  = 0
-$bookFailed = 0
+# ────────────────────────────────────────────────────────────────────────────
+# 1. KJV (aruljohn/Bible-kjv) — um arquivo por livro
+#    Formato: { book, chapters: [ { chapter, verses: [{verse, text}] } ] }
+# ────────────────────────────────────────────────────────────────────────────
+Write-Host "[BibleIA] Baixando KJV (66 arquivos)..." -ForegroundColor Cyan
+$kjvBase  = "https://raw.githubusercontent.com/aruljohn/Bible-kjv/master"
+# Dicionario (orderIndex, chapter, verse) -> textKJV
+$kjvMap = @{}
 
-foreach ($bookName in $selectedBooks) {
-    $orderIndex = $bookNames.IndexOf($bookName) + 1
-    # Arquivos do repo nao tem espacos: "1 Samuel" -> "1Samuel", "Song of Solomon" -> "SongofSolomon"
-    $encoded    = $bookName -replace " ", ""
-    $url        = "$baseUrl/$encoded.json"
-
+for ($i = $minIdx; $i -le $maxIdx; $i++) {
+    $name    = $bookNames[$i]
+    $encoded = $name -replace " ", ""  # "1 Samuel" -> "1Samuel"
+    $url     = "$kjvBase/$encoded.json"
     try {
         $data = Invoke-RestMethod $url -TimeoutSec 30
-
         foreach ($ch in $data.chapters) {
             $chNum = [int]$ch.chapter
             foreach ($v in $ch.verses) {
-                $allVerses.Add(@{
-                    bookOrderIndex = $orderIndex
-                    chapter        = $chNum
-                    verse          = [int]$v.verse
-                    textKJV        = $v.text.Trim()
-                    textACF        = ""
-                })
+                $key = "$($i+1)_$($chNum)_$([int]$v.verse)"
+                $kjvMap[$key] = $v.text.Trim()
             }
         }
-
-        $booksDone++
-        $pct = [Math]::Round($booksDone / $selectedBooks.Count * 100)
-        Write-Host "  [$booksDone/$($selectedBooks.Count)] $bookName ($($pct)%)" -ForegroundColor DarkGray
+        Write-Host "  KJV [$($i+1)/66] $name" -ForegroundColor DarkGray
     } catch {
-        Write-Warning "  FALHOU: $bookName -- $_"
-        $bookFailed++
+        Write-Warning "  KJV FALHOU: $name -- $_"
     }
 }
+Write-Host "[BibleIA] KJV: $($kjvMap.Count) versiculos." -ForegroundColor Green
 
-$total = $allVerses.Count
-$color = if ($bookFailed -eq 0) { "Green" } else { "Yellow" }
-Write-Host "[BibleIA] $total versiculos prontos. Livros com falha: $bookFailed" -ForegroundColor $color
+# ────────────────────────────────────────────────────────────────────────────
+# 2. PT-BR (thiagobodruk/biblia) — um arquivo por traducao
+#    Formato: [ { abbrev, chapters: [ ["v1","v2",...], [...] ] } ]
+#    Indice 0-based: chapters[chIdx][vIdx]
+# ────────────────────────────────────────────────────────────────────────────
+$ptBase = "https://raw.githubusercontent.com/thiagobodruk/biblia/master/json"
 
-if ($total -eq 0) {
-    Write-Error "Nenhum versiculo encontrado. Verifique a conexao."
-    exit 1
+function Get-PtMap($url, $label) {
+    $map = @{}
+    try {
+        Write-Host "[BibleIA] Baixando $label..." -ForegroundColor Cyan
+        $data = Invoke-RestMethod $url -TimeoutSec 60
+        # Array de 66 livros na ordem canonica (indice 0 = Genesis)
+        for ($bi = $minIdx; $bi -le $maxIdx; $bi++) {
+            $book    = $data[$bi]
+            $orderIdx = $bi + 1
+            for ($chIdx = 0; $chIdx -lt $book.chapters.Count; $chIdx++) {
+                $chNum   = $chIdx + 1
+                $chapter = $book.chapters[$chIdx]
+                for ($vIdx = 0; $vIdx -lt $chapter.Count; $vIdx++) {
+                    $vNum = $vIdx + 1
+                    $key  = "${orderIdx}_${chNum}_${vNum}"
+                    $map[$key] = $chapter[$vIdx]
+                }
+            }
+        }
+        Write-Host "[BibleIA] $label: $($map.Count) versiculos." -ForegroundColor Green
+    } catch {
+        Write-Warning "[BibleIA] Falha ao baixar $label: $_"
+    }
+    return $map
 }
 
-# --- Importar em lotes ---
+$aaMap  = Get-PtMap "$ptBase/aa.json"  "AA  (Almeida Revisada)"
+$acfMap = Get-PtMap "$ptBase/acf.json" "ACF (Almeida Corrigida e Fiel)"
+$nviMap = Get-PtMap "$ptBase/nvi.json" "NVI (Nova Versao Internacional)"
+
+# ────────────────────────────────────────────────────────────────────────────
+# 3. Monta lista unificada de ImportVerseDto
+# ────────────────────────────────────────────────────────────────────────────
+# A uniao de chaves de todas as traducoes garante que nenhum versiculo seja perdido.
+$allKeys = [System.Collections.Generic.HashSet[string]]::new()
+foreach ($k in $kjvMap.Keys)  { $null = $allKeys.Add($k) }
+foreach ($k in $aaMap.Keys)   { $null = $allKeys.Add($k) }
+foreach ($k in $acfMap.Keys)  { $null = $allKeys.Add($k) }
+foreach ($k in $nviMap.Keys)  { $null = $allKeys.Add($k) }
+
+$allVerses = [System.Collections.Generic.List[hashtable]]::new()
+
+foreach ($key in $allKeys) {
+    $parts = $key -split "_"
+    $allVerses.Add(@{
+        bookOrderIndex = [int]$parts[0]
+        chapter        = [int]$parts[1]
+        verse          = [int]$parts[2]
+        textKJV        = if ($kjvMap.ContainsKey($key))  { $kjvMap[$key]  } else { "" }
+        textAA         = if ($aaMap.ContainsKey($key))   { $aaMap[$key]   } else { "" }
+        textACF        = if ($acfMap.ContainsKey($key))  { $acfMap[$key]  } else { "" }
+        textNVI        = if ($nviMap.ContainsKey($key))  { $nviMap[$key]  } else { "" }
+    })
+}
+
+# Ordena para inserir na sequencia canonica
+$allVerses = $allVerses | Sort-Object { [int]$_.bookOrderIndex * 1000000 + [int]$_.chapter * 1000 + [int]$_.verse }
+
+$total = $allVerses.Count
+Write-Host "[BibleIA] $total versiculos combinados. Iniciando importacao..." -ForegroundColor Cyan
+
+# ────────────────────────────────────────────────────────────────────────────
+# 4. Importar em lotes
+# ────────────────────────────────────────────────────────────────────────────
 $batches  = [Math]::Ceiling($total / $BatchSize)
 $imported = 0
 $skipped  = 0
 $batchErr = 0
-
-Write-Host "[BibleIA] Importando $total versiculos em $batches lotes..." -ForegroundColor Cyan
 
 for ($b = 0; $b -lt $batches; $b++) {
     $s     = $b * $BatchSize
@@ -134,10 +184,10 @@ for ($b = 0; $b -lt $batches; $b++) {
 
 Write-Host ""
 Write-Host "=== Importacao concluida ===" -ForegroundColor Green
-Write-Host "  Versiculos no arquivo: $total"
+Write-Host "  Total de versiculos  : $total"
 Write-Host "  Importados           : $imported" -ForegroundColor Green
 Write-Host "  Ja existiam (pulados): $skipped"
-if ($bookFailed -gt 0) { Write-Host "  Livros com falha     : $bookFailed" -ForegroundColor Yellow }
-if ($batchErr   -gt 0) { Write-Host "  Lotes com erro       : $batchErr"   -ForegroundColor Yellow }
+if ($batchErr -gt 0) { Write-Host "  Lotes com erro       : $batchErr" -ForegroundColor Yellow }
 Write-Host ""
+Write-Host "Traducoes importadas: KJV, AA, ACF, NVI" -ForegroundColor Cyan
 Write-Host "Dica: reexecute o script a qualquer momento -- e idempotente." -ForegroundColor DarkGray
