@@ -76,14 +76,16 @@ public class BibleController : ControllerBase
         if (!bookExists)
             return NotFound();
 
-        var chapters = await _context.BibleVerses
+        // EF Core não consegue traduzir construtores posicionais dentro de GroupBy.
+        // Projetamos para tipo anônimo (traduzível) e mapeamos no C# depois.
+        var raw = await _context.BibleVerses
             .Where(v => v.BookId == bookId)
             .GroupBy(v => v.Chapter)
-            .Select(g => new ChapterSummaryDto(g.Key, g.Count()))
+            .Select(g => new { Chapter = g.Key, VerseCount = g.Count() })
             .OrderBy(c => c.Chapter)
             .ToListAsync();
 
-        return Ok(chapters);
+        return Ok(raw.Select(c => new ChapterSummaryDto(c.Chapter, c.VerseCount)));
     }
 
     // GET /api/bible/books/{bookId}/chapters/{chapter}

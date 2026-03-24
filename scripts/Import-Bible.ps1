@@ -2,15 +2,17 @@ param(
     [string]$ApiUrl    = "http://localhost:5239",
     [string]$Testament = "NT",
     [int]   $BatchSize = 500,
-    [int]   $DelayMs   = 200
+    [int]   $DelayMs   = 300,
+    [int]   $MaxRetry  = 3
 )
 
 # Uso:
 #   .\Import-Bible.ps1               # NT (padrao, ~260 capitulos, ~3 min)
-#   .\Import-Bible.ps1 -Testament ALL  # Biblia completa (~1189 capitulos, ~15 min)
+#   .\Import-Bible.ps1 -Testament ALL  # Biblia completa (~1189 capitulos, ~7 min)
 #   .\Import-Bible.ps1 -Testament OT
 
-$ErrorActionPreference = "Stop"
+# Nao usar Stop — queremos continuar em erros individuais e reportar no final
+$ErrorActionPreference = "Continue"
 
 # --- Mapa canonico de livros ---
 # orderIndex (1-66), nome para a bible-api.com, contagem de capitulos
@@ -93,50 +95,80 @@ switch ($Testament.ToUpper()) {
 
 $totalChapters = ($books | ForEach-Object { $_.c } | Measure-Object -Sum).Sum
 Write-Host "[BibleIA] $($books.Count) livros, $totalChapters capitulos ($Testament)." -ForegroundColor Cyan
-Write-Host "[BibleIA] Fonte: bible-api.com (KJV, ~$([Math]::Round($totalChapters*$DelayMs/1000)) seg de delay)" -ForegroundColor DarkGray
+Write-Host "[BibleIA] Fonte: bible-api.com (KJV) | delay: ${DelayMs}ms | batch: $BatchSize" -ForegroundColor DarkGray
+
+# Verifica se a API esta acessivel
+try {
+    $null = Invoke-RestMethod "$ApiUrl/api/bible/books" -TimeoutSec 5
+    Write-Host "[BibleIA] API respondendo em $ApiUrl" -ForegroundColor Green
+} catch {
+    Write-Error "API nao acessivel em $ApiUrl. Certifique-se de que a API esta rodando."
+    exit 1
+}
 
 # --- Baixar e acumular versiculos ---
-$allVerses = [System.Collections.Generic.List[hashtable]]::new()
-$chapDone  = 0
-$errors    = 0
+$allVerses  = [System.Collections.Generic.List[hashtable]]::new()
+$chapDone   = 0
+$chapFailed = 0
 
 foreach ($book in $books) {
     for ($ch = 1; $ch -le $book.c; $ch++) {
-        $url = "https://bible-api.com/$($book.n)+$($ch)?translation=kjv"
-        try {
-            $data = Invoke-RestMethod $url
-            foreach ($v in $data.verses) {
-                $allVerses.Add(@{
-                    bookOrderIndex = $book.i
-                    chapter        = $v.chapter
-                    verse          = $v.verse
-                    textKJV        = $v.text.Trim()
-                    textACF        = ""
-                })
+        $url     = "https://bible-api.com/$($book.n)+$($ch)?translation=kjv"
+        $success = $false
+
+        for ($try = 1; $try -le $MaxRetry; $try++) {
+            try {
+                $data = Invoke-RestMethod $url -TimeoutSec 30
+                foreach ($v in $data.verses) {
+                    $allVerses.Add(@{
+                        bookOrderIndex = $book.i
+                        chapter        = $v.chapter
+                        verse          = $v.verse
+                        textKJV        = $v.text.Trim()
+                        textACF        = ""
+                    })
+                }
+                $success = $true
+                break
+            } catch {
+                if ($try -lt $MaxRetry) {
+                    $wait = $try * 1000  # backoff: 1s, 2s
+                    Write-Warning "  Tentativa $try/$MaxRetry falhou para $($book.n) $ch. Aguardando ${wait}ms..."
+                    Start-Sleep -Milliseconds $wait
+                } else {
+                    Write-Warning "  FALHOU (todas as tentativas): $($book.n) $ch — $_"
+                    $chapFailed++
+                }
             }
+        }
+
+        if ($success) {
             $chapDone++
-            if ($chapDone % 10 -eq 0) {
+            if ($chapDone % 20 -eq 0) {
                 $pct = [Math]::Round($chapDone / $totalChapters * 100)
                 Write-Host "  Baixando... $chapDone/$totalChapters capitulos ($pct%)" -ForegroundColor DarkGray
             }
         }
-        catch {
-            Write-Warning "Falhou: $($book.n) $ch - $_"
-            $errors++
-        }
+
         if ($DelayMs -gt 0) { Start-Sleep -Milliseconds $DelayMs }
     }
 }
 
 $total = $allVerses.Count
-Write-Host "[BibleIA] $total versiculos baixados ($errors erros)." -ForegroundColor Green
+Write-Host "[BibleIA] $total versiculos baixados | $chapFailed capitulos com falha." -ForegroundColor $(if ($chapFailed -eq 0) { "Green" } else { "Yellow" })
+
+if ($total -eq 0) {
+    Write-Error "Nenhum versiculo baixado. Verifique a conexao com bible-api.com."
+    exit 1
+}
 
 # --- Importar em lotes ---
 $batches  = [Math]::Ceiling($total / $BatchSize)
 $imported = 0
 $skipped  = 0
+$batchErr = 0
 
-Write-Host "[BibleIA] Importando em $batches lotes..." -ForegroundColor Cyan
+Write-Host "[BibleIA] Importando $total versiculos em $batches lotes..." -ForegroundColor Cyan
 
 for ($b = 0; $b -lt $batches; $b++) {
     $s     = $b * $BatchSize
@@ -149,20 +181,25 @@ for ($b = 0; $b -lt $batches; $b++) {
             -Method POST `
             -Uri "$ApiUrl/api/bible/import" `
             -ContentType "application/json; charset=utf-8" `
-            -Body ([System.Text.Encoding]::UTF8.GetBytes($body))
+            -Body ([System.Text.Encoding]::UTF8.GetBytes($body)) `
+            -TimeoutSec 120
 
         $imported += $result.imported
         $skipped  += $result.skipped
         $pct = [Math]::Round(($b + 1) / $batches * 100)
-        Write-Host "  Lote $($b+1)/$batches ($pct%) - ok:$($result.imported) pulados:$($result.skipped)" -ForegroundColor Gray
-    }
-    catch {
-        Write-Error "Erro no lote $($b+1): $_"
+        Write-Host "  Lote $($b+1)/$batches ($pct%) — importados:$($result.imported) pulados:$($result.skipped)" -ForegroundColor Gray
+    } catch {
+        Write-Warning "  Erro no lote $($b+1): $_"
+        $batchErr++
     }
 }
 
 Write-Host ""
 Write-Host "=== Importacao concluida ===" -ForegroundColor Green
-Write-Host "  Total    : $total"           -ForegroundColor Green
-Write-Host "  Importado: $imported"        -ForegroundColor Green
-Write-Host "  Pulados  : $skipped"         -ForegroundColor Green
+Write-Host "  Versiculos baixados : $total"
+Write-Host "  Importados          : $imported" -ForegroundColor Green
+Write-Host "  Ja existiam (pulados): $skipped"
+if ($chapFailed -gt 0)  { Write-Host "  Capitulos com falha  : $chapFailed"  -ForegroundColor Yellow }
+if ($batchErr   -gt 0)  { Write-Host "  Lotes com erro       : $batchErr"    -ForegroundColor Yellow }
+Write-Host ""
+Write-Host "Dica: reexecute o script para preencher eventuais falhas (e idempotente)." -ForegroundColor DarkGray
