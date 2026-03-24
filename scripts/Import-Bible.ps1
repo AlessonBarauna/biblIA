@@ -91,7 +91,7 @@ switch ($Testament.ToUpper()) {
     default { Write-Error "Testament deve ser NT, OT ou ALL"; exit 1 }
 }
 
-$totalChapters = ($books | Measure-Object -Property c -Sum).Sum
+$totalChapters = ($books | ForEach-Object { $_.c } | Measure-Object -Sum).Sum
 Write-Host "[BibleIA] $($books.Count) livros, $totalChapters capitulos ($Testament)." -ForegroundColor Cyan
 Write-Host "[BibleIA] Fonte: bible-api.com (KJV, ~$([Math]::Round($totalChapters*$DelayMs/1000)) seg de delay)" -ForegroundColor DarkGray
 
