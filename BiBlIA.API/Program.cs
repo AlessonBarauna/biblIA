@@ -12,17 +12,23 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// SQLite: em produção usa /data/biblia.db (volume persistente do Railway)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
-if (builder.Environment.IsProduction())
-{
-    var dataDir = Environment.GetEnvironmentVariable("DATA_DIR") ?? "/data";
-    Directory.CreateDirectory(dataDir);
-    connectionString = $"Data Source={Path.Combine(dataDir, "biblia.db")}";
-}
+// Em produção (Railway), DATABASE_URL é setado automaticamente pelo addon PostgreSQL.
+// Em dev, usa SQLite local.
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(connectionString));
+{
+    if (!string.IsNullOrEmpty(databaseUrl))
+    {
+        // Railway PostgreSQL: persiste entre deploys, sem necessidade de volume
+        options.UseNpgsql(databaseUrl);
+    }
+    else
+    {
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+        options.UseSqlite(connectionString);
+    }
+});
 
 // HttpClient para chamadas à API Gemini
 builder.Services.AddHttpClient();
@@ -70,12 +76,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Aplica migrations pendentes e popula com dados iniciais se estiver vazio
-// Migrate() é idempotente: só roda migrations que ainda não foram aplicadas
+// Inicializa o banco e semeia dados iniciais
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+
+    if (!string.IsNullOrEmpty(databaseUrl))
+    {
+        // PostgreSQL (Railway): EnsureCreated cria o schema direto do modelo.
+        // Não usa migrations — mais simples para produção sem volume.
+        db.Database.EnsureCreated();
+    }
+    else
+    {
+        // SQLite (dev): aplica migrations incrementais normalmente
+        db.Database.Migrate();
+    }
+
     await DataSeeder.SeedAsync(db);
 }
 
