@@ -126,7 +126,12 @@ public class ChatsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteChat(int id)
     {
-        var chat = await _context.Chats.FindAsync(id);
+        // Include Messages para o EF Core rastrear e deletar em cascade.
+        // FindAsync sem Include não rastreia filhos — cascade não ocorre.
+        var chat = await _context.Chats
+            .Include(c => c.Messages)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
         if (chat == null)
             return NotFound();
 
