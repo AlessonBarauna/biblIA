@@ -93,10 +93,22 @@ function Get-PtMap($url, $label) {
     $map = @{}
     try {
         Write-Host "[BibleIA] Baixando $label..." -ForegroundColor Cyan
-        $data = Invoke-RestMethod $url -TimeoutSec 60
-        # Array de 66 livros na ordem canonica (indice 0 = Genesis)
+
+        # Invoke-WebRequest + decodificacao manual para lidar com BOM UTF-8.
+        # Invoke-RestMethod no PS 5.1 falha silenciosamente quando o JSON tem BOM.
+        $response = Invoke-WebRequest $url -TimeoutSec 60
+        $content  = [System.Text.Encoding]::UTF8.GetString($response.Content)
+
+        # Remove BOM (U+FEFF = 65279) se presente
+        if ($content.Length -gt 0 -and ([int][char]$content[0]) -eq 65279) {
+            $content = $content.Substring(1)
+        }
+
+        $data = $content | ConvertFrom-Json
+        Write-Host "  $label livros no JSON: $($data.Count)" -ForegroundColor DarkGray
+
         for ($bi = $minIdx; $bi -le $maxIdx; $bi++) {
-            $book    = $data[$bi]
+            $book     = $data[$bi]
             $orderIdx = $bi + 1
             for ($chIdx = 0; $chIdx -lt $book.chapters.Count; $chIdx++) {
                 $chNum   = $chIdx + 1
@@ -108,9 +120,9 @@ function Get-PtMap($url, $label) {
                 }
             }
         }
-        Write-Host "[BibleIA] $($label): $($map.Count) versiculos." -ForegroundColor Green
+        Write-Host "[BibleIA] $label: $($map.Count) versiculos." -ForegroundColor Green
     } catch {
-        Write-Warning "[BibleIA] Falha ao baixar $($label): $_"
+        Write-Warning "[BibleIA] Falha ao baixar $label: $_"
     }
     return $map
 }
