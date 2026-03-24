@@ -13,12 +13,19 @@ import { AiPanelComponent } from '../../shared/ai-panel/ai-panel.component';
 // Mantemos tudo em signals para que o template reaja automaticamente.
 type View = 'courses' | 'modules';
 
+// Estado por questão — cada quiz tem seu próprio selectedAnswer e showResult.
+// Antes era per-módulo, o que causava: responder Q1 → showResult=true para o
+// módulo inteiro → Q2 já aparecia como "respondida" automaticamente.
+interface QuizState {
+  selectedAnswer: string | null;
+  showResult: boolean;
+}
+
 interface ModuleWithQuizzes {
   module: TheologyModule;
   quizzes: TheologyQuiz[];
   quizzesLoaded: boolean;
-  selectedAnswer: string | null;
-  showResult: boolean;
+  quizStates: Record<number, QuizState>; // chave = quiz.id
 }
 
 @Component({
@@ -84,7 +91,7 @@ export class TheologyComponent implements OnInit {
     this.api.getTheologyModules(course.id).subscribe({
       next: (modules) => {
         this.modulesWithQuizzes.set(
-          modules.map(m => ({ module: m, quizzes: [], quizzesLoaded: false, selectedAnswer: null, showResult: false }))
+          modules.map(m => ({ module: m, quizzes: [], quizzesLoaded: false, quizStates: {} }))
         );
         this.loading.set(false);
       },
@@ -118,22 +125,26 @@ export class TheologyComponent implements OnInit {
     });
   }
 
-  answerQuiz(moduleId: number, answer: string) {
+  answerQuiz(moduleId: number, quizId: number, answer: string) {
     this.modulesWithQuizzes.update(list =>
       list.map(i => i.module.id === moduleId
-        ? { ...i, selectedAnswer: answer, showResult: true }
+        ? { ...i, quizStates: { ...i.quizStates, [quizId]: { selectedAnswer: answer, showResult: true } } }
         : i
       )
     );
   }
 
-  resetQuiz(moduleId: number) {
+  resetQuiz(moduleId: number, quizId: number) {
     this.modulesWithQuizzes.update(list =>
       list.map(i => i.module.id === moduleId
-        ? { ...i, selectedAnswer: null, showResult: false }
+        ? { ...i, quizStates: { ...i.quizStates, [quizId]: { selectedAnswer: null, showResult: false } } }
         : i
       )
     );
+  }
+
+  getQuizState(item: ModuleWithQuizzes, quizId: number): QuizState {
+    return item.quizStates[quizId] ?? { selectedAnswer: null, showResult: false };
   }
 
   getLevelIcon(level: string): string {

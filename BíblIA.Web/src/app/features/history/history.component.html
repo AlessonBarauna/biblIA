@@ -1,7 +1,7 @@
 <div class="history-container">
   <header class="history-header">
-    <h1>História da Igreja</h1>
-    <p>Conheça os heróis da fé e os grandes avivamentos que moldaram o cristianismo</p>
+    <h1>História Bíblica e da Igreja</h1>
+    <p>De Adão ao Apocalipse — narrativa, teologia e os grandes pensadores que moldaram o cristianismo</p>
   </header>
 
   @if (error()) {
@@ -109,6 +109,81 @@
         </div>
       </mat-tab>
 
+      <!-- ── Aba 3: Narrativa Bíblica ─────────────────────────────── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>auto_stories</mat-icon>&nbsp;Narrativa Bíblica
+        </ng-template>
+
+        <div class="tab-content">
+          <p class="tab-intro">
+            A Bíblia é uma narrativa unificada de criação, queda, redenção e consumação. Cada era prepara o caminho para a seguinte — tudo apontando para Jesus Cristo.
+          </p>
+          <div class="eras-timeline">
+            @for (era of bibleEras; track era.id) {
+              <div class="era-item" (click)="openEra(era)">
+                <div class="era-dot" [style.background]="era.color">
+                  <mat-icon>{{ era.icon }}</mat-icon>
+                </div>
+                <div class="era-card">
+                  <div class="era-header">
+                    <div>
+                      <h3 class="era-title">{{ era.period }}</h3>
+                      <span class="era-timespan">{{ era.timespan }}</span>
+                    </div>
+                    <mat-icon class="era-arrow">chevron_right</mat-icon>
+                  </div>
+                  <p class="era-summary">{{ era.summary }}</p>
+                  <div class="era-figures">
+                    @for (fig of era.keyFigures; track fig) {
+                      <span class="figure-chip">{{ fig }}</span>
+                    }
+                  </div>
+                  <div class="era-theme">
+                    <mat-icon>label</mat-icon> {{ era.theologicalTheme }}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ── Aba 4: Grandes Teólogos ───────────────────────────────── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>psychology</mat-icon>&nbsp;Grandes Teólogos
+        </ng-template>
+
+        <div class="tab-content">
+          <p class="tab-intro">
+            Os grandes teólogos da história cristã organizaram, defenderam e aprofundaram a compreensão da fé. Conhecê-los é enriquecer o estudo da Palavra.
+          </p>
+          <div class="theologians-grid">
+            @for (t of greatTheologians; track t.name) {
+              <mat-card class="theologian-card" (click)="openTheologian(t)">
+                <mat-card-header>
+                  <div mat-card-avatar class="theologian-avatar">
+                    <mat-icon>{{ t.icon }}</mat-icon>
+                  </div>
+                  <mat-card-title>{{ t.name }}</mat-card-title>
+                  <mat-card-subtitle>{{ t.years }} · {{ t.tradition }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <p class="theologian-contribution">{{ t.contribution }}</p>
+                  <div class="theologian-emphasis">
+                    <mat-icon>label</mat-icon> {{ t.theologicalEmphasis }}
+                  </div>
+                </mat-card-content>
+                <mat-card-actions align="end">
+                  <button mat-button color="primary">Ver mais</button>
+                </mat-card-actions>
+              </mat-card>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
     </mat-tab-group>
   }
 
@@ -150,6 +225,103 @@
               <em>{{ selectedHero()!.favoriteVerse }}</em>
             </div>
           }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Modal de detalhe da Era Bíblica ──────────────────────────── -->
+  @if (selectedEra()) {
+    <div class="modal-overlay" (click)="closeEra()">
+      <div class="era-detail-modal" (click)="$event.stopPropagation()">
+        <button class="modal-close" mat-icon-button (click)="closeEra()">
+          <mat-icon>close</mat-icon>
+        </button>
+        <div class="era-modal-header" [style.border-color]="selectedEra()!.color">
+          <div class="era-modal-icon" [style.background]="selectedEra()!.color">
+            <mat-icon>{{ selectedEra()!.icon }}</mat-icon>
+          </div>
+          <div>
+            <h2>{{ selectedEra()!.period }}</h2>
+            <span class="era-timespan">{{ selectedEra()!.timespan }}</span>
+          </div>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="modal-body era-modal-body">
+          <section>
+            <h3><mat-icon>people</mat-icon> Personagens Principais</h3>
+            <div class="era-figures">
+              @for (fig of selectedEra()!.keyFigures; track fig) {
+                <span class="figure-chip">{{ fig }}</span>
+              }
+            </div>
+          </section>
+          <section>
+            <h3><mat-icon>menu_book</mat-icon> Narrativa e Comentário</h3>
+            @for (para of selectedEra()!.narrative.split('\n\n'); track $index) {
+              <p>{{ para }}</p>
+            }
+          </section>
+          <section>
+            <h3><mat-icon>format_quote</mat-icon> Versículos-Chave</h3>
+            @for (v of selectedEra()!.keyVerses; track v.ref) {
+              <div class="key-verse-block">
+                <strong>{{ v.ref }}</strong>
+                <p><em>"{{ v.text }}"</em></p>
+              </div>
+            }
+          </section>
+          <section class="theologian-insight-block">
+            <h3><mat-icon>psychology</mat-icon> Perspectiva Teológica</h3>
+            <div class="insight-card">
+              <strong>{{ selectedEra()!.theologianInsight.theologian }}</strong>
+              <p><em>"{{ selectedEra()!.theologianInsight.quote }}"</em></p>
+            </div>
+          </section>
+          <section>
+            <h3><mat-icon>label</mat-icon> Temas Teológicos</h3>
+            <p class="theme-text">{{ selectedEra()!.theologicalTheme }}</p>
+          </section>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Modal de detalhe do Teólogo ──────────────────────────────── -->
+  @if (selectedTheologian()) {
+    <div class="modal-overlay" (click)="closeTheologian()">
+      <div class="hero-detail-modal" (click)="$event.stopPropagation()">
+        <button class="modal-close" mat-icon-button (click)="closeTheologian()">
+          <mat-icon>close</mat-icon>
+        </button>
+        <div class="modal-hero-header">
+          <div class="modal-avatar">
+            <mat-icon>{{ selectedTheologian()!.icon }}</mat-icon>
+          </div>
+          <div>
+            <h2>{{ selectedTheologian()!.name }}</h2>
+            <p>{{ selectedTheologian()!.years }}</p>
+            <div class="hero-tags">
+              <span class="tag category-tag">{{ selectedTheologian()!.tradition }}</span>
+            </div>
+          </div>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="modal-body">
+          <h3>Contribuição</h3>
+          <p>{{ selectedTheologian()!.contribution }}</p>
+          <h3>Principais Obras</h3>
+          <ul>
+            @for (work of selectedTheologian()!.mainWorks; track work) {
+              <li>{{ work }}</li>
+            }
+          </ul>
+          <h3>Ênfase Teológica</h3>
+          <p>{{ selectedTheologian()!.theologicalEmphasis }}</p>
+          <div class="favorite-verse">
+            <mat-icon>format_quote</mat-icon>
+            <em>{{ selectedTheologian()!.keyQuote }}</em>
+          </div>
         </div>
       </div>
     </div>

@@ -148,6 +148,7 @@
           <div class="quiz-section">
             <h4><mat-icon>quiz</mat-icon> Quiz do módulo</h4>
             @for (quiz of item.quizzes; track quiz.id) {
+              @let qs = getQuizState(item, quiz.id);
               <div class="quiz-card">
                 <p class="quiz-question">{{ quiz.question }}</p>
                 <div class="quiz-options">
@@ -159,22 +160,22 @@
                   ]; track opt.key) {
                     <button
                       class="quiz-option"
-                      [class.correct]="item.showResult && opt.key === quiz.correctAnswer"
-                      [class.wrong]="item.showResult && item.selectedAnswer === opt.key && opt.key !== quiz.correctAnswer"
-                      [class.selected]="item.selectedAnswer === opt.key && !item.showResult"
-                      [disabled]="item.showResult"
-                      (click)="answerQuiz(item.module.id, opt.key)">
+                      [class.correct]="qs.showResult && opt.key === quiz.correctAnswer"
+                      [class.wrong]="qs.showResult && qs.selectedAnswer === opt.key && opt.key !== quiz.correctAnswer"
+                      [class.selected]="qs.selectedAnswer === opt.key && !qs.showResult"
+                      [disabled]="qs.showResult"
+                      (click)="answerQuiz(item.module.id, quiz.id, opt.key)">
                       <strong>{{ opt.key }}.</strong> {{ opt.text }}
                     </button>
                   }
                 </div>
-                @if (item.showResult) {
-                  <div class="quiz-result" [class.correct-result]="item.selectedAnswer === quiz.correctAnswer">
-                    <mat-icon>{{ item.selectedAnswer === quiz.correctAnswer ? 'check_circle' : 'cancel' }}</mat-icon>
-                    {{ item.selectedAnswer === quiz.correctAnswer ? 'Correto!' : 'Resposta correta: ' + quiz.correctAnswer }}
+                @if (qs.showResult) {
+                  <div class="quiz-result" [class.correct-result]="qs.selectedAnswer === quiz.correctAnswer">
+                    <mat-icon>{{ qs.selectedAnswer === quiz.correctAnswer ? 'check_circle' : 'cancel' }}</mat-icon>
+                    {{ qs.selectedAnswer === quiz.correctAnswer ? 'Correto!' : 'Resposta correta: ' + quiz.correctAnswer }}
                     <p class="explanation">{{ quiz.explanation }}</p>
                   </div>
-                  <button mat-button (click)="resetQuiz(item.module.id)">Tentar novamente</button>
+                  <button mat-button (click)="resetQuiz(item.module.id, quiz.id)">Tentar novamente</button>
                 }
               </div>
             }
