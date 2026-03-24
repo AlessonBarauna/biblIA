@@ -1,162 +1,102 @@
 param(
     [string]$ApiUrl    = "http://localhost:5239",
-    [string]$Testament = "NT",
-    [int]   $BatchSize = 500,
-    [int]   $DelayMs   = 300,
-    [int]   $MaxRetry  = 3
+    [string]$Testament = "ALL",
+    [int]   $BatchSize = 500
 )
 
 # Uso:
-#   .\Import-Bible.ps1               # NT (padrao, ~260 capitulos, ~3 min)
-#   .\Import-Bible.ps1 -Testament ALL  # Biblia completa (~1189 capitulos, ~7 min)
+#   .\Import-Bible.ps1               # Biblia completa (padrao)
+#   .\Import-Bible.ps1 -Testament NT
 #   .\Import-Bible.ps1 -Testament OT
+#
+# Fonte: github.com/aruljohn/Bible-kjv (KJV, dominio publico)
+# 66 requisicoes HTTP (1 por livro) -- sem rate limiting severo.
 
-# Nao usar Stop -- queremos continuar em erros individuais e reportar no final
 $ErrorActionPreference = "Continue"
 
-$books = @(
-    @{i=1;  n="genesis";           c=50},
-    @{i=2;  n="exodus";            c=40},
-    @{i=3;  n="leviticus";         c=27},
-    @{i=4;  n="numbers";           c=36},
-    @{i=5;  n="deuteronomy";       c=34},
-    @{i=6;  n="joshua";            c=24},
-    @{i=7;  n="judges";            c=21},
-    @{i=8;  n="ruth";              c=4},
-    @{i=9;  n="1+samuel";          c=31},
-    @{i=10; n="2+samuel";          c=24},
-    @{i=11; n="1+kings";           c=22},
-    @{i=12; n="2+kings";           c=25},
-    @{i=13; n="1+chronicles";      c=29},
-    @{i=14; n="2+chronicles";      c=36},
-    @{i=15; n="ezra";              c=10},
-    @{i=16; n="nehemiah";          c=13},
-    @{i=17; n="esther";            c=10},
-    @{i=18; n="job";               c=42},
-    @{i=19; n="psalms";            c=150},
-    @{i=20; n="proverbs";          c=31},
-    @{i=21; n="ecclesiastes";      c=12},
-    @{i=22; n="song+of+solomon";   c=8},
-    @{i=23; n="isaiah";            c=66},
-    @{i=24; n="jeremiah";          c=52},
-    @{i=25; n="lamentations";      c=5},
-    @{i=26; n="ezekiel";           c=48},
-    @{i=27; n="daniel";            c=12},
-    @{i=28; n="hosea";             c=14},
-    @{i=29; n="joel";              c=3},
-    @{i=30; n="amos";              c=9},
-    @{i=31; n="obadiah";           c=1},
-    @{i=32; n="jonah";             c=4},
-    @{i=33; n="micah";             c=7},
-    @{i=34; n="nahum";             c=3},
-    @{i=35; n="habakkuk";          c=3},
-    @{i=36; n="zephaniah";         c=3},
-    @{i=37; n="haggai";            c=2},
-    @{i=38; n="zechariah";         c=14},
-    @{i=39; n="malachi";           c=4},
-    @{i=40; n="matthew";           c=28},
-    @{i=41; n="mark";              c=16},
-    @{i=42; n="luke";              c=24},
-    @{i=43; n="john";              c=21},
-    @{i=44; n="acts";              c=28},
-    @{i=45; n="romans";            c=16},
-    @{i=46; n="1+corinthians";     c=16},
-    @{i=47; n="2+corinthians";     c=13},
-    @{i=48; n="galatians";         c=6},
-    @{i=49; n="ephesians";         c=6},
-    @{i=50; n="philippians";       c=4},
-    @{i=51; n="colossians";        c=4},
-    @{i=52; n="1+thessalonians";   c=5},
-    @{i=53; n="2+thessalonians";   c=3},
-    @{i=54; n="1+timothy";         c=6},
-    @{i=55; n="2+timothy";         c=4},
-    @{i=56; n="titus";             c=3},
-    @{i=57; n="philemon";          c=1},
-    @{i=58; n="hebrews";           c=13},
-    @{i=59; n="james";             c=5},
-    @{i=60; n="1+peter";           c=5},
-    @{i=61; n="2+peter";           c=3},
-    @{i=62; n="1+john";            c=5},
-    @{i=63; n="2+john";            c=1},
-    @{i=64; n="3+john";            c=1},
-    @{i=65; n="jude";              c=1},
-    @{i=66; n="revelation";        c=22}
+# Nomes canonicos dos livros na ordem 1-66 (correspondem aos arquivos do repo)
+$bookNames = @(
+    "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy",
+    "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel",
+    "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra",
+    "Nehemiah", "Esther", "Job", "Psalms", "Proverbs",
+    "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations",
+    "Ezekiel", "Daniel", "Hosea", "Joel", "Amos",
+    "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk",
+    "Zephaniah", "Haggai", "Zechariah", "Malachi",
+    "Matthew", "Mark", "Luke", "John", "Acts",
+    "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians",
+    "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians",
+    "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews",
+    "James", "1 Peter", "2 Peter", "1 John", "2 John",
+    "3 John", "Jude", "Revelation"
 )
 
+# Filtro de testamento (orderIndex 1-39 = OT, 40-66 = NT)
+$minIdx = 0  # 0-based
+$maxIdx = 65
 switch ($Testament.ToUpper()) {
-    "NT"  { $books = $books | Where-Object { $_.i -ge 40 } }
-    "OT"  { $books = $books | Where-Object { $_.i -le 39 } }
+    "NT"  { $minIdx = 39 }
+    "OT"  { $maxIdx = 38 }
     "ALL" { }
     default { Write-Error "Testament deve ser NT, OT ou ALL"; exit 1 }
 }
 
-$totalChapters = ($books | ForEach-Object { $_.c } | Measure-Object -Sum).Sum
-Write-Host "[BibleIA] $($books.Count) livros, $totalChapters capitulos ($Testament)." -ForegroundColor Cyan
-Write-Host "[BibleIA] Fonte: bible-api.com (KJV) | delay: ${DelayMs}ms | batch: $BatchSize" -ForegroundColor DarkGray
+$selectedBooks = $bookNames[$minIdx..$maxIdx]
+Write-Host "[BibleIA] $($selectedBooks.Count) livros ($Testament)." -ForegroundColor Cyan
 
 # Verifica se a API esta acessivel
+Write-Host "[BibleIA] Verificando API em $ApiUrl..." -ForegroundColor DarkGray
 try {
     $null = Invoke-RestMethod "$ApiUrl/api/bible/books" -TimeoutSec 5
-    Write-Host "[BibleIA] API respondendo em $ApiUrl" -ForegroundColor Green
+    Write-Host "[BibleIA] API ok." -ForegroundColor Green
 } catch {
-    Write-Error "API nao acessivel em $ApiUrl. Certifique-se de que a API esta rodando."
+    Write-Error "API nao acessivel em $ApiUrl. Verifique se a API esta rodando (dotnet run)."
     exit 1
 }
 
-# --- Baixar e acumular versiculos ---
+$baseUrl    = "https://raw.githubusercontent.com/aruljohn/Bible-kjv/master"
 $allVerses  = [System.Collections.Generic.List[hashtable]]::new()
-$chapDone   = 0
-$chapFailed = 0
+$booksDone  = 0
+$bookFailed = 0
 
-foreach ($book in $books) {
-    for ($ch = 1; $ch -le $book.c; $ch++) {
-        $url     = "https://bible-api.com/$($book.n)+$($ch)?translation=kjv"
-        $success = $false
+foreach ($bookName in $selectedBooks) {
+    $orderIndex = $bookNames.IndexOf($bookName) + 1
+    # Arquivos do repo nao tem espacos: "1 Samuel" -> "1Samuel", "Song of Solomon" -> "SongofSolomon"
+    $encoded    = $bookName -replace " ", ""
+    $url        = "$baseUrl/$encoded.json"
 
-        for ($try = 1; $try -le $MaxRetry; $try++) {
-            try {
-                $data = Invoke-RestMethod $url -TimeoutSec 30
-                foreach ($v in $data.verses) {
-                    $allVerses.Add(@{
-                        bookOrderIndex = $book.i
-                        chapter        = $v.chapter
-                        verse          = $v.verse
-                        textKJV        = $v.text.Trim()
-                        textACF        = ""
-                    })
-                }
-                $success = $true
-                break
-            } catch {
-                if ($try -lt $MaxRetry) {
-                    $wait = $try * 1000
-                    Write-Warning "  Tentativa $try/$MaxRetry falhou para $($book.n) $ch. Aguardando ${wait}ms..."
-                    Start-Sleep -Milliseconds $wait
-                } else {
-                    Write-Warning "  FALHOU (todas tentativas): $($book.n) $ch"
-                    $chapFailed++
-                }
+    try {
+        $data = Invoke-RestMethod $url -TimeoutSec 30
+
+        foreach ($ch in $data.chapters) {
+            $chNum = [int]$ch.chapter
+            foreach ($v in $ch.verses) {
+                $allVerses.Add(@{
+                    bookOrderIndex = $orderIndex
+                    chapter        = $chNum
+                    verse          = [int]$v.verse
+                    textKJV        = $v.text.Trim()
+                    textACF        = ""
+                })
             }
         }
 
-        if ($success) {
-            $chapDone++
-            if ($chapDone % 20 -eq 0) {
-                $pct = [Math]::Round($chapDone / $totalChapters * 100)
-                Write-Host "  Baixando... $chapDone/$totalChapters capitulos ($($pct)%)" -ForegroundColor DarkGray
-            }
-        }
-
-        if ($DelayMs -gt 0) { Start-Sleep -Milliseconds $DelayMs }
+        $booksDone++
+        $pct = [Math]::Round($booksDone / $selectedBooks.Count * 100)
+        Write-Host "  [$booksDone/$($selectedBooks.Count)] $bookName ($($pct)%)" -ForegroundColor DarkGray
+    } catch {
+        Write-Warning "  FALHOU: $bookName -- $_"
+        $bookFailed++
     }
 }
 
 $total = $allVerses.Count
-$color = if ($chapFailed -eq 0) { "Green" } else { "Yellow" }
-Write-Host "[BibleIA] $total versiculos baixados. Capitulos com falha: $chapFailed" -ForegroundColor $color
+$color = if ($bookFailed -eq 0) { "Green" } else { "Yellow" }
+Write-Host "[BibleIA] $total versiculos prontos. Livros com falha: $bookFailed" -ForegroundColor $color
 
 if ($total -eq 0) {
-    Write-Error "Nenhum versiculo baixado. Verifique a conexao com bible-api.com."
+    Write-Error "Nenhum versiculo encontrado. Verifique a conexao."
     exit 1
 }
 
@@ -194,10 +134,10 @@ for ($b = 0; $b -lt $batches; $b++) {
 
 Write-Host ""
 Write-Host "=== Importacao concluida ===" -ForegroundColor Green
-Write-Host "  Versiculos baixados  : $total"
+Write-Host "  Versiculos no arquivo: $total"
 Write-Host "  Importados           : $imported" -ForegroundColor Green
 Write-Host "  Ja existiam (pulados): $skipped"
-if ($chapFailed -gt 0) { Write-Host "  Capitulos com falha  : $chapFailed" -ForegroundColor Yellow }
+if ($bookFailed -gt 0) { Write-Host "  Livros com falha     : $bookFailed" -ForegroundColor Yellow }
 if ($batchErr   -gt 0) { Write-Host "  Lotes com erro       : $batchErr"   -ForegroundColor Yellow }
 Write-Host ""
-Write-Host "Dica: reexecute o script para preencher eventuais falhas (e idempotente)." -ForegroundColor DarkGray
+Write-Host "Dica: reexecute o script a qualquer momento -- e idempotente." -ForegroundColor DarkGray
