@@ -20,7 +20,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddHttpClient();
 
 // Services de negócio
-builder.Services.AddScoped<GeminiService>();
+builder.Services.AddScoped<GroqService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<AuthService>();
 

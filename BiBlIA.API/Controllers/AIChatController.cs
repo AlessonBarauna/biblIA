@@ -13,11 +13,11 @@ namespace BíblIA.Api.Controllers;
 [Route("api/ai")]
 public class AIChatController : ControllerBase
 {
-    private readonly GeminiService _gemini;
+    private readonly GroqService _groq;
 
-    public AIChatController(GeminiService gemini)
+    public AIChatController(GroqService gemini)
     {
-        _gemini = gemini;
+        _groq = gemini;
     }
 
     // POST /api/ai/ask
@@ -28,7 +28,7 @@ public class AIChatController : ControllerBase
             return BadRequest("A pergunta deve ter pelo menos 3 caracteres.");
 
         var domain = dto.Domain ?? "general";
-        var answer = await _gemini.AskAsync(dto.Question, domain);
+        var answer = await _groq.AskAsync(dto.Question, domain);
 
         return Ok(new AiAnswerDto { Answer = answer });
     }

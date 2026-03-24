@@ -12,12 +12,12 @@ namespace BíblIA.Api.Controllers;
 public class ChatsController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly GeminiService _geminiService;
+    private readonly GroqService _groqService;
 
-    public ChatsController(AppDbContext context, GeminiService geminiService)
+    public ChatsController(AppDbContext context, GroqService geminiService)
     {
         _context = context;
-        _geminiService = geminiService;
+        _groqService = geminiService;
     }
 
     [HttpGet("{userId}")]
@@ -89,7 +89,7 @@ public class ChatsController : ControllerBase
             .ToList();
 
         // Obter resposta da IA
-        var aiResponse = await _geminiService.SendMessageAsync(dto.Content, history);
+        var aiResponse = await _groqService.SendMessageAsync(dto.Content, history);
 
         // Salvar resposta da IA
         var aiMessage = new ChatMessage
