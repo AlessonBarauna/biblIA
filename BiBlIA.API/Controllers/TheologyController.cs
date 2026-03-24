@@ -37,6 +37,10 @@ public class TheologyController : ControllerBase
             Id = c.Id,
             Title = c.Title,
             Description = c.Description,
+            Category = c.Category,
+            DurationHours = c.DurationHours,
+            Level = c.Level,
+            ImageIcon = c.ImageIcon,
             ModuleCount = c.Modules.Count
         }));
     }
@@ -57,6 +61,10 @@ public class TheologyController : ControllerBase
             Id = course.Id,
             Title = course.Title,
             Description = course.Description,
+            Category = course.Category,
+            DurationHours = course.DurationHours,
+            Level = course.Level,
+            ImageIcon = course.ImageIcon,
             ModuleCount = course.Modules.Count
         });
     }

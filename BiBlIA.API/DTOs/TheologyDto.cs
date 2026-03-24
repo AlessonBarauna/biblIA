@@ -6,6 +6,10 @@ public class TheologyCourseDto
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public int DurationHours { get; set; }
+    public string Level { get; set; } = string.Empty;
+    public string ImageIcon { get; set; } = string.Empty;
     public int ModuleCount { get; set; }
 }
 
