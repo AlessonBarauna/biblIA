@@ -12,9 +12,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// SQLite — simples, sem instalação adicional
+// SQLite: em produção usa /data/biblia.db (volume persistente do Railway)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+if (builder.Environment.IsProduction())
+{
+    var dataDir = Environment.GetEnvironmentVariable("DATA_DIR") ?? "/data";
+    Directory.CreateDirectory(dataDir);
+    connectionString = $"Data Source={Path.Combine(dataDir, "biblia.db")}";
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(connectionString));
 
 // HttpClient para chamadas à API Gemini
 builder.Services.AddHttpClient();
@@ -46,19 +54,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// CORS para o Angular em desenvolvimento
+// CORS: origens locais + domínios de produção configurados via env var CORS_ORIGINS
+// Ex: CORS_ORIGINS=https://meuapp.vercel.app,https://outro.vercel.app
+var corsOrigins = new List<string>
+{
+    "http://localhost:4200",
+    "http://localhost:60919",
+    "http://127.0.0.1:4200",
+    "http://127.0.0.1:60919"
+};
+
+var extraOrigins = Environment.GetEnvironmentVariable("CORS_ORIGINS");
+if (!string.IsNullOrWhiteSpace(extraOrigins))
+    corsOrigins.AddRange(extraOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries));
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
-        policy.WithOrigins(
-            "http://localhost:4200",     // porta padrão ng serve
-            "http://localhost:60919",    // porta alternativa (se 4200 está ocupada)
-            "http://127.0.0.1:4200",
-            "http://127.0.0.1:60919"
-        )
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials());  // importante se usar cookies/credentials
+        policy.WithOrigins(corsOrigins.ToArray())
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials());
 });
 
 var app = builder.Build();

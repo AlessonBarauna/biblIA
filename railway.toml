@@ -1,0 +1,9 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "BiBlIA.API/Dockerfile"
+buildContext = "BiBlIA.API"
+
+[deploy]
+healthcheckPath = "/api/bible/books"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
