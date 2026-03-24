@@ -11,11 +11,9 @@ param(
 #   .\Import-Bible.ps1 -Testament ALL  # Biblia completa (~1189 capitulos, ~7 min)
 #   .\Import-Bible.ps1 -Testament OT
 
-# Nao usar Stop — queremos continuar em erros individuais e reportar no final
+# Nao usar Stop -- queremos continuar em erros individuais e reportar no final
 $ErrorActionPreference = "Continue"
 
-# --- Mapa canonico de livros ---
-# orderIndex (1-66), nome para a bible-api.com, contagem de capitulos
 $books = @(
     @{i=1;  n="genesis";           c=50},
     @{i=2;  n="exodus";            c=40},
@@ -85,7 +83,6 @@ $books = @(
     @{i=66; n="revelation";        c=22}
 )
 
-# Filtrar por testamento
 switch ($Testament.ToUpper()) {
     "NT"  { $books = $books | Where-Object { $_.i -ge 40 } }
     "OT"  { $books = $books | Where-Object { $_.i -le 39 } }
@@ -132,11 +129,11 @@ foreach ($book in $books) {
                 break
             } catch {
                 if ($try -lt $MaxRetry) {
-                    $wait = $try * 1000  # backoff: 1s, 2s
+                    $wait = $try * 1000
                     Write-Warning "  Tentativa $try/$MaxRetry falhou para $($book.n) $ch. Aguardando ${wait}ms..."
                     Start-Sleep -Milliseconds $wait
                 } else {
-                    Write-Warning "  FALHOU (todas as tentativas): $($book.n) $ch — $_"
+                    Write-Warning "  FALHOU (todas tentativas): $($book.n) $ch"
                     $chapFailed++
                 }
             }
@@ -146,7 +143,7 @@ foreach ($book in $books) {
             $chapDone++
             if ($chapDone % 20 -eq 0) {
                 $pct = [Math]::Round($chapDone / $totalChapters * 100)
-                Write-Host "  Baixando... $chapDone/$totalChapters capitulos ($pct%)" -ForegroundColor DarkGray
+                Write-Host "  Baixando... $chapDone/$totalChapters capitulos ($($pct)%)" -ForegroundColor DarkGray
             }
         }
 
@@ -155,7 +152,8 @@ foreach ($book in $books) {
 }
 
 $total = $allVerses.Count
-Write-Host "[BibleIA] $total versiculos baixados | $chapFailed capitulos com falha." -ForegroundColor $(if ($chapFailed -eq 0) { "Green" } else { "Yellow" })
+$color = if ($chapFailed -eq 0) { "Green" } else { "Yellow" }
+Write-Host "[BibleIA] $total versiculos baixados. Capitulos com falha: $chapFailed" -ForegroundColor $color
 
 if ($total -eq 0) {
     Write-Error "Nenhum versiculo baixado. Verifique a conexao com bible-api.com."
@@ -187,7 +185,7 @@ for ($b = 0; $b -lt $batches; $b++) {
         $imported += $result.imported
         $skipped  += $result.skipped
         $pct = [Math]::Round(($b + 1) / $batches * 100)
-        Write-Host "  Lote $($b+1)/$batches ($pct%) — importados:$($result.imported) pulados:$($result.skipped)" -ForegroundColor Gray
+        Write-Host "  Lote $($b+1)/$batches ($($pct)%) - importados:$($result.imported) pulados:$($result.skipped)" -ForegroundColor Gray
     } catch {
         Write-Warning "  Erro no lote $($b+1): $_"
         $batchErr++
@@ -196,10 +194,10 @@ for ($b = 0; $b -lt $batches; $b++) {
 
 Write-Host ""
 Write-Host "=== Importacao concluida ===" -ForegroundColor Green
-Write-Host "  Versiculos baixados : $total"
-Write-Host "  Importados          : $imported" -ForegroundColor Green
+Write-Host "  Versiculos baixados  : $total"
+Write-Host "  Importados           : $imported" -ForegroundColor Green
 Write-Host "  Ja existiam (pulados): $skipped"
-if ($chapFailed -gt 0)  { Write-Host "  Capitulos com falha  : $chapFailed"  -ForegroundColor Yellow }
-if ($batchErr   -gt 0)  { Write-Host "  Lotes com erro       : $batchErr"    -ForegroundColor Yellow }
+if ($chapFailed -gt 0) { Write-Host "  Capitulos com falha  : $chapFailed" -ForegroundColor Yellow }
+if ($batchErr   -gt 0) { Write-Host "  Lotes com erro       : $batchErr"   -ForegroundColor Yellow }
 Write-Host ""
 Write-Host "Dica: reexecute o script para preencher eventuais falhas (e idempotente)." -ForegroundColor DarkGray
