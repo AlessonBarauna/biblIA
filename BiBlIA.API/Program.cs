@@ -54,24 +54,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// CORS: origens locais + domínios de produção configurados via env var CORS_ORIGINS
-// Ex: CORS_ORIGINS=https://meuapp.vercel.app,https://outro.vercel.app
-var corsOrigins = new List<string>
-{
-    "http://localhost:4200",
-    "http://localhost:60919",
-    "http://127.0.0.1:4200",
-    "http://127.0.0.1:60919"
-};
-
-var extraOrigins = Environment.GetEnvironmentVariable("CORS_ORIGINS");
-if (!string.IsNullOrWhiteSpace(extraOrigins))
-    corsOrigins.AddRange(extraOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries));
-
+// CORS: localhost em dev + qualquer subdomínio *.vercel.app em produção.
+// SetIsOriginAllowed é necessário com AllowCredentials() — não aceita wildcard.
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
-        policy.WithOrigins(corsOrigins.ToArray())
+        policy.SetIsOriginAllowed(origin =>
+                  origin.StartsWith("http://localhost") ||
+                  origin.StartsWith("http://127.0.0.1") ||
+                  origin.EndsWith(".vercel.app"))
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials());
