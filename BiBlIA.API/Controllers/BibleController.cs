@@ -115,6 +115,72 @@ public class BibleController : ControllerBase
         }));
     }
 
+    // POST /api/bible/import
+    // Importação em lote — idempotente (pula versículos já existentes).
+    // Recebe até 2000 versículos por requisição; scripts externos chamam em batches.
+    [HttpPost("import")]
+    public async Task<ActionResult<ImportResultDto>> ImportVerses([FromBody] List<ImportVerseDto> verses)
+    {
+        if (verses == null || verses.Count == 0)
+            return BadRequest("Nenhum versículo fornecido.");
+
+        // Monta dicionário orderIndex → bookId para lookup O(1)
+        var books = (await _context.BibleBooks
+            .Select(b => new { b.OrderIndex, b.Id })
+            .ToListAsync())
+            .ToDictionary(b => b.OrderIndex, b => b.Id);
+
+        // Carrega chaves existentes como ValueTuple para equality correta
+        var existingKeys = (await _context.BibleVerses
+            .Select(v => new { v.BookId, v.Chapter, v.Verse })
+            .ToListAsync())
+            .Select(v => (v.BookId, v.Chapter, v.Verse))
+            .ToHashSet();
+
+        var toInsert = new List<BíblIA.Api.Models.BibleVerse>(verses.Count);
+        int skipped = 0;
+
+        foreach (var dto in verses)
+        {
+            if (!books.TryGetValue(dto.BookOrderIndex, out var bookId))
+            {
+                skipped++;
+                continue;
+            }
+
+            if (existingKeys.Contains((bookId, dto.Chapter, dto.Verse)))
+            {
+                skipped++;
+                continue;
+            }
+
+            toInsert.Add(new BíblIA.Api.Models.BibleVerse
+            {
+                BookId = bookId,
+                Chapter = dto.Chapter,
+                Verse = dto.Verse,
+                TextACF = dto.TextACF,
+                TextKJV = dto.TextKJV
+            });
+
+            // Adiciona ao set para evitar duplicatas dentro do mesmo lote
+            existingKeys.Add((bookId, dto.Chapter, dto.Verse));
+        }
+
+        if (toInsert.Count > 0)
+        {
+            await _context.BibleVerses.AddRangeAsync(toInsert);
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new ImportResultDto
+        {
+            Total    = verses.Count,
+            Imported = toInsert.Count,
+            Skipped  = skipped
+        });
+    }
+
     // GET /api/bible/books/{bookId}/chapters/{chapter}/verses/{verse}
     [HttpGet("books/{bookId}/chapters/{chapter}/verses/{verse}")]
     public async Task<ActionResult<BibleVerseDto>> GetVerse(int bookId, int chapter, int verse)

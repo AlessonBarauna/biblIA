@@ -13,6 +13,27 @@ public class BibleVerseDto
     public string TextKJV { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// DTO para importação em lote via POST /api/bible/import.
+/// Usa bookOrderIndex (1=Gênesis … 66=Apocalipse) em vez de bookId interno,
+/// para que scripts externos não precisem conhecer os IDs do banco.
+/// </summary>
+public class ImportVerseDto
+{
+    public int BookOrderIndex { get; set; }
+    public int Chapter { get; set; }
+    public int Verse { get; set; }
+    public string TextACF { get; set; } = string.Empty;
+    public string TextKJV { get; set; } = string.Empty;
+}
+
+public class ImportResultDto
+{
+    public int Total { get; set; }
+    public int Imported { get; set; }
+    public int Skipped { get; set; }
+}
+
 public class CreateBibleVerseDto
 {
     [Required]
