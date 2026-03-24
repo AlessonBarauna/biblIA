@@ -16,11 +16,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// HttpClient nomeado para Anthropic
+// HttpClient para chamadas à API Gemini
 builder.Services.AddHttpClient();
 
 // Services de negócio
-builder.Services.AddScoped<AnthropicService>();
+builder.Services.AddScoped<GeminiService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<AuthService>();
 
