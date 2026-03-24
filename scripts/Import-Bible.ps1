@@ -108,9 +108,9 @@ function Get-PtMap($url, $label) {
                 }
             }
         }
-        Write-Host "[BibleIA] $label: $($map.Count) versiculos." -ForegroundColor Green
+        Write-Host "[BibleIA] $($label): $($map.Count) versiculos." -ForegroundColor Green
     } catch {
-        Write-Warning "[BibleIA] Falha ao baixar $label: $_"
+        Write-Warning "[BibleIA] Falha ao baixar $($label): $_"
     }
     return $map
 }
