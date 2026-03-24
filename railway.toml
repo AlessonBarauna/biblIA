@@ -1,7 +1,6 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "BiBlIA.API/Dockerfile"
-buildContext = "BiBlIA.API"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 healthcheckPath = "/api/bible/books"
