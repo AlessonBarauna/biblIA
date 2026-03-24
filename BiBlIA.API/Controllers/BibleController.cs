@@ -120,7 +120,7 @@ public class BibleController : ControllerBase
     }
 
     // POST /api/bible/import
-    // Importação em lote — idempotente (pula versículos já existentes).
+    // Upsert em lote: insere versículos novos e atualiza traduções dos já existentes.
     // Recebe até 2000 versículos por requisição; scripts externos chamam em batches.
     [HttpPost("import")]
     public async Task<ActionResult<ImportResultDto>> ImportVerses([FromBody] List<ImportVerseDto> verses)
@@ -128,21 +128,20 @@ public class BibleController : ControllerBase
         if (verses == null || verses.Count == 0)
             return BadRequest("Nenhum versículo fornecido.");
 
-        // Monta dicionário orderIndex → bookId para lookup O(1)
+        // orderIndex → bookId  (lookup O(1))
         var books = (await _context.BibleBooks
             .Select(b => new { b.OrderIndex, b.Id })
             .ToListAsync())
             .ToDictionary(b => b.OrderIndex, b => b.Id);
 
-        // Carrega chaves existentes como ValueTuple para equality correta
-        var existingKeys = (await _context.BibleVerses
-            .Select(v => new { v.BookId, v.Chapter, v.Verse })
-            .ToListAsync())
-            .Select(v => (v.BookId, v.Chapter, v.Verse))
-            .ToHashSet();
+        // Carrega entidades existentes indexadas por (bookId, chapter, verse)
+        // para poder atualizar os campos de tradução sem deletar e reinserir.
+        var existing = (await _context.BibleVerses.ToListAsync())
+            .ToDictionary(v => (v.BookId, v.Chapter, v.Verse));
 
-        var toInsert = new List<BíblIA.Api.Models.BibleVerse>(verses.Count);
-        int skipped = 0;
+        var toInsert  = new List<BíblIA.Api.Models.BibleVerse>(verses.Count);
+        int updated   = 0;
+        int skipped   = 0;
 
         foreach (var dto in verses)
         {
@@ -152,37 +151,47 @@ public class BibleController : ControllerBase
                 continue;
             }
 
-            if (existingKeys.Contains((bookId, dto.Chapter, dto.Verse)))
+            var key = (bookId, dto.Chapter, dto.Verse);
+
+            if (existing.TryGetValue(key, out var entity))
             {
-                skipped++;
-                continue;
+                // Versículo já existe — atualiza apenas as traduções não-vazias
+                // para preservar dados de importações anteriores.
+                if (!string.IsNullOrEmpty(dto.TextKJV)) entity.TextKJV = dto.TextKJV;
+                if (!string.IsNullOrEmpty(dto.TextAA))  entity.TextAA  = dto.TextAA;
+                if (!string.IsNullOrEmpty(dto.TextACF)) entity.TextACF = dto.TextACF;
+                if (!string.IsNullOrEmpty(dto.TextNVI)) entity.TextNVI = dto.TextNVI;
+                updated++;
             }
-
-            toInsert.Add(new BíblIA.Api.Models.BibleVerse
+            else
             {
-                BookId = bookId,
-                Chapter = dto.Chapter,
-                Verse   = dto.Verse,
-                TextKJV = dto.TextKJV,
-                TextAA  = dto.TextAA,
-                TextACF = dto.TextACF,
-                TextNVI = dto.TextNVI
-            });
-
-            // Adiciona ao set para evitar duplicatas dentro do mesmo lote
-            existingKeys.Add((bookId, dto.Chapter, dto.Verse));
+                var novo = new BíblIA.Api.Models.BibleVerse
+                {
+                    BookId  = bookId,
+                    Chapter = dto.Chapter,
+                    Verse   = dto.Verse,
+                    TextKJV = dto.TextKJV,
+                    TextAA  = dto.TextAA,
+                    TextACF = dto.TextACF,
+                    TextNVI = dto.TextNVI
+                };
+                toInsert.Add(novo);
+                // Previne duplicata dentro do mesmo lote
+                existing[key] = novo;
+            }
         }
 
         if (toInsert.Count > 0)
-        {
             await _context.BibleVerses.AddRangeAsync(toInsert);
+
+        // SaveChanges persiste tanto os inserts quanto as entidades modificadas
+        if (toInsert.Count > 0 || updated > 0)
             await _context.SaveChangesAsync();
-        }
 
         return Ok(new ImportResultDto
         {
             Total    = verses.Count,
-            Imported = toInsert.Count,
+            Imported = toInsert.Count + updated,
             Skipped  = skipped
         });
     }
