@@ -18,6 +18,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 import { ApiService, Chat, ChatMessage } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { ChatStateService } from '../../services/chat-state.service';
 
 @Component({
   selector: 'app-chat',
@@ -47,6 +48,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   private apiService = inject(ApiService);
   private authService = inject(AuthService);
   private sanitizer = inject(DomSanitizer);
+  private chatState = inject(ChatStateService);
 
   // Signals (Angular 21 - reactivity)
   readonly chatId = signal<number | null>(null);
@@ -114,13 +116,22 @@ export class ChatComponent implements OnInit, AfterViewChecked {
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         );
         this.chats.set(sorted);
-        if (sorted.length > 0) {
-          this.selectChat(sorted[0]);
-        } else {
+
+        if (sorted.length === 0) {
+          // Sem histórico: cria a primeira conversa
           this.createNewChat();
+          return;
         }
+
+        // Restaura o chat que estava ativo antes da navegação,
+        // ou seleciona o mais recente se for a primeira visita.
+        const savedId = this.chatState.activeChatId();
+        const toSelect = savedId
+          ? (sorted.find(c => c.id === savedId) ?? sorted[0])
+          : sorted[0];
+        this.selectChat(toSelect);
       },
-      error: () => this.createNewChat()
+      error: (err) => console.error('Erro ao carregar chats:', err)
     });
   }
 
@@ -168,6 +179,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   }
 
   selectChat(chat: Chat): void {
+    this.chatState.activeChatId.set(chat.id);
     this.chatId.set(chat.id);
     this.loadChat();
   }

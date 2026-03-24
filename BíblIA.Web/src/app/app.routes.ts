@@ -9,13 +9,12 @@ import { AuthComponent } from './features/auth/auth.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '',          component: HomeComponent },
-  { path: 'auth',      component: AuthComponent },
-  { path: 'bible',     component: BibleComponent },
-  // Chat requer login — o authGuard redireciona para /auth se não autenticado
-  { path: 'chat',      component: ChatComponent, canActivate: [authGuard] },
-  { path: 'theology',  component: TheologyComponent },
-  { path: 'eschatology', component: EschatologyComponent },
-  { path: 'history',   component: HistoryComponent },
-  { path: '**',        redirectTo: '' }
+  { path: 'auth',        component: AuthComponent },
+  { path: '',            component: HomeComponent,        canActivate: [authGuard] },
+  { path: 'bible',       component: BibleComponent,       canActivate: [authGuard] },
+  { path: 'chat',        component: ChatComponent,        canActivate: [authGuard] },
+  { path: 'theology',    component: TheologyComponent,    canActivate: [authGuard] },
+  { path: 'eschatology', component: EschatologyComponent, canActivate: [authGuard] },
+  { path: 'history',     component: HistoryComponent,     canActivate: [authGuard] },
+  { path: '**',          redirectTo: '' }
 ];
