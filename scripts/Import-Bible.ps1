@@ -1,133 +1,142 @@
 param(
     [string]$ApiUrl    = "http://localhost:5239",
     [string]$Testament = "NT",
-    [int]   $BatchSize = 1000
+    [int]   $BatchSize = 500,
+    [int]   $DelayMs   = 200
 )
 
 # Uso:
-#   .\Import-Bible.ps1               # NT (padrao)
-#   .\Import-Bible.ps1 -Testament ALL
+#   .\Import-Bible.ps1               # NT (padrao, ~260 capitulos, ~3 min)
+#   .\Import-Bible.ps1 -Testament ALL  # Biblia completa (~1189 capitulos, ~15 min)
 #   .\Import-Bible.ps1 -Testament OT
 
 $ErrorActionPreference = "Stop"
 
-function Try-Download([string[]]$urls) {
-    foreach ($url in $urls) {
-        try {
-            Write-Host "  GET $url" -ForegroundColor DarkGray
-            return Invoke-RestMethod $url
-        } catch {
-            Write-Host "  Falhou ($($_.Exception.Message.Split([char]10)[0]))" -ForegroundColor Yellow
-        }
-    }
-    return $null
-}
-
-# =============================================================================
-# 1. Baixar KJV
-# Fonte: scrollmapper/bible_databases
-# Formato: {"resultset":{"row":[{"field":[book,chapter,verse,text]},...]}}
-# book 1=Genesis ... 66=Apocalipse (igual ao nosso orderIndex)
-# =============================================================================
-Write-Host "[1/4] Baixando KJV (scrollmapper)..." -ForegroundColor Cyan
-$kjvRaw = Try-Download @(
-    "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/json/t_kjv.json"
+# --- Mapa canonico de livros ---
+# orderIndex (1-66), nome para a bible-api.com, contagem de capitulos
+$books = @(
+    @{i=1;  n="genesis";           c=50},
+    @{i=2;  n="exodus";            c=40},
+    @{i=3;  n="leviticus";         c=27},
+    @{i=4;  n="numbers";           c=36},
+    @{i=5;  n="deuteronomy";       c=34},
+    @{i=6;  n="joshua";            c=24},
+    @{i=7;  n="judges";            c=21},
+    @{i=8;  n="ruth";              c=4},
+    @{i=9;  n="1+samuel";          c=31},
+    @{i=10; n="2+samuel";          c=24},
+    @{i=11; n="1+kings";           c=22},
+    @{i=12; n="2+kings";           c=25},
+    @{i=13; n="1+chronicles";      c=29},
+    @{i=14; n="2+chronicles";      c=36},
+    @{i=15; n="ezra";              c=10},
+    @{i=16; n="nehemiah";          c=13},
+    @{i=17; n="esther";            c=10},
+    @{i=18; n="job";               c=42},
+    @{i=19; n="psalms";            c=150},
+    @{i=20; n="proverbs";          c=31},
+    @{i=21; n="ecclesiastes";      c=12},
+    @{i=22; n="song+of+solomon";   c=8},
+    @{i=23; n="isaiah";            c=66},
+    @{i=24; n="jeremiah";          c=52},
+    @{i=25; n="lamentations";      c=5},
+    @{i=26; n="ezekiel";           c=48},
+    @{i=27; n="daniel";            c=12},
+    @{i=28; n="hosea";             c=14},
+    @{i=29; n="joel";              c=3},
+    @{i=30; n="amos";              c=9},
+    @{i=31; n="obadiah";           c=1},
+    @{i=32; n="jonah";             c=4},
+    @{i=33; n="micah";             c=7},
+    @{i=34; n="nahum";             c=3},
+    @{i=35; n="habakkuk";          c=3},
+    @{i=36; n="zephaniah";         c=3},
+    @{i=37; n="haggai";            c=2},
+    @{i=38; n="zechariah";         c=14},
+    @{i=39; n="malachi";           c=4},
+    @{i=40; n="matthew";           c=28},
+    @{i=41; n="mark";              c=16},
+    @{i=42; n="luke";              c=24},
+    @{i=43; n="john";              c=21},
+    @{i=44; n="acts";              c=28},
+    @{i=45; n="romans";            c=16},
+    @{i=46; n="1+corinthians";     c=16},
+    @{i=47; n="2+corinthians";     c=13},
+    @{i=48; n="galatians";         c=6},
+    @{i=49; n="ephesians";         c=6},
+    @{i=50; n="philippians";       c=4},
+    @{i=51; n="colossians";        c=4},
+    @{i=52; n="1+thessalonians";   c=5},
+    @{i=53; n="2+thessalonians";   c=3},
+    @{i=54; n="1+timothy";         c=6},
+    @{i=55; n="2+timothy";         c=4},
+    @{i=56; n="titus";             c=3},
+    @{i=57; n="philemon";          c=1},
+    @{i=58; n="hebrews";           c=13},
+    @{i=59; n="james";             c=5},
+    @{i=60; n="1+peter";           c=5},
+    @{i=61; n="2+peter";           c=3},
+    @{i=62; n="1+john";            c=5},
+    @{i=63; n="2+john";            c=1},
+    @{i=64; n="3+john";            c=1},
+    @{i=65; n="jude";              c=1},
+    @{i=66; n="revelation";        c=22}
 )
-if ($null -eq $kjvRaw) {
-    Write-Error "Nao foi possivel baixar o KJV. Verifique sua conexao com a internet."
-    exit 1
-}
 
-# Indexar KJV por (book, chapter, verse) para lookup O(1) ao cruzar com PT
-$kjvIndex = @{}
-foreach ($row in $kjvRaw.resultset.row) {
-    $f = $row.field
-    $key = "$($f[0])_$($f[1])_$($f[2])"
-    $kjvIndex[$key] = $f[3]
-}
-Write-Host "  $($kjvIndex.Count) versiculos KJV carregados." -ForegroundColor Green
-
-# =============================================================================
-# 2. Baixar Portugues (ACF / AA)
-# Tenta varias fontes conhecidas. Se falhar, importa so KJV.
-# =============================================================================
-Write-Host "[2/4] Baixando portugues (ACF/AA)..." -ForegroundColor Cyan
-$ptRaw = Try-Download @(
-    "https://raw.githubusercontent.com/thiagobodruk/biblia/main/json/pt_acf.json",
-    "https://raw.githubusercontent.com/thiagobodruk/biblia/master/json/pt_acf.json",
-    "https://raw.githubusercontent.com/thiagobodruk/biblia/main/json/pt_aa.json",
-    "https://raw.githubusercontent.com/thiagobodruk/biblia/master/json/pt_aa.json"
-)
-
-# Indexar PT por (bookOrderIndex, chapter, verse) se disponivel
-# Formato thiagobodruk: array de livros -> chapters (array de arrays de strings)
-$ptIndex = @{}
-if ($null -ne $ptRaw) {
-    for ($bi = 0; $bi -lt $ptRaw.Count; $bi++) {
-        $book     = $ptRaw[$bi]
-        $orderIdx = $bi + 1
-        for ($ci = 0; $ci -lt $book.chapters.Count; $ci++) {
-            $ch = $ci + 1
-            for ($vi = 0; $vi -lt $book.chapters[$ci].Count; $vi++) {
-                $key = "${orderIdx}_${ch}_$($vi+1)"
-                $ptIndex[$key] = $book.chapters[$ci][$vi]
-            }
-        }
-    }
-    Write-Host "  $($ptIndex.Count) versiculos PT carregados." -ForegroundColor Green
-} else {
-    Write-Warning "Portugues nao disponivel. Importando apenas KJV (campo textACF ficara vazio)."
-}
-
-# =============================================================================
-# 3. Determinar range de livros
-# =============================================================================
+# Filtrar por testamento
 switch ($Testament.ToUpper()) {
-    "NT"  { $bookStart = 40; $bookEnd = 66 }
-    "OT"  { $bookStart = 1;  $bookEnd = 39 }
-    "ALL" { $bookStart = 1;  $bookEnd = 66 }
+    "NT"  { $books = $books | Where-Object { $_.i -ge 40 } }
+    "OT"  { $books = $books | Where-Object { $_.i -le 39 } }
+    "ALL" { }
     default { Write-Error "Testament deve ser NT, OT ou ALL"; exit 1 }
 }
 
-# =============================================================================
-# 4. Montar lista de versiculos
-# =============================================================================
-Write-Host "[3/4] Construindo lista ($Testament, livros $bookStart-$bookEnd)..." -ForegroundColor Cyan
+$totalChapters = ($books | Measure-Object -Property c -Sum).Sum
+Write-Host "[BibleIA] $($books.Count) livros, $totalChapters capitulos ($Testament)." -ForegroundColor Cyan
+Write-Host "[BibleIA] Fonte: bible-api.com (KJV, ~$([Math]::Round($totalChapters*$DelayMs/1000)) seg de delay)" -ForegroundColor DarkGray
 
+# --- Baixar e acumular versiculos ---
 $allVerses = [System.Collections.Generic.List[hashtable]]::new()
+$chapDone  = 0
+$errors    = 0
 
-foreach ($row in $kjvRaw.resultset.row) {
-    $f   = $row.field
-    $b   = [int]$f[0]
-    $ch  = [int]$f[1]
-    $v   = [int]$f[2]
-    $txt = $f[3]
-
-    if ($b -lt $bookStart -or $b -gt $bookEnd) { continue }
-
-    $ptKey  = "${b}_${ch}_${v}"
-    $textPT = if ($ptIndex.ContainsKey($ptKey)) { $ptIndex[$ptKey] } else { "" }
-
-    $allVerses.Add(@{
-        bookOrderIndex = $b
-        chapter        = $ch
-        verse          = $v
-        textKJV        = $txt
-        textACF        = $textPT
-    })
+foreach ($book in $books) {
+    for ($ch = 1; $ch -le $book.c; $ch++) {
+        $url = "https://bible-api.com/$($book.n)+$($ch)?translation=kjv"
+        try {
+            $data = Invoke-RestMethod $url
+            foreach ($v in $data.verses) {
+                $allVerses.Add(@{
+                    bookOrderIndex = $book.i
+                    chapter        = $v.chapter
+                    verse          = $v.verse
+                    textKJV        = $v.text.Trim()
+                    textACF        = ""
+                })
+            }
+            $chapDone++
+            if ($chapDone % 10 -eq 0) {
+                $pct = [Math]::Round($chapDone / $totalChapters * 100)
+                Write-Host "  Baixando... $chapDone/$totalChapters capitulos ($pct%)" -ForegroundColor DarkGray
+            }
+        }
+        catch {
+            Write-Warning "Falhou: $($book.n) $ch - $_"
+            $errors++
+        }
+        if ($DelayMs -gt 0) { Start-Sleep -Milliseconds $DelayMs }
+    }
 }
 
-$total   = $allVerses.Count
-$batches = [Math]::Ceiling($total / $BatchSize)
-Write-Host "  $total versiculos, $batches lotes de $BatchSize." -ForegroundColor Green
+$total = $allVerses.Count
+Write-Host "[BibleIA] $total versiculos baixados ($errors erros)." -ForegroundColor Green
 
-# =============================================================================
-# 5. Importar em lotes
-# =============================================================================
-Write-Host "[4/4] Importando..." -ForegroundColor Cyan
-
+# --- Importar em lotes ---
+$batches  = [Math]::Ceiling($total / $BatchSize)
 $imported = 0
 $skipped  = 0
+
+Write-Host "[BibleIA] Importando em $batches lotes..." -ForegroundColor Cyan
 
 for ($b = 0; $b -lt $batches; $b++) {
     $s     = $b * $BatchSize
