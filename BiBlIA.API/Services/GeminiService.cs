@@ -62,8 +62,7 @@ public class GeminiService
     public GeminiService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        _apiKey = configuration["Gemini:ApiKey"]
-            ?? throw new InvalidOperationException("Gemini:ApiKey não configurado. Obtenha sua chave gratuita em https://aistudio.google.com/");
+        _apiKey = configuration["Gemini:ApiKey"] ?? string.Empty;
         _model = configuration["Gemini:Model"] ?? "gemini-2.0-flash";
     }
 
@@ -84,49 +83,69 @@ public class GeminiService
         string domain,
         List<(string role, string content)>? history)
     {
-        var systemPrompt = SystemPrompts.TryGetValue(domain, out var sp) ? sp : SystemPrompts["general"];
-
-        // Gemini usa "model" como role do assistente (não "assistant")
-        var contents = new List<object>();
-
-        if (history != null)
-        {
-            foreach (var (role, content) in history)
-            {
-                var geminiRole = role == "assistant" ? "model" : "user";
-                contents.Add(new { role = geminiRole, parts = new[] { new { text = content } } });
-            }
-        }
-
-        contents.Add(new { role = "user", parts = new[] { new { text = userMessage } } });
-
-        var requestBody = new
-        {
-            system_instruction = new { parts = new[] { new { text = systemPrompt } } },
-            contents,
-            generationConfig = new { maxOutputTokens = 1024, temperature = 0.7 }
-        };
-
-        var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={_apiKey}";
-
-        var httpContent = new StringContent(
-            System.Text.Json.JsonSerializer.Serialize(requestBody),
-            System.Text.Encoding.UTF8,
-            "application/json");
+        // Validação antecipada da chave — evita chamada HTTP desnecessária
+        if (string.IsNullOrWhiteSpace(_apiKey) || _apiKey == "your-gemini-api-key-here")
+            return "Chave Gemini não configurada. Adicione sua chave em appsettings.Development.json → \"Gemini:ApiKey\". Chave gratuita em: https://aistudio.google.com/apikey";
 
         try
         {
+            var systemPrompt = SystemPrompts.TryGetValue(domain, out var sp) ? sp : SystemPrompts["general"];
+
+            // Monta o array de conteúdo usando JsonArray para serialização correta
+            // (List<object> com anônimos pode ter comportamento imprevisto no System.Text.Json)
+            var contentsArray = new System.Text.Json.Nodes.JsonArray();
+
+            if (history != null)
+            {
+                foreach (var (role, content) in history)
+                {
+                    var geminiRole = role == "assistant" ? "model" : "user";
+                    contentsArray.Add(System.Text.Json.Nodes.JsonNode.Parse(
+                        $"{{\"role\":\"{geminiRole}\",\"parts\":[{{\"text\":{System.Text.Json.JsonSerializer.Serialize(content)}}}]}}"));
+                }
+            }
+
+            contentsArray.Add(System.Text.Json.Nodes.JsonNode.Parse(
+                $"{{\"role\":\"user\",\"parts\":[{{\"text\":{System.Text.Json.JsonSerializer.Serialize(userMessage)}}}]}}"));
+
+            var requestBody = new System.Text.Json.Nodes.JsonObject
+            {
+                ["system_instruction"] = System.Text.Json.Nodes.JsonNode.Parse(
+                    $"{{\"parts\":[{{\"text\":{System.Text.Json.JsonSerializer.Serialize(systemPrompt)}}}]}}"),
+                ["contents"] = contentsArray,
+                ["generationConfig"] = System.Text.Json.Nodes.JsonNode.Parse(
+                    "{\"maxOutputTokens\":1024,\"temperature\":0.7}")
+            };
+
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={_apiKey}";
+
+            var httpContent = new StringContent(
+                requestBody.ToJsonString(),
+                System.Text.Encoding.UTF8,
+                "application/json");
+
             var response = await _httpClient.PostAsync(url, httpContent);
+            var responseBody = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync();
-                return $"Erro na API Gemini ({(int)response.StatusCode}): {errorBody}";
+                // Extrai a mensagem de erro do JSON da Gemini, se possível
+                try
+                {
+                    var errJson = System.Text.Json.JsonDocument.Parse(responseBody);
+                    var msg = errJson.RootElement
+                        .GetProperty("error")
+                        .GetProperty("message")
+                        .GetString();
+                    return $"Gemini API error ({(int)response.StatusCode}): {msg}";
+                }
+                catch
+                {
+                    return $"Gemini API error ({(int)response.StatusCode}): {responseBody}";
+                }
             }
 
-            var body = await response.Content.ReadAsStringAsync();
-            var json = System.Text.Json.JsonDocument.Parse(body);
-
+            var json = System.Text.Json.JsonDocument.Parse(responseBody);
             var text = json.RootElement
                 .GetProperty("candidates")[0]
                 .GetProperty("content")
@@ -134,11 +153,11 @@ public class GeminiService
                 .GetProperty("text")
                 .GetString();
 
-            return text ?? "Não foi possível obter uma resposta.";
+            return text ?? "Resposta vazia do Gemini.";
         }
         catch (Exception ex)
         {
-            return $"Erro ao conectar com o Gemini: {ex.Message}";
+            return $"Erro interno ao chamar Gemini: {ex.GetType().Name} — {ex.Message}";
         }
     }
 }
