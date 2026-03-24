@@ -206,6 +206,43 @@ public class BibleController : ControllerBase
             TextKJV = v.TextKJV
         });
     }
+
+    // GET /api/bible/search?query=...&limit=10
+    // Busca full-text nos campos textKJV e textACF. Retorna até `limit` resultados (padrão 10, máx 50).
+    // Usado pelo chat para sugestão de referências cruzadas.
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<BibleVerseDto>>> Search(
+        [FromQuery] string query,
+        [FromQuery] int limit = 10)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 3)
+            return BadRequest("Query deve ter pelo menos 3 caracteres.");
+
+        limit = Math.Clamp(limit, 1, 50);
+        var term = query.ToLower();
+
+        // Compõe a query no IQueryable — o banco faz o filtro, não o C#
+        var verses = await _context.BibleVerses
+            .Where(v => v.TextKJV.ToLower().Contains(term) || v.TextACF.ToLower().Contains(term))
+            .OrderBy(v => v.BookId).ThenBy(v => v.Chapter).ThenBy(v => v.Verse)
+            .Take(limit)
+            .Join(_context.BibleBooks,
+                  v => v.BookId,
+                  b => b.Id,
+                  (v, b) => new BibleVerseDto
+                  {
+                      Id      = v.Id,
+                      BookId  = v.BookId,
+                      BookName = b.Name,
+                      Chapter = v.Chapter,
+                      Verse   = v.Verse,
+                      TextACF = v.TextACF,
+                      TextKJV = v.TextKJV
+                  })
+            .ToListAsync();
+
+        return Ok(verses);
+    }
 }
 
 // DTO auxiliar — representa o resumo de um capítulo
