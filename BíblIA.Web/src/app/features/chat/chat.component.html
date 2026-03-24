@@ -101,8 +101,13 @@
       @if (!hasMessages()) {
         <div class="empty-state">
           <mat-icon>auto_awesome</mat-icon>
-          <p>Como posso ajudar no seu estudo bíblico?</p>
-          <small>Pergunte sobre teologia, passagens bíblicas, história da Igreja ou escatologia</small>
+          @if (chatId()) {
+            <p>Como posso ajudar no seu estudo bíblico?</p>
+            <small>Pergunte sobre teologia, passagens bíblicas, história da Igreja ou escatologia</small>
+          } @else {
+            <p>Nenhuma conversa selecionada</p>
+            <small>Clique em <strong>Nova conversa</strong> para começar</small>
+          }
         </div>
       }
 

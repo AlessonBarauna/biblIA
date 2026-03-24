@@ -118,8 +118,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         this.chats.set(sorted);
 
         if (sorted.length === 0) {
-          // Sem histórico: cria a primeira conversa
-          this.createNewChat();
+          // Sem histórico: mostra estado vazio, usuário clica "Nova conversa"
           return;
         }
 
