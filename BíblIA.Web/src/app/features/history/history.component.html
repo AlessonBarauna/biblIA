@@ -1,0 +1,157 @@
+<div class="history-container">
+  <header class="history-header">
+    <h1>História da Igreja</h1>
+    <p>Conheça os heróis da fé e os grandes avivamentos que moldaram o cristianismo</p>
+  </header>
+
+  @if (error()) {
+    <div class="error-banner">
+      <mat-icon>error_outline</mat-icon> {{ error() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-center"><mat-spinner diameter="48"></mat-spinner></div>
+  }
+
+  @if (!loading()) {
+    <mat-tab-group animationDuration="200ms">
+
+      <!-- ── Aba 1: Heróis da fé ───────────────────────────────────── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>people</mat-icon>&nbsp;Heróis da Fé
+        </ng-template>
+
+        <div class="tab-content">
+          @if (categories().length > 0) {
+            <div class="category-filters">
+              <button mat-stroked-button [class.active-filter]="selectedCategory() === null" (click)="selectedCategory.set(null)">
+                Todos
+              </button>
+              @for (cat of categories(); track cat) {
+                <button mat-stroked-button [class.active-filter]="selectedCategory() === cat" (click)="toggleCategory(cat)">
+                  <mat-icon>{{ getCategoryIcon(cat) }}</mat-icon>
+                  {{ getCategoryLabel(cat) }}
+                </button>
+              }
+            </div>
+          }
+
+          <div class="heroes-grid">
+            @for (hero of filteredHeroes(); track hero.id) {
+              <mat-card class="hero-card" (click)="openHero(hero)">
+                <mat-card-header>
+                  <div mat-card-avatar class="hero-avatar">
+                    <mat-icon>{{ getCategoryIcon(hero.category) }}</mat-icon>
+                  </div>
+                  <mat-card-title>{{ hero.name }}</mat-card-title>
+                  <mat-card-subtitle>{{ hero.period }} {{ formatYears(hero) }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="hero-tags">
+                    <span class="tag category-tag">{{ getCategoryLabel(hero.category) }}</span>
+                    <span class="tag">{{ hero.nationality }}</span>
+                  </div>
+                  <p class="hero-bio-preview">{{ hero.biography | slice:0:140 }}...</p>
+                </mat-card-content>
+                <mat-card-actions align="end">
+                  <button mat-button color="primary">Ver mais</button>
+                </mat-card-actions>
+              </mat-card>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ── Aba 2: Avivamentos ────────────────────────────────────── -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>local_fire_department</mat-icon>&nbsp;Avivamentos
+        </ng-template>
+
+        <div class="tab-content">
+          <div class="revivals-list">
+            @for (revival of revivals(); track revival.id) {
+              <mat-card class="revival-card">
+                <mat-card-header>
+                  <div mat-card-avatar class="revival-year-badge">{{ revival.year }}</div>
+                  <mat-card-title>{{ revival.name }}</mat-card-title>
+                  <mat-card-subtitle>
+                    {{ revival.location }} · {{ revival.year }}{{ revival.endYear ? '–' + revival.endYear : '' }}
+                  </mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <p><strong>Líderes:</strong> {{ revival.leaderNames }}</p>
+                  <p>{{ revival.description }}</p>
+                  @if (revival.keyEvents) {
+                    <mat-divider></mat-divider>
+                    <div class="revival-section">
+                      <h4><mat-icon inline>event</mat-icon> Eventos Principais</h4>
+                      <p>{{ revival.keyEvents }}</p>
+                    </div>
+                  }
+                  @if (revival.impact) {
+                    <div class="revival-section">
+                      <h4><mat-icon inline>trending_up</mat-icon> Impacto</h4>
+                      <p>{{ revival.impact }}</p>
+                    </div>
+                  }
+                  @if (revival.estimatedConversions) {
+                    <div class="conversions-badge">
+                      <mat-icon>people</mat-icon> {{ revival.estimatedConversions }}
+                    </div>
+                  }
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  }
+
+  <app-ai-panel
+    domain="history"
+    title="Assistente de História da Igreja"
+    placeholder="Pergunte sobre Pais da Igreja, Reforma, avivamentos...">
+  </app-ai-panel>
+
+  <!-- ── Modal de detalhe do herói ─────────────────────────────────── -->
+  @if (selectedHero()) {
+    <div class="modal-overlay" (click)="closeHero()">
+      <div class="hero-detail-modal" (click)="$event.stopPropagation()">
+        <button class="modal-close" mat-icon-button (click)="closeHero()">
+          <mat-icon>close</mat-icon>
+        </button>
+        <div class="modal-hero-header">
+          <div class="modal-avatar">
+            <mat-icon>{{ getCategoryIcon(selectedHero()!.category) }}</mat-icon>
+          </div>
+          <div>
+            <h2>{{ selectedHero()!.name }}</h2>
+            <p>{{ selectedHero()!.period }} {{ formatYears(selectedHero()!) }}</p>
+            <div class="hero-tags">
+              <span class="tag category-tag">{{ getCategoryLabel(selectedHero()!.category) }}</span>
+              <span class="tag">{{ selectedHero()!.nationality }}</span>
+            </div>
+          </div>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="modal-body">
+          <h3>Biografia</h3>
+          <p>{{ selectedHero()!.biography }}</p>
+          <h3>Contribuições Principais</h3>
+          <p>{{ selectedHero()!.keyContributions }}</p>
+          @if (selectedHero()!.favoriteVerse) {
+            <div class="favorite-verse">
+              <mat-icon>format_quote</mat-icon>
+              <em>{{ selectedHero()!.favoriteVerse }}</em>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

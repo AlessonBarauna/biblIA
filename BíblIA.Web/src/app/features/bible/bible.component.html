@@ -1,0 +1,118 @@
+<div class="bible-container">
+
+  <!-- ── Cabeçalho com navegação breadcrumb ─────────────────────────────── -->
+  <div class="bible-header">
+    @if (view() !== 'books') {
+      <button mat-icon-button (click)="goBack()" matTooltip="Voltar">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+    }
+
+    <div class="breadcrumb">
+      <span class="breadcrumb-item" [class.active]="view() === 'books'">Bíblia</span>
+      @if (selectedBook()) {
+        <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
+        <span class="breadcrumb-item" [class.active]="view() === 'chapters'"
+              (click)="view() === 'verses' && goBack()">
+          {{ selectedBook()!.name }}
+        </span>
+      }
+      @if (selectedChapter()) {
+        <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
+        <span class="breadcrumb-item active">Capítulo {{ selectedChapter() }}</span>
+      }
+    </div>
+
+    @if (view() === 'verses') {
+      <div class="version-tabs">
+        @for (t of translations; track t.key) {
+          <button mat-button
+            class="version-btn"
+            [class.active]="activeTranslation() === t.key"
+            (click)="activeTranslation.set(t.key)"
+            [title]="t.name">
+            {{ t.label }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ── Loading ─────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="loading-center">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  <!-- ── Vista: Lista de livros ──────────────────────────────────────────── -->
+  @if (view() === 'books' && !loading()) {
+    <mat-tab-group animationDuration="200ms">
+
+      <mat-tab label="Antigo Testamento">
+        <div class="books-grid">
+          @for (book of otBooks(); track book.id) {
+            <mat-card class="book-card" (click)="selectBook(book)">
+              <mat-card-content>
+                <span class="book-abbr">{{ book.abbreviation }}</span>
+                <span class="book-name">{{ book.name }}</span>
+                <span class="book-chapters">{{ book.chapterCount }} cap.</span>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Novo Testamento">
+        <div class="books-grid">
+          @for (book of ntBooks(); track book.id) {
+            <mat-card class="book-card" (click)="selectBook(book)">
+              <mat-card-content>
+                <span class="book-abbr">{{ book.abbreviation }}</span>
+                <span class="book-name">{{ book.name }}</span>
+                <span class="book-chapters">{{ book.chapterCount }} cap.</span>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  }
+
+  <!-- ── Vista: Grid de capítulos ───────────────────────────────────────── -->
+  @if (view() === 'chapters' && !loading()) {
+    <div class="book-info">
+      <p class="book-description">{{ selectedBook()!.description }}</p>
+    </div>
+    <div class="chapters-grid">
+      @for (ch of chapterNumbers(); track ch) {
+        <button mat-flat-button class="chapter-btn" (click)="selectChapter(ch)">
+          {{ ch }}
+        </button>
+      }
+    </div>
+  }
+
+  <!-- ── Vista: Versículos do capítulo ──────────────────────────────────── -->
+  @if (view() === 'verses' && !loading()) {
+    <div class="verses-list">
+      @if (verses().length === 0) {
+        <p class="empty-state">Nenhum versículo cadastrado neste capítulo ainda.</p>
+      }
+      @for (v of verses(); track v.id) {
+        <div class="verse-row">
+          <span class="verse-number">{{ v.verse }}</span>
+          <span class="verse-text">{{ verseText(v) }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <app-ai-panel
+    domain="bible"
+    title="Assistente Bíblico"
+    placeholder="Pergunte sobre versículos, contexto histórico, exegese...">
+  </app-ai-panel>
+
+</div>

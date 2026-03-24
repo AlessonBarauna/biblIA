@@ -1,0 +1,106 @@
+.app-toolbar {
+  background: linear-gradient(135deg, #1a1a35 0%, #16213e 100%);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.logo-icon {
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+  color: var(--accent);
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.app-container {
+  display: flex;
+  height: calc(100vh - 64px);
+}
+
+.app-nav {
+  width: 250px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.app-nav mat-list-item {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: var(--text-muted) !important;
+}
+
+.app-nav mat-list-item:hover {
+  background-color: var(--surface-3) !important;
+  color: var(--text) !important;
+}
+
+.app-nav mat-list-item.active {
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+  color: white !important;
+}
+
+.app-nav mat-list-item.active mat-icon {
+  color: white !important;
+}
+
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+.auth-page {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .app-nav {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 200px;
+  }
+
+  .user-name {
+    display: none;
+  }
+}

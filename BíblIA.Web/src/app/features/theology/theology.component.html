@@ -1,0 +1,192 @@
+<div class="theology-container">
+  <header class="theology-header">
+    <h1>Teologia Bíblica</h1>
+    <p>Cursos estruturados para um estudo doutrinário sólido</p>
+  </header>
+
+  @if (error()) {
+    <div class="error-banner">
+      <mat-icon>error_outline</mat-icon>
+      {{ error() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-center">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  }
+
+  <!-- ── Lista de cursos ─────────────────────────────────────────────── -->
+  @if (view() === 'courses' && !loading()) {
+
+    @if (basicCourses().length > 0) {
+      <section class="level-section">
+        <div class="level-header">
+          <mat-icon>school</mat-icon>
+          <span>Básico</span>
+        </div>
+        <div class="courses-grid">
+          @for (course of basicCourses(); track course.id) {
+            <mat-card class="course-card" (click)="selectCourse(course)">
+              <mat-card-header>
+                <mat-icon mat-card-avatar class="course-icon">{{ course.imageIcon || 'menu_book' }}</mat-icon>
+                <mat-card-title>{{ course.title }}</mat-card-title>
+                <mat-card-subtitle>{{ course.category }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <p>{{ course.description }}</p>
+                <div class="course-meta">
+                  <span><mat-icon inline>schedule</mat-icon> {{ course.durationHours }}h</span>
+                  <span><mat-icon inline>layers</mat-icon> {{ course.moduleCount }} módulos</span>
+                </div>
+              </mat-card-content>
+              <mat-card-actions align="end">
+                <button mat-flat-button color="primary">Iniciar</button>
+              </mat-card-actions>
+            </mat-card>
+          }
+        </div>
+      </section>
+    }
+
+    @if (intermCourses().length > 0) {
+      <section class="level-section">
+        <div class="level-header">
+          <mat-icon>menu_book</mat-icon>
+          <span>Intermediário</span>
+        </div>
+        <div class="courses-grid">
+          @for (course of intermCourses(); track course.id) {
+            <mat-card class="course-card" (click)="selectCourse(course)">
+              <mat-card-header>
+                <mat-icon mat-card-avatar class="course-icon">{{ course.imageIcon || 'menu_book' }}</mat-icon>
+                <mat-card-title>{{ course.title }}</mat-card-title>
+                <mat-card-subtitle>{{ course.category }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <p>{{ course.description }}</p>
+                <div class="course-meta">
+                  <span><mat-icon inline>schedule</mat-icon> {{ course.durationHours }}h</span>
+                  <span><mat-icon inline>layers</mat-icon> {{ course.moduleCount }} módulos</span>
+                </div>
+              </mat-card-content>
+              <mat-card-actions align="end">
+                <button mat-flat-button color="accent">Iniciar</button>
+              </mat-card-actions>
+            </mat-card>
+          }
+        </div>
+      </section>
+    }
+
+    @if (advancedCourses().length > 0) {
+      <section class="level-section">
+        <div class="level-header">
+          <mat-icon>psychology</mat-icon>
+          <span>Avançado</span>
+        </div>
+        <div class="courses-grid">
+          @for (course of advancedCourses(); track course.id) {
+            <mat-card class="course-card" (click)="selectCourse(course)">
+              <mat-card-header>
+                <mat-icon mat-card-avatar class="course-icon">{{ course.imageIcon || 'menu_book' }}</mat-icon>
+                <mat-card-title>{{ course.title }}</mat-card-title>
+                <mat-card-subtitle>{{ course.category }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <p>{{ course.description }}</p>
+                <div class="course-meta">
+                  <span><mat-icon inline>schedule</mat-icon> {{ course.durationHours }}h</span>
+                  <span><mat-icon inline>layers</mat-icon> {{ course.moduleCount }} módulos</span>
+                </div>
+              </mat-card-content>
+              <mat-card-actions align="end">
+                <button mat-flat-button color="warn">Iniciar</button>
+              </mat-card-actions>
+            </mat-card>
+          }
+        </div>
+      </section>
+    }
+
+    @if (courses().length === 0) {
+      <p class="empty-state">Nenhum curso disponível ainda.</p>
+    }
+  }
+
+  <!-- ── Detalhe do curso: módulos ──────────────────────────────────── -->
+  @if (view() === 'modules' && selectedCourse()) {
+    <div class="back-bar">
+      <button mat-button (click)="backToCourses()">
+        <mat-icon>arrow_back</mat-icon> Todos os cursos
+      </button>
+      <h2>{{ selectedCourse()!.title }}</h2>
+    </div>
+
+    @for (item of modulesWithQuizzes(); track item.module.id) {
+      <mat-expansion-panel class="module-panel" (opened)="loadQuizzes(item)">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span class="module-index">{{ item.module.orderIndex }}</span>
+            {{ item.module.title }}
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="module-content">
+          <p>{{ item.module.content }}</p>
+          @if (item.module.references) {
+            <div class="references-block">
+              <mat-icon>library_books</mat-icon>
+              <strong>Referências:</strong> {{ item.module.references }}
+            </div>
+          }
+        </div>
+
+        @if (item.quizzesLoaded && item.quizzes.length > 0) {
+          <mat-divider></mat-divider>
+          <div class="quiz-section">
+            <h4><mat-icon>quiz</mat-icon> Quiz do módulo</h4>
+            @for (quiz of item.quizzes; track quiz.id) {
+              <div class="quiz-card">
+                <p class="quiz-question">{{ quiz.question }}</p>
+                <div class="quiz-options">
+                  @for (opt of [
+                    { key: 'A', text: quiz.optionA },
+                    { key: 'B', text: quiz.optionB },
+                    { key: 'C', text: quiz.optionC },
+                    { key: 'D', text: quiz.optionD }
+                  ]; track opt.key) {
+                    <button
+                      class="quiz-option"
+                      [class.correct]="item.showResult && opt.key === quiz.correctAnswer"
+                      [class.wrong]="item.showResult && item.selectedAnswer === opt.key && opt.key !== quiz.correctAnswer"
+                      [class.selected]="item.selectedAnswer === opt.key && !item.showResult"
+                      [disabled]="item.showResult"
+                      (click)="answerQuiz(item.module.id, opt.key)">
+                      <strong>{{ opt.key }}.</strong> {{ opt.text }}
+                    </button>
+                  }
+                </div>
+                @if (item.showResult) {
+                  <div class="quiz-result" [class.correct-result]="item.selectedAnswer === quiz.correctAnswer">
+                    <mat-icon>{{ item.selectedAnswer === quiz.correctAnswer ? 'check_circle' : 'cancel' }}</mat-icon>
+                    {{ item.selectedAnswer === quiz.correctAnswer ? 'Correto!' : 'Resposta correta: ' + quiz.correctAnswer }}
+                    <p class="explanation">{{ quiz.explanation }}</p>
+                  </div>
+                  <button mat-button (click)="resetQuiz(item.module.id)">Tentar novamente</button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </mat-expansion-panel>
+    }
+  }
+
+  <app-ai-panel
+    domain="theology"
+    title="Assistente de Teologia"
+    placeholder="Pergunte sobre doutrinas, teólogos, hermenêutica...">
+  </app-ai-panel>
+</div>

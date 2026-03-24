@@ -1,0 +1,244 @@
+.theology-container {
+  padding: 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.theology-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.theology-header h1 {
+  font-size: 2.5rem;
+  color: var(--text);
+  margin: 0;
+}
+
+.theology-header p {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin: 0.5rem 0 0;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--error-bg);
+  border: 1px solid var(--error);
+  color: #ff6b6b;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.loading-center {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.level-section {
+  margin-bottom: 2.5rem;
+}
+
+.level-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.course-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2) !important;
+  border-color: var(--accent) !important;
+}
+
+.course-icon {
+  font-size: 2rem;
+  width: 40px;
+  height: 40px;
+  color: var(--accent) !important;
+}
+
+.course-meta {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.course-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem;
+}
+
+.back-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.back-bar h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--text);
+}
+
+.module-panel {
+  margin-bottom: 0.75rem;
+  box-shadow: none !important;
+}
+
+.module-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.module-content p {
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.references-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-3);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.quiz-section {
+  padding: 1rem 0 0.5rem;
+}
+
+.quiz-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+.quiz-card {
+  background: var(--surface-3);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+}
+
+.quiz-question {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quiz-option {
+  padding: 0.6rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.quiz-option:hover:not([disabled]) {
+  border-color: var(--accent);
+  background: var(--surface-3);
+}
+
+.quiz-option.selected {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.quiz-option.correct {
+  border-color: var(--success);
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.quiz-option.wrong {
+  border-color: var(--error);
+  background: var(--error-bg);
+  color: #ff6b6b;
+}
+
+.quiz-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--error-bg);
+  border: 1px solid var(--error);
+  border-radius: 6px;
+  color: #ff6b6b;
+}
+
+.quiz-result.correct-result {
+  background: var(--success-bg);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.explanation {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}

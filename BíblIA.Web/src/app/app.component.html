@@ -1,0 +1,63 @@
+@if (!isAuthRoute()) {
+
+  <mat-toolbar color="primary" class="app-toolbar">
+    <span class="app-title">
+      <mat-icon class="logo-icon">menu_book</mat-icon>
+      {{ title }}
+    </span>
+
+    <span class="spacer"></span>
+
+    <div class="user-menu">
+      @if (auth.isLoggedIn()) {
+        <span class="user-name">{{ auth.currentUser()?.name }}</span>
+
+        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu do usuário">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item disabled>
+            <mat-icon>person</mat-icon>
+            <span>{{ auth.currentUser()?.email }}</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="auth.logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Sair</span>
+          </button>
+        </mat-menu>
+      } @else {
+        <button mat-button routerLink="/auth">
+          <mat-icon>login</mat-icon>
+          Entrar
+        </button>
+      }
+    </div>
+  </mat-toolbar>
+
+  <div class="app-container">
+    <nav class="app-nav">
+      <mat-nav-list>
+        @for (item of menuItems; track item.route) {
+          <mat-list-item [routerLink]="item.route" routerLinkActive="active">
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </mat-list-item>
+        }
+      </mat-nav-list>
+    </nav>
+
+    <main class="app-main">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+} @else {
+
+  <!-- Página de auth sem toolbar/nav — layout limpo de tela cheia -->
+  <div class="auth-page">
+    <router-outlet></router-outlet>
+  </div>
+
+}

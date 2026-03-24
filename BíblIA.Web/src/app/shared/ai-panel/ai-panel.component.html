@@ -1,0 +1,58 @@
+<div class="ai-panel">
+  <div class="ai-panel-header">
+    <mat-icon class="ai-icon">auto_awesome</mat-icon>
+    <span class="ai-title">{{ title }}</span>
+    @if (messages().length > 0) {
+      <button mat-icon-button class="clear-btn" (click)="clearMessages()" title="Limpar">
+        <mat-icon>delete_sweep</mat-icon>
+      </button>
+    }
+  </div>
+
+  <div class="ai-messages" #msgContainer>
+    @if (messages().length === 0) {
+      <div class="ai-empty">
+        <mat-icon>chat_bubble_outline</mat-icon>
+        <p>{{ placeholder }}</p>
+      </div>
+    }
+
+    @for (msg of messages(); track $index) {
+      <div class="ai-msg" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+        @if (msg.role === 'assistant') {
+          <mat-icon class="msg-avatar">auto_awesome</mat-icon>
+          <div class="msg-bubble markdown-body" [innerHTML]="renderMarkdown(msg.content)"></div>
+        } @else {
+          <div class="msg-bubble">{{ msg.content }}</div>
+          <mat-icon class="msg-avatar user-avatar">person</mat-icon>
+        }
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="ai-msg assistant">
+        <mat-icon class="msg-avatar">auto_awesome</mat-icon>
+        <div class="typing-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="ai-input-row">
+    <mat-form-field appearance="outline" class="ai-input-field">
+      <input
+        matInput
+        [placeholder]="placeholder"
+        [value]="input()"
+        (input)="input.set($any($event.target).value)"
+        (keydown)="onKeydown($event)"
+        [disabled]="loading()">
+    </mat-form-field>
+    <button mat-flat-button color="primary" class="ai-send-btn"
+      [disabled]="!input().trim() || loading()"
+      (click)="send()">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
+</div>

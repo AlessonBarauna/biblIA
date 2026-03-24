@@ -1,0 +1,152 @@
+/* ── Angular Material theme ──────────────────────────────────────────────── */
+@import '@angular/material/prebuilt-themes/purple-green.css';
+
+/* ── Design tokens — dark palette ────────────────────────────────────────── */
+:root {
+  --bg:          #0d0d1a;
+  --surface:     #13132a;
+  --surface-2:   #1a1a35;
+  --surface-3:   #21213f;
+  --surface-4:   #2a2a4e;
+  --border:      #2c2c52;
+  --border-soft: #22224a;
+
+  --text:        #e4e4f0;
+  --text-muted:  #8888aa;
+  --text-dim:    #55556e;
+
+  --accent:      #667eea;
+  --accent-2:    #764ba2;
+  --accent-glow: rgba(102, 126, 234, 0.18);
+
+  --success:     #2ecc71;
+  --success-bg:  rgba(46, 204, 113, 0.12);
+  --error:       #e74c3c;
+  --error-bg:    rgba(231, 76, 60, 0.12);
+  --warning:     #f39c12;
+}
+
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--surface-4); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ── Angular Material — global dark overrides ────────────────────────────── */
+
+/* Card */
+.mat-mdc-card {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Form fields */
+.mat-mdc-form-field-input-control,
+.mat-mdc-input-element {
+  color: var(--text) !important;
+  caret-color: var(--accent) !important;
+}
+.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
+.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,
+.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing {
+  border-color: var(--border) !important;
+}
+.mdc-text-field--outlined:not(.mdc-text-field--disabled):hover .mdc-notched-outline__leading,
+.mdc-text-field--outlined:not(.mdc-text-field--disabled):hover .mdc-notched-outline__notch,
+.mdc-text-field--outlined:not(.mdc-text-field--disabled):hover .mdc-notched-outline__trailing {
+  border-color: var(--accent) !important;
+}
+.mdc-text-field { background: var(--surface-3) !important; }
+.mat-mdc-form-field-hint, .mat-mdc-form-field-error { color: var(--text-muted) !important; }
+.mat-mdc-floating-label { color: var(--text-muted) !important; }
+.mdc-text-field--focused .mat-mdc-floating-label { color: var(--accent) !important; }
+.mat-mdc-form-field-focus-overlay { background-color: var(--accent-glow) !important; }
+
+/* Select */
+.mat-mdc-select-value { color: var(--text) !important; }
+.mat-mdc-select-arrow { color: var(--text-muted) !important; }
+.mat-mdc-select-panel { background: var(--surface-2) !important; }
+.mat-mdc-option { color: var(--text) !important; background: var(--surface-2) !important; }
+.mat-mdc-option:hover { background: var(--surface-3) !important; }
+.mat-mdc-option.mdc-list-item--selected { background: var(--accent-glow) !important; }
+
+/* Tabs */
+.mat-mdc-tab-group { background: transparent; }
+.mat-mdc-tab-header { background: var(--surface-2); border-bottom: 1px solid var(--border); }
+.mat-mdc-tab .mdc-tab__text-label { color: var(--text-muted) !important; }
+.mat-mdc-tab.mdc-tab--active .mdc-tab__text-label { color: var(--accent) !important; }
+.mat-mdc-tab-body-content { background: transparent; }
+.mdc-tab-indicator__content--underline { border-color: var(--accent) !important; }
+
+/* Expansion panel */
+.mat-expansion-panel {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+.mat-expansion-panel-header { background: var(--surface-2) !important; }
+.mat-expansion-panel-header:hover { background: var(--surface-3) !important; }
+.mat-expansion-panel-header-title { color: var(--text) !important; }
+.mat-expansion-indicator::after { color: var(--text-muted) !important; border-color: var(--text-muted) !important; }
+
+/* List */
+.mat-mdc-list-item { color: var(--text) !important; }
+.mat-mdc-list-item:hover { background: var(--surface-3) !important; }
+
+/* Menu */
+.mat-mdc-menu-panel { background: var(--surface-2) !important; border: 1px solid var(--border) !important; }
+.mat-mdc-menu-item { color: var(--text) !important; }
+.mat-mdc-menu-item:hover { background: var(--surface-3) !important; }
+.mat-mdc-menu-item .mat-icon { color: var(--text-muted) !important; }
+
+/* Chips */
+.mat-mdc-chip { background: var(--surface-3) !important; color: var(--text) !important; }
+
+/* Tooltip */
+.mat-mdc-tooltip { background: var(--surface-4) !important; color: var(--text) !important; }
+
+/* Divider */
+.mat-divider { border-color: var(--border) !important; }
+
+/* Icon */
+mat-icon { color: var(--text-muted); }
+
+/* Sidenav */
+mat-sidenav { background: var(--surface) !important; color: var(--text) !important; }
+mat-sidenav-content { background: var(--bg) !important; }
+mat-sidenav-container { background: var(--bg) !important; }
+
+/* Toolbar */
+mat-toolbar {
+  z-index: 100;
+}
+
+/* ── Animações ───────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+app-home,
+app-chat,
+app-bible,
+app-theology,
+app-eschatology,
+app-history {
+  animation: fadeIn 0.3s ease-in-out;
+}

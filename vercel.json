@@ -1,0 +1,8 @@
+{
+  "buildCommand": "cd BíblIA.Web && npm install && npm run build",
+  "outputDirectory": "BíblIA.Web/dist/BiblIA.web/browser",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

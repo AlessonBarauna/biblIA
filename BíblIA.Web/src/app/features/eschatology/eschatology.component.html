@@ -1,0 +1,172 @@
+<div class="eschatology-container">
+  <header class="eschatology-header">
+    <h1>Escatologia Bíblica</h1>
+    <p>Explore as principais visões sobre os eventos finais segundo diferentes tradições teológicas</p>
+  </header>
+
+  @if (error()) {
+    <div class="error-banner"><mat-icon>error_outline</mat-icon> {{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="loading-center"><mat-spinner diameter="48"></mat-spinner></div>
+  }
+
+  @if (!loading() && !compareMode()) {
+    <div class="toolbar">
+      <button mat-flat-button color="accent" (click)="enterCompareMode()">
+        <mat-icon>compare_arrows</mat-icon> Comparar Visões
+      </button>
+    </div>
+
+    <div class="views-grid">
+      @for (view of views(); track view.id) {
+        <mat-card class="view-card" (click)="openView(view)">
+          <mat-card-header>
+            <mat-card-title>{{ view.name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="view-summary">{{ view.summary }}</p>
+            <mat-divider></mat-divider>
+            <div class="view-table">
+              <div class="view-row">
+                <span class="view-label"><mat-icon inline>hourglass_bottom</mat-icon> Milênio</span>
+                <span>{{ view.millenniumView }}</span>
+              </div>
+              <div class="view-row">
+                <span class="view-label"><mat-icon inline>flight_takeoff</mat-icon> Arrebatamento</span>
+                <span>{{ view.raptureView }}</span>
+              </div>
+              <div class="view-row">
+                <span class="view-label"><mat-icon inline>warning</mat-icon> Tribulação</span>
+                <span>{{ view.tribulationView }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <button mat-button color="primary">Ver detalhes</button>
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+  }
+
+  <!-- ── Modo comparação ────────────────────────────────────────────── -->
+  @if (!loading() && compareMode()) {
+    <div class="compare-panel">
+      <div class="compare-toolbar">
+        <h2>Comparar duas visões</h2>
+        <button mat-button (click)="exitCompareMode()">
+          <mat-icon>close</mat-icon> Cancelar
+        </button>
+      </div>
+
+      <div class="compare-selects">
+        <mat-form-field appearance="outline">
+          <mat-label>Visão 1</mat-label>
+          <mat-select [value]="compareId1()" (valueChange)="compareId1.set($event)">
+            @for (v of views(); track v.id) {
+              <mat-option [value]="v.id">{{ v.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-icon class="compare-vs">compare_arrows</mat-icon>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Visão 2</mat-label>
+          <mat-select [value]="compareId2()" (valueChange)="compareId2.set($event)">
+            @for (v of views(); track v.id) {
+              <mat-option [value]="v.id">{{ v.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <button mat-flat-button color="primary" [disabled]="!canCompare() || comparingLoading()" (click)="runComparison()">
+        @if (comparingLoading()) { <mat-spinner diameter="20"></mat-spinner> }
+        @else { <mat-icon>compare_arrows</mat-icon> }
+        Comparar
+      </button>
+
+      @if (comparison()) {
+        <div class="comparison-result">
+          <div class="compare-col">
+            <h3>{{ comparison()!.view1.name }}</h3>
+            <p>{{ comparison()!.view1.summary }}</p>
+            <div class="compare-attributes">
+              <div><strong>Milênio:</strong> {{ comparison()!.view1.millenniumView }}</div>
+              <div><strong>Arrebatamento:</strong> {{ comparison()!.view1.raptureView }}</div>
+              <div><strong>Tribulação:</strong> {{ comparison()!.view1.tribulationView }}</div>
+              <div><strong>Teólogos:</strong> {{ comparison()!.view1.mainTheologians }}</div>
+            </div>
+          </div>
+
+          <div class="compare-divider">
+            <div class="vs-badge">VS</div>
+          </div>
+
+          <div class="compare-col">
+            <h3>{{ comparison()!.view2.name }}</h3>
+            <p>{{ comparison()!.view2.summary }}</p>
+            <div class="compare-attributes">
+              <div><strong>Milênio:</strong> {{ comparison()!.view2.millenniumView }}</div>
+              <div><strong>Arrebatamento:</strong> {{ comparison()!.view2.raptureView }}</div>
+              <div><strong>Tribulação:</strong> {{ comparison()!.view2.tribulationView }}</div>
+              <div><strong>Teólogos:</strong> {{ comparison()!.view2.mainTheologians }}</div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <app-ai-panel
+    domain="eschatology"
+    title="Assistente de Escatologia"
+    placeholder="Pergunte sobre o milênio, rapto, tribulação, segunda vinda...">
+  </app-ai-panel>
+
+  <!-- ── Modal de detalhe ───────────────────────────────────────────── -->
+  @if (selectedView()) {
+    <div class="modal-overlay" (click)="closeView()">
+      <div class="view-detail-modal" (click)="$event.stopPropagation()">
+        <button mat-icon-button class="modal-close" (click)="closeView()">
+          <mat-icon>close</mat-icon>
+        </button>
+
+        <h2>{{ selectedView()!.name }}</h2>
+        <p class="modal-summary">{{ selectedView()!.summary }}</p>
+        <mat-divider></mat-divider>
+
+        <div class="modal-body">
+          <section>
+            <h3>Explicação Detalhada</h3>
+            <p>{{ selectedView()!.detailedExplanation }}</p>
+          </section>
+
+          <section class="two-cols">
+            <div>
+              <h3>Pontos Fortes</h3>
+              <p>{{ selectedView()!.strengths }}</p>
+            </div>
+            <div>
+              <h3>Pontos Fracos</h3>
+              <p>{{ selectedView()!.weaknesses }}</p>
+            </div>
+          </section>
+
+          <section>
+            <h3>Principais Teólogos</h3>
+            <p>{{ selectedView()!.mainTheologians }}</p>
+          </section>
+
+          <section>
+            <h3>Textos Bíblicos-Chave</h3>
+            <p>{{ selectedView()!.keyScriptures }}</p>
+          </section>
+        </div>
+      </div>
+    </div>
+  }
+</div>

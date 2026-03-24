@@ -1,0 +1,195 @@
+.bible-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* ── Cabeçalho ──────────────────────────────────────────────────────────── */
+.bible-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  min-height: 48px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.breadcrumb-item {
+  font-size: 1rem;
+  color: var(--text-dim);
+  cursor: default;
+}
+
+.breadcrumb-item.active {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.breadcrumb-sep {
+  font-size: 18px;
+  color: var(--text-dim);
+}
+
+.version-tabs {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.version-btn {
+  min-width: 48px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  color: var(--text-muted) !important;
+  padding: 0 10px !important;
+}
+
+.version-btn.active {
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+.loading-center {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+/* ── Lista de livros ─────────────────────────────────────────────────────── */
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  padding: 16px 0;
+}
+
+.book-card {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  background: var(--surface-2) !important;
+}
+
+.book-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2) !important;
+  border-color: var(--accent) !important;
+}
+
+.book-card mat-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px !important;
+}
+
+.book-abbr {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.book-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.book-chapters {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Grid de capítulos ───────────────────────────────────────────────────── */
+.book-info {
+  margin-bottom: 16px;
+}
+
+.book-description {
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.chapters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 8px;
+}
+
+.chapter-btn {
+  font-size: 1rem;
+  font-weight: 600;
+  height: 48px;
+  min-width: 0;
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.chapter-btn:hover {
+  background: var(--surface-3) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-glow) !important;
+}
+
+/* ── Versículos ──────────────────────────────────────────────────────────── */
+.verses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.verse-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border-soft);
+  line-height: 1.7;
+  transition: background 0.15s;
+}
+
+.verse-row:hover {
+  background: var(--surface-2);
+  border-radius: 4px;
+}
+
+.verse-number {
+  min-width: 28px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  padding-top: 2px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.verse-text {
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.empty-state {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 48px 0;
+  font-style: italic;
+}

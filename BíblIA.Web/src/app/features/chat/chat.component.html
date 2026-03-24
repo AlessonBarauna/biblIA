@@ -1,0 +1,190 @@
+<div class="chat-wrapper">
+
+  <!-- ── Sidebar: lista de conversas ─────────────────────────────── -->
+  <aside class="sidebar" [class.collapsed]="!showSidebar()">
+    <div class="sidebar-header">
+      <h2>Conversas</h2>
+      <button mat-icon-button class="toggle-btn" (click)="toggleSidebar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <button mat-flat-button color="primary" class="new-chat-btn" (click)="createNewChat()">
+      <mat-icon>add</mat-icon> Nova conversa
+    </button>
+
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar</mat-label>
+      <input matInput [value]="searchQuery()" (input)="updateSearchQuery($any($event.target).value)" placeholder="Buscar conversas...">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <div class="chats-list">
+      @for (chat of filteredChats(); track chat.id) {
+        <div
+          class="chat-item"
+          [class.active]="chatId() === chat.id"
+          (click)="selectChat(chat)">
+          <mat-icon class="chat-icon">chat_bubble_outline</mat-icon>
+          <div class="chat-item-content">
+            <div class="chat-title">{{ chat.title }}</div>
+            <div class="chat-date">{{ chat.updatedAt | date:'dd/MM HH:mm' }}</div>
+          </div>
+          <button mat-icon-button class="delete-btn"
+            (click)="deleteChat(chat.id, $event)"
+            matTooltip="Excluir">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      }
+
+      @if (filteredChats().length === 0) {
+        <p style="text-align:center; color:#aaa; padding:1rem; font-size:0.9rem;">
+          Nenhuma conversa encontrada
+        </p>
+      }
+    </div>
+  </aside>
+
+  <!-- ── Chat principal ───────────────────────────────────────────── -->
+  <div class="chat-container">
+    <div class="chat-header">
+      @if (!showSidebar()) {
+        <button mat-icon-button class="menu-toggle" (click)="toggleSidebar()">
+          <mat-icon>menu</mat-icon>
+        </button>
+      }
+      <mat-icon style="color:#667eea; margin-right:0.5rem;">auto_awesome</mat-icon>
+      <h1>BíblIA — Assistente Teológico</h1>
+      <span class="header-spacer"></span>
+    </div>
+
+    <!-- Contexto bíblico ativo -->
+    @if (biblicalContext()) {
+      <div class="context-section">
+        <mat-card class="context-card">
+          <mat-card-content>
+            <div class="context-header">
+              <mat-icon>menu_book</mat-icon>
+              <span class="context-text">Contexto: {{ contextText() }}</span>
+              <button mat-icon-button class="clear-context-btn" (click)="clearContext()" matTooltip="Remover contexto">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    }
+
+    <!-- Seletor de contexto bíblico -->
+    <div class="biblical-selector">
+      <button mat-stroked-button class="select-context-btn" [matMenuTriggerFor]="bookMenu">
+        <mat-icon>menu_book</mat-icon>
+        {{ selectedBook() }}
+      </button>
+      <mat-menu #bookMenu="matMenu" class="book-menu">
+        @for (book of bibleBooks(); track book) {
+          <button mat-menu-item (click)="setContext(book)">{{ book }}</button>
+        }
+      </mat-menu>
+      <input
+        class="chapter-input"
+        type="number"
+        min="1"
+        placeholder="Cap."
+        [value]="selectedChapter() ?? ''"
+        (change)="setContext(selectedBook(), +$any($event.target).value || undefined)">
+    </div>
+
+    <!-- Área de mensagens -->
+    <div class="messages" #messagesContainer>
+      @if (!hasMessages()) {
+        <div class="empty-state">
+          <mat-icon>auto_awesome</mat-icon>
+          <p>Como posso ajudar no seu estudo bíblico?</p>
+          <small>Pergunte sobre teologia, passagens bíblicas, história da Igreja ou escatologia</small>
+        </div>
+      }
+
+      @for (message of messages(); track message.id) {
+        <div class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
+          <div class="message-avatar">
+            <mat-icon>{{ getAvatar(message.role) }}</mat-icon>
+          </div>
+          <div class="message-bubble">
+            @if (message.role === 'assistant') {
+              <div class="message-content markdown-body" [innerHTML]="renderMarkdown(message.content)"></div>
+            } @else {
+              <div class="message-content">{{ message.content }}</div>
+            }
+            <div class="message-time">{{ message.createdAt | date:'HH:mm' }}</div>
+            <div class="message-actions">
+              <button mat-icon-button class="copy-btn" [class.copied]="copiedMessageId() === message.id"
+                (click)="copyMessage(message.content, message.id)"
+                matTooltip="Copiar">
+                <mat-icon>{{ copiedMessageId() === message.id ? 'check' : 'content_copy' }}</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="message assistant typing-indicator">
+          <div class="message-avatar">
+            <mat-icon>smart_toy</mat-icon>
+          </div>
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Versículos sugeridos -->
+    @if (suggestedVerses().length > 0) {
+      <div class="suggested-verses">
+        <mat-card class="verses-card">
+          <mat-card-header>
+            <h4 class="verses-title">
+              <mat-icon>library_books</mat-icon>
+              Versículos relacionados
+            </h4>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="verses-list">
+              @for (verse of suggestedVerses(); track verse.id) {
+                <mat-chip class="verse-chip">
+                  {{ verse.bookName }} {{ verse.chapter }}:{{ verse.verse }}
+                </mat-chip>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    }
+
+    <!-- Input -->
+    <div class="chat-input">
+      <mat-form-field appearance="outline" class="input-field">
+        <input
+          matInput
+          placeholder="Faça uma pergunta teológica ou bíblica..."
+          [value]="messageContent()"
+          (input)="messageContent.set($any($event.target).value)"
+          (keydown.enter)="sendMessage()"
+          [disabled]="loading()">
+        <mat-hint>Enter para enviar</mat-hint>
+      </mat-form-field>
+      <button
+        mat-flat-button
+        color="primary"
+        class="send-btn"
+        [disabled]="!canSend()"
+        (click)="sendMessage()">
+        <mat-icon>send</mat-icon>
+        Enviar
+      </button>
+    </div>
+  </div>
+</div>
