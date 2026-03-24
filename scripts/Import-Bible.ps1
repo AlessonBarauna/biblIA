@@ -94,15 +94,11 @@ function Get-PtMap($url, $label) {
     try {
         Write-Host "[BibleIA] Baixando $label..." -ForegroundColor Cyan
 
-        # Invoke-WebRequest + decodificacao manual para lidar com BOM UTF-8.
-        # Invoke-RestMethod no PS 5.1 falha silenciosamente quando o JSON tem BOM.
-        $response = Invoke-WebRequest $url -TimeoutSec 60
-        $content  = [System.Text.Encoding]::UTF8.GetString($response.Content)
-
-        # Remove BOM (U+FEFF = 65279) se presente
-        if ($content.Length -gt 0 -and ([int][char]$content[0]) -eq 65279) {
-            $content = $content.Substring(1)
-        }
+        # WebClient com UTF-8 trata BOM automaticamente e nao exige confirmacao
+        # de seguranca como Invoke-WebRequest no PS 5.1.
+        $wc = [System.Net.WebClient]::new()
+        $wc.Encoding = [System.Text.Encoding]::UTF8
+        $content = $wc.DownloadString($url)
 
         $data = $content | ConvertFrom-Json
         Write-Host "  $label livros no JSON: $($data.Count)" -ForegroundColor DarkGray
@@ -120,9 +116,9 @@ function Get-PtMap($url, $label) {
                 }
             }
         }
-        Write-Host "[BibleIA] $label: $($map.Count) versiculos." -ForegroundColor Green
+        Write-Host "[BibleIA] $($label): $($map.Count) versiculos." -ForegroundColor Green
     } catch {
-        Write-Warning "[BibleIA] Falha ao baixar $label: $_"
+        Write-Warning "[BibleIA] Falha ao baixar $($label): $_"
     }
     return $map
 }
