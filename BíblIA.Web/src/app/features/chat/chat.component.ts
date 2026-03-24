@@ -96,7 +96,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   // Computed signals
   readonly hasMessages = computed(() => this.messages().length > 0);
   readonly isInputEmpty = computed(() => !this.messageContent().trim());
-  readonly canSend = computed(() => !this.isInputEmpty() && this.chatId() !== null && !this.loading());
+  readonly canSend = computed(() => !this.isInputEmpty() && !this.loading());
   readonly contextText = computed(() => {
     const ctx = this.biblicalContext();
     if (!ctx) return null;
@@ -156,25 +156,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   }
 
   createNewChat(): void {
-    const user = this.authService.getCurrentUser();
-    if (!user) return;
-
-    const timestamp = new Date().toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    this.apiService.createChat({
-      userId: user.id,
-      title: `Conversa - ${timestamp}`
-    }).subscribe({
-      next: (chat) => {
-        this.chatId.set(chat.id);
-        this.messages.set([]);
-        this.loadUserChats(user.id);
-      },
-      error: (error) => console.error('Erro ao criar chat:', error)
-    });
+    // Não cria no servidor ainda — o chat só é persistido quando o usuário
+    // enviar a primeira mensagem (título gerado a partir dela, como no ChatGPT).
+    this.chatId.set(null);
+    this.messages.set([]);
+    this.suggestedVerses.set([]);
+    this.chatState.activeChatId.set(null);
   }
 
   selectChat(chat: Chat): void {
@@ -202,59 +189,66 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   }
 
   sendMessage(): void {
-    if (!this.canSend() || !this.chatId()) return;
+    if (!this.canSend()) return;
 
     const content = this.messageContent().trim();
     this.messageContent.set('');
     this.loading.set(true);
     this.shouldScroll = true;
 
-    // Adicionar mensagem do usuário imediatamente (optimistic update)
     const userMessage: ChatMessage = {
       id: Math.random(),
-      chatId: this.chatId()!,
+      chatId: this.chatId() ?? 0,
       role: 'user',
       content: content,
       createdAt: new Date().toISOString()
     };
     this.messages.update(msg => [...msg, userMessage]);
 
-    // Enviar com contexto bíblico se disponível
-    const messageWithContext = this.biblicalContext() 
+    if (this.chatId() !== null) {
+      this.dispatchMessage(content, this.chatId()!, userMessage.id);
+    } else {
+      // Primeira mensagem: cria o chat com o título gerado a partir do conteúdo
+      const user = this.authService.getCurrentUser();
+      if (!user) { this.loading.set(false); return; }
+
+      const title = content.length > 50 ? content.substring(0, 50) + '...' : content;
+
+      this.apiService.createChat({ userId: user.id, title }).subscribe({
+        next: (chat) => {
+          this.chatId.set(chat.id);
+          this.chatState.activeChatId.set(chat.id);
+          this.messages.update(msgs => msgs.map(m =>
+            m.id === userMessage.id ? { ...m, chatId: chat.id } : m
+          ));
+          this.loadUserChats(user.id);
+          this.dispatchMessage(content, chat.id, userMessage.id);
+        },
+        error: (error) => {
+          console.error('Erro ao criar chat:', error);
+          this.loading.set(false);
+          this.messages.update(msg => msg.filter(m => m.id !== userMessage.id));
+        }
+      });
+    }
+  }
+
+  private dispatchMessage(content: string, chatId: number, tempMsgId: number): void {
+    const messageWithContext = this.biblicalContext()
       ? `[Contexto: ${this.contextText()}]\n\n${content}`
       : content;
 
-    this.apiService.sendChatMessage(this.chatId()!, messageWithContext).subscribe({
+    this.apiService.sendChatMessage(chatId, messageWithContext).subscribe({
       next: () => {
         this.loadChat();
-        // Atualizar título do chat se for a primeira mensagem
-        if (this.messages().length === 2) {
-          this.updateChatTitle(content);
-        }
-        // Buscar referências cruzadas se mensagem mencionar escritura
         this.suggestCrossReferences(content);
         this.loading.set(false);
       },
       error: (error) => {
         console.error('Erro ao enviar mensagem:', error);
         this.loading.set(false);
-        // Remove a mensagem do usuário em caso de erro
-        this.messages.update(msg => msg.filter(m => m.id !== userMessage.id));
+        this.messages.update(msg => msg.filter(m => m.id !== tempMsgId));
       }
-    });
-  }
-
-  // Atualizar título do chat com resumo automático
-  private updateChatTitle(firstMessage: string): void {
-    if (!this.chatId()) return;
-    
-    const title = firstMessage.length > 50 
-      ? firstMessage.substring(0, 50) + '...'
-      : firstMessage;
-    
-    this.apiService.updateChat(this.chatId()!, { title }).subscribe({
-      next: () => this.loadUserChats(this.authService.getCurrentUser()?.id || 0),
-      error: (error) => console.error('Erro ao atualizar título:', error)
     });
   }
 
