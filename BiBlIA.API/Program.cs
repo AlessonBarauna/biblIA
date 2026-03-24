@@ -13,15 +13,34 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Em produção (Railway), DATABASE_URL é setado automaticamente pelo addon PostgreSQL.
-// Em dev, usa SQLite local.
+// Railway fornece no formato URI: postgresql://user:pass@host:port/db
+// Npgsql espera key-value: Host=...;Port=...;Database=...;Username=...;Password=...
+// A função abaixo converte o formato URI para o formato aceito pelo Npgsql.
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+static string? ConvertPostgresUrlToNpgsql(string? url)
+{
+    if (string.IsNullOrEmpty(url)) return null;
+    if (!url.StartsWith("postgres://") && !url.StartsWith("postgresql://")) return url;
+
+    var uri = new Uri(url);
+    var userInfo = uri.UserInfo.Split(':', 2);
+    var host = uri.Host;
+    var port = uri.Port > 0 ? uri.Port : 5432;
+    var database = uri.AbsolutePath.TrimStart('/');
+    var username = Uri.UnescapeDataString(userInfo[0]);
+    var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
+
+    return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+}
+
+var npgsqlConnectionString = ConvertPostgresUrlToNpgsql(databaseUrl);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    if (!string.IsNullOrEmpty(databaseUrl))
+    if (!string.IsNullOrEmpty(npgsqlConnectionString))
     {
-        // Railway PostgreSQL: persiste entre deploys, sem necessidade de volume
-        options.UseNpgsql(databaseUrl);
+        options.UseNpgsql(npgsqlConnectionString);
     }
     else
     {
@@ -81,10 +100,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    if (!string.IsNullOrEmpty(databaseUrl))
+    if (!string.IsNullOrEmpty(npgsqlConnectionString))
     {
         // PostgreSQL (Railway): EnsureCreated cria o schema direto do modelo.
-        // Não usa migrations — mais simples para produção sem volume.
         db.Database.EnsureCreated();
     }
     else
