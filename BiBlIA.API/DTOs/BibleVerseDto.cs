@@ -38,6 +38,21 @@ public class ImportResultDto
     public int Skipped { get; set; }
 }
 
+/// <summary>Nota de estudo bíblico por capítulo — estilo Bíblia de Estudo.</summary>
+public class BibleStudyNoteDto
+{
+    public int Id { get; set; }
+    public int BookId { get; set; }
+    public int Chapter { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Context { get; set; } = string.Empty;
+    public string TheologicalSignificance { get; set; } = string.Empty;
+    public string KeyThemes { get; set; } = string.Empty;
+    public string CrossReferences { get; set; } = string.Empty;
+    public string Commentary { get; set; } = string.Empty;
+    public string AuthorNote { get; set; } = string.Empty;
+}
+
 public class CreateBibleVerseDto
 {
     [Required]

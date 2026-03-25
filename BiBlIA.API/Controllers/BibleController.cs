@@ -196,6 +196,32 @@ public class BibleController : ControllerBase
         });
     }
 
+    // GET /api/bible/books/{bookId}/chapters/{chapter}/note
+    // Retorna a nota de estudo do capítulo (404 se não houver nota)
+    [HttpGet("books/{bookId}/chapters/{chapter}/note")]
+    public async Task<ActionResult<BibleStudyNoteDto>> GetChapterNote(int bookId, int chapter)
+    {
+        var note = await _context.BibleStudyNotes
+            .FirstOrDefaultAsync(n => n.BookId == bookId && n.Chapter == chapter);
+
+        if (note == null)
+            return NotFound();
+
+        return Ok(new BibleStudyNoteDto
+        {
+            Id                      = note.Id,
+            BookId                  = note.BookId,
+            Chapter                 = note.Chapter,
+            Title                   = note.Title,
+            Context                 = note.Context,
+            TheologicalSignificance = note.TheologicalSignificance,
+            KeyThemes               = note.KeyThemes,
+            CrossReferences         = note.CrossReferences,
+            Commentary              = note.Commentary,
+            AuthorNote              = note.AuthorNote
+        });
+    }
+
     // GET /api/bible/books/{bookId}/chapters/{chapter}/verses/{verse}
     [HttpGet("books/{bookId}/chapters/{chapter}/verses/{verse}")]
     public async Task<ActionResult<BibleVerseDto>> GetVerse(int bookId, int chapter, int verse)

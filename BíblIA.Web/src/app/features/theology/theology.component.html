@@ -39,9 +39,17 @@
                 <div class="course-meta">
                   <span><mat-icon inline>schedule</mat-icon> {{ course.durationHours }}h</span>
                   <span><mat-icon inline>layers</mat-icon> {{ course.moduleCount }} módulos</span>
+                  @if (course.provider) {
+                    <span class="provider-chip"><mat-icon inline>school</mat-icon> {{ course.provider }}</span>
+                  }
                 </div>
               </mat-card-content>
               <mat-card-actions align="end">
+                @if (course.externalUrl) {
+                  <a mat-stroked-button [href]="course.externalUrl" target="_blank" rel="noopener" (click)="$event.stopPropagation()">
+                    <mat-icon>open_in_new</mat-icon> Curso Online
+                  </a>
+                }
                 <button mat-flat-button color="primary">Iniciar</button>
               </mat-card-actions>
             </mat-card>
@@ -69,6 +77,9 @@
                 <div class="course-meta">
                   <span><mat-icon inline>schedule</mat-icon> {{ course.durationHours }}h</span>
                   <span><mat-icon inline>layers</mat-icon> {{ course.moduleCount }} módulos</span>
+                  @if (course.provider) {
+                    <span class="provider-chip"><mat-icon inline>school</mat-icon> {{ course.provider }}</span>
+                  }
                 </div>
               </mat-card-content>
               <mat-card-actions align="end">
@@ -99,6 +110,9 @@
                 <div class="course-meta">
                   <span><mat-icon inline>schedule</mat-icon> {{ course.durationHours }}h</span>
                   <span><mat-icon inline>layers</mat-icon> {{ course.moduleCount }} módulos</span>
+                  @if (course.provider) {
+                    <span class="provider-chip"><mat-icon inline>school</mat-icon> {{ course.provider }}</span>
+                  }
                 </div>
               </mat-card-content>
               <mat-card-actions align="end">

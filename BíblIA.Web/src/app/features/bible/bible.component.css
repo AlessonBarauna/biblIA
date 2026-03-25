@@ -193,3 +193,51 @@
   padding: 48px 0;
   font-style: italic;
 }
+
+/* ── Notas de Estudo ─────────────────────────────────────────────────────── */
+.study-note-panel {
+  margin-top: 2rem;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+
+.study-note-panel mat-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.study-note-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+.note-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.note-section p {
+  color: var(--text);
+  line-height: 1.7;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.author-note {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+  background: rgba(var(--accent-rgb, 100, 181, 246), 0.05);
+  border-radius: 0 4px 4px 0;
+  padding: 0.75rem 1rem;
+}

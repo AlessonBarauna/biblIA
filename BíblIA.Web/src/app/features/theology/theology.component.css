@@ -95,6 +95,11 @@
   gap: 0.25rem;
 }
 
+.provider-chip {
+  color: var(--accent);
+  font-weight: 500;
+}
+
 .empty-state {
   text-align: center;
   color: var(--text-muted);

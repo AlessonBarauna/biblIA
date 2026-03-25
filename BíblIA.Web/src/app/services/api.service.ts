@@ -47,6 +47,21 @@ export interface TheologyCourse {
   level: string;
   imageIcon: string;
   moduleCount: number;
+  externalUrl?: string;
+  provider?: string;
+}
+
+export interface BibleStudyNote {
+  id: number;
+  bookId: number;
+  chapter: number;
+  title: string;
+  context: string;
+  theologicalSignificance: string;
+  keyThemes: string;
+  crossReferences: string;
+  commentary: string;
+  authorNote: string;
 }
 
 export interface TheologyModule {
@@ -236,6 +251,10 @@ export class ApiService {
 
   getRevivals(): Observable<Revival[]> {
     return this.http.get<Revival[]>(`${this.apiUrl}/history/revivals`);
+  }
+
+  getChapterNote(bookId: number, chapter: number): Observable<BibleStudyNote> {
+    return this.http.get<BibleStudyNote>(`${this.apiUrl}/bible/books/${bookId}/chapters/${chapter}/note`);
   }
 
   // ── Bible: Busca de versículos ─────────────────────────────────────────────

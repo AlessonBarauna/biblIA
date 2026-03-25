@@ -10,6 +10,7 @@ public static class DataSeeder
     {
         await SeedBibleBooksAsync(db);
         await SeedBibleVersesAsync(db);
+        await SeedBibleStudyNotesAsync(db);
         await SeedTheologyAsync(db);
         await SeedChurchHistoryAsync(db);
         await SeedEschatologyAsync(db);
@@ -166,13 +167,224 @@ public static class DataSeeder
 
     // ── Theology ──────────────────────────────────────────────────────────────
 
-    private static async Task SeedTheologyAsync(AppDbContext db)
+    // ── Bible Study Notes ─────────────────────────────────────────────────────
+
+    private static async Task SeedBibleStudyNotesAsync(AppDbContext db)
     {
-        if (await db.TheologyCourses.AnyAsync())
+        if (await db.BibleStudyNotes.AnyAsync())
             return;
 
+        var genesis  = await db.BibleBooks.FirstOrDefaultAsync(b => b.OrderIndex == 1);
+        var exodus   = await db.BibleBooks.FirstOrDefaultAsync(b => b.OrderIndex == 2);
+        var psalms   = await db.BibleBooks.FirstOrDefaultAsync(b => b.OrderIndex == 19);
+        var isaiah   = await db.BibleBooks.FirstOrDefaultAsync(b => b.OrderIndex == 23);
+        var matthew  = await db.BibleBooks.FirstOrDefaultAsync(b => b.OrderIndex == 40);
+        var john     = await db.BibleBooks.FirstOrDefaultAsync(b => b.OrderIndex == 43);
+        var romans   = await db.BibleBooks.FirstOrDefaultAsync(b => b.OrderIndex == 45);
+        var corinth1 = await db.BibleBooks.FirstOrDefaultAsync(b => b.OrderIndex == 46);
+        var rev      = await db.BibleBooks.FirstOrDefaultAsync(b => b.OrderIndex == 66);
+
+        if (genesis == null) return; // livros ainda não seedados
+
+        var notes = new List<BibleStudyNote>();
+
+        // ── Gênesis 1 ─────────────────────────────────────────────────────────
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = genesis.Id,
+            Chapter = 1,
+            Title   = "A Criação — Fundamentos da Existência",
+            Context = "Gênesis 1 abre as Escrituras com uma declaração teológica, não um tratado científico moderno. O texto foi escrito por Moisés para Israel recém-libertado do Egito, um povo cercado por cosmovisões politeístas onde os astros eram deuses, a criação era luta entre divindades e o ser humano era escravo dos deuses. O Gênesis desmonta tudo isso: há um único Deus soberano, a criação é boa e ordenada, e o ser humano é portador da imagem divina.",
+            TheologicalSignificance = "Este capítulo estabelece os dois pilares da antropologia cristã: (1) Criação ex nihilo — Deus cria do nada por sua Palavra soberana, não a partir de matéria pré-existente (Hb 11:3); (2) Imago Dei — o ser humano, homem e mulher, é criado à imagem e semelhança de Deus (v. 26-27), o que confere dignidade inalienável a todo ser humano independente de raça, sexo ou condição. Calvino chamou o Gênesis 1 de 'o teatro da glória de Deus'.",
+            KeyThemes      = "Criação ex nihilo · Imago Dei · Soberania divina · Bondade da criação · Mandato cultural · Monoteísmo",
+            CrossReferences = "João 1:1-3; Hebreus 11:3; Colossenses 1:15-17; Salmos 33:6,9; Provérbios 8:22-31",
+            Commentary      = "O padrão estrutural do capítulo — 'E disse Deus... e assim se fez... e viu Deus que era bom' — revela a criação como ato de palavra soberana e avaliação. Os dias 1-3 formam 'reinos' e os dias 4-6 seus 'governantes': luz/trevas → astros; céu/mar → aves/peixes; terra/vegetação → animais/homem. A criação é funcional e ordenada, com o sábado (dia 7, Gn 2:1-3) como clímax e sinal da aliança.",
+            AuthorNote      = "Baseado em Calvino (Commentaries on Genesis), Matthew Henry (Commentary), Wayne Grudem (Teologia Sistemática, cap. 15) e John Walton (The Lost World of Genesis One)"
+        });
+
+        // ── Gênesis 3 ─────────────────────────────────────────────────────────
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = genesis.Id,
+            Chapter = 3,
+            Title   = "A Queda — Origem do Pecado e a Protoevangelium",
+            Context = "Gênesis 3 narra a entrada do pecado na criação perfeita. A serpente, instrumento de Satanás (Ap 12:9), questiona a Palavra de Deus ('É assim que Deus disse?') e ataca o caráter divino ('Deus sabe que...'), as duas estratégias permanentes da tentação: duvidar da Palavra e difamar o caráter de Deus. Adão, presente e passivo (v. 6), falha em sua responsabilidade como guardião do jardim.",
+            TheologicalSignificance = "A Queda explica a condição humana: (1) Separação de Deus — expulsão do jardim, quebra da comunhão; (2) Pecado original — todos em Adão pecaram (Rm 5:12); (3) Consequências: trabalho difícil, dor no parto, morte física e espiritual. Mas v. 15 contém a Protoevangelium ('primeiro evangelho'): 'Porei inimizade entre ti e a mulher, entre a tua descendência e a dela; esta te ferirá a cabeça, e tu lhe ferirás o calcanhar.' — a primeira promessa messiânica, cumprida na cruz e ressurreição de Cristo.",
+            KeyThemes      = "Origem do pecado · Tentação · Responsabilidade humana · Consequências da queda · Protoevangelium · Graça preveniente",
+            CrossReferences = "Romanos 5:12-21; 1 Coríntios 15:21-22; 2 Coríntios 11:3; Apocalipse 12:9; João 8:44",
+            Commentary      = "A sequência da tentação em 1 João 2:16 encontra eco em Gênesis 3:6: 'a mulher viu que a árvore era boa para comer' (concupiscência da carne), 'agradável aos olhos' (concupiscência dos olhos), 'desejável para dar entendimento' (soberba da vida). Jesus resistiu às mesmas três tentações no deserto (Mt 4) — o Segundo Adão onde o primeiro falhou.",
+            AuthorNote      = "Baseado em Matthew Henry, Calvino (Commentaries), e Derek Kidner (Genesis, Tyndale OT Commentary)"
+        });
+
+        // ── Êxodo 20 ──────────────────────────────────────────────────────────
+        if (exodus != null)
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = exodus.Id,
+            Chapter = 20,
+            Title   = "Os Dez Mandamentos — A Lei da Aliança",
+            Context = "Êxodo 20 é o coração da aliança mosaica, promulgada no monte Sinai após a libertação do Egito. Importante: os mandamentos são dados APÓS a redenção, não como condição para ela — 'Eu sou o Senhor teu Deus, que te tirei do Egito' (v. 2) precede todos os mandamentos. A lei revela quem é o Deus redentor e como o povo redimido deve viver.",
+            TheologicalSignificance = "Os Dez Mandamentos (Decálogo) estruturam-se em dois grupos: (1) Tábua 1 (v. 3-11) — deveres para com Deus: sem outros deuses, sem ídolos, não usar o nome em vão, guardar o sábado; (2) Tábua 2 (v. 12-17) — deveres para com o próximo: honrar pais, não matar, não adulterar, não furtar, não dar falso testemunho, não cobiçar. Jesus resumiu em dois mandamentos (Mt 22:37-40) e cumpriu plenamente a Lei (Mt 5:17). Paulo ensina que a Lei revela o pecado (Rm 3:20) e aponta para Cristo (Gl 3:24).",
+            KeyThemes      = "Decálogo · Lei e graça · Aliança mosaica · Adoração exclusiva · Ética social · Sábado",
+            CrossReferences = "Deuteronômio 5:6-21; Mateus 5:17-20; 22:37-40; Romanos 3:20; 7:7-12; Gálatas 3:24",
+            Commentary      = "A proibição de imagens (v. 4-6) não proíbe toda arte — mas qualquer representação de Deus, pois Deus é Espírito (Jo 4:24) e transcende toda representação. A promessa anexa ao quinto mandamento ('para que se prolonguem os teus dias', v. 12) é citada por Paulo como o 'primeiro mandamento com promessa' (Ef 6:2-3).",
+            AuthorNote      = "Baseado em Calvino (Institutes II.8), Matthew Henry, e John Durham (Exodus, Word Biblical Commentary)"
+        });
+
+        // ── Salmos 23 ─────────────────────────────────────────────────────────
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = psalms.Id,
+            Chapter = 23,
+            Title   = "O Senhor é Meu Pastor — Confiança Total em Deus",
+            Context = "Escrito por Davi, pastor e rei de Israel, este salmo reflete tanto sua experiência pessoal com o pastoreio quanto sua fé profunda em Yahweh como pastor da nação (Sl 80:1). É o mais amado dos Salmos e foi cantado no leito de morte de incontáveis crentes ao longo de séculos.",
+            TheologicalSignificance = "O salmo progride em duas metáforas: (1) v. 1-4: Yahweh como Pastor — provisão (pastos, águas tranquilas), restauração, guia, proteção no vale da sombra da morte; (2) v. 5-6: Yahweh como Anfitrião — banquete diante dos inimigos, unção de honra, bondade e misericórdia como companheiras permanentes. Jesus se identifica como o 'Bom Pastor' (Jo 10:11,14), cumprindo este salmo — ele dá a vida pelas ovelhas.",
+            KeyThemes      = "Cuidado divino · Provisão · Proteção · Morte sem medo · Hospitalidade divina · Pastoreio messiânico",
+            CrossReferences = "João 10:11,14; Ezequiel 34:11-16; Isaías 40:11; Hebreus 13:20; 1 Pedro 2:25; Apocalipse 7:17",
+            Commentary      = "'Vale da sombra da morte' (v. 4, tzalmaveth) pode ser traduzido como 'vale de trevas densas' — seja morte literal ou circunstâncias opressoras. 'Teu cajado e teu bordão me consolam': o cajado (shebet) servia para defender contra predadores; o bordão (misheneth) para apoiar o pastor e guiar as ovelhas. Ambos falam do cuidado protetor e guiador de Deus.",
+            AuthorNote      = "Baseado em Spurgeon (The Treasury of David), Matthew Henry, e Derek Kidner (Psalms 1-72, Tyndale)"
+        });
+
+        // ── Isaías 53 ─────────────────────────────────────────────────────────
+        if (isaiah != null)
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = isaiah.Id,
+            Chapter = 53,
+            Title   = "O Servo Sofredor — A Profecia da Expiação",
+            Context = "Isaías 53 faz parte do quarto e último 'Cântico do Servo' (52:13-53:12), escrito 700 anos antes de Cristo. É o capítulo mais citado no NT (mais de 40 referências). Os judeus do primeiro século esperavam um Messias conquistador; Isaías profetiza um Messias sofredor. O capítulo começa com espanto universal ('a quem foi revelado o braço do Senhor?') e termina com a exaltação do Servo.",
+            TheologicalSignificance = "Este capítulo é o locus classicus da substituição penal no AT: 'ele foi ferido pelas nossas transgressões, moído pelas nossas iniquidades' (v. 5); 'o Senhor fez cair sobre ele a iniquidade de nós todos' (v. 6); 'pelo seu conhecimento o meu servo justo justificará a muitos, e as iniquidades deles ele mesmo suportará' (v. 11). Philip apologize ensinou que Filipe leu este capítulo ao eunuco etíope (At 8:32-35), que reconheceu Jesus. É impossível ler sem ver a cruz.",
+            KeyThemes      = "Substituição penal · Sofrimento vicário · Exaltação após humilhação · Justiça divina · Missão messiânica · Profecia cumprida",
+            CrossReferences = "Atos 8:32-35; Romanos 4:25; 1 Pedro 2:22-25; 2 Coríntios 5:21; Hebreus 9:28; 1 João 2:2",
+            Commentary      = "A estrutura quiástica do capítulo é notável: A (exaltação, 52:13-15) — B (rejeição humana, 53:1-3) — C (sofrimento vicário, 53:4-6) — B' (silêncio ante o sofrimento, 53:7-9) — A' (exaltação e fruto, 53:10-12). 'Pela sua ferida fomos sarados' (v. 5) é o versículo mais citado para a doutrina da expiação substitutiva em toda a Escritura.",
+            AuthorNote      = "Baseado em Calvino (Commentary on Isaiah), Matthew Henry, e John Oswalt (Isaiah, NICOT)"
+        });
+
+        // ── Mateus 5 ──────────────────────────────────────────────────────────
+        if (matthew != null)
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = matthew.Id,
+            Chapter = 5,
+            Title   = "O Sermão do Monte — A Ética do Reino",
+            Context = "Mateus 5-7 contém o mais longo discurso de Jesus registrado nos Evangelhos. Jesus sobe ao monte (como Moisés ao Sinai) e estabelece a ética do Reino. O capítulo 5 começa com as Bem-aventuranças (v. 3-12) — retrato do caráter do cidadão do Reino — e continua com a relação entre Jesus e a Lei (v. 17-20) e seis antíteses ('Ouvistes que foi dito... mas eu vos digo', v. 21-48).",
+            TheologicalSignificance = "As Bem-aventuranças invertem os valores do mundo: os pobres de espírito, os que choram, os mansos, os que têm fome de justiça, os misericordiosos, os puros de coração, os pacificadores e os perseguidos são os bem-aventurados. As antíteses mostram que Jesus não aboliu a Lei mas a cumpriu e aprofundou — do externo ao interno (ira = assassinato no coração; lascívia = adultério no coração). A demanda ética é impossível por forças humanas: só é cumprida naqueles que nasceram de novo.",
+            KeyThemes      = "Bem-aventuranças · Ética do Reino · Lei e graça · Radicalidade do discipulado · Sal e luz · Justiça que excede a dos fariseus",
+            CrossReferences = "Lucas 6:20-49 (Sermão na Planície); Romanos 8:3-4; Gálatas 5:22-23; Tiago 3:13-18; Miquéias 6:8",
+            Commentary      = "'Bem-aventurados os pobres de espírito' (v. 3) — não os economicamente pobres, mas os que reconhecem sua bancarrota espiritual diante de Deus. É o oposto da autoconfiança religiosa. 'Sede, pois, vós perfeitos, como é perfeito o vosso Pai celestial' (v. 48) — não perfeição sinless nesta vida, mas teleios = completo, maduro, íntegro; o padrão é o caráter do Pai.",
+            AuthorNote      = "Baseado em D. A. Carson (The Sermon on the Mount), John Stott (O Sermão do Monte), Matthew Henry"
+        });
+
+        // ── João 3 ────────────────────────────────────────────────────────────
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = john.Id,
+            Chapter = 3,
+            Title   = "Novo Nascimento e João 3:16 — O Evangelho em Miniatura",
+            Context = "Nicodemos era membro do Sinédrio (conselho supremo judeu de 70 líderes) e um fariseu — o mais rigoroso grupo religioso de Israel. Ele vem a Jesus de noite (por medo? por necessidade genuína de conversa privada?). Sua confissão inicial é teológica correta mas incompleta: reconhece Jesus como 'Mestre vindo de Deus' mas não como Messias e Salvador.",
+            TheologicalSignificance = "Jesus ensina que o novo nascimento (gennēthē anōthen — nascer de novo/do alto) é necessário e não opcional para 'ver o Reino de Deus' (v. 3). Não é reforma moral ou decisão religiosa — é obra soberana do Espírito (v. 8, 'o vento sopra onde quer'). João 3:16 é chamado de 'o Evangelho em miniatura': Deus (agente), amou (motivação), o mundo (extensão), de tal maneira que deu (ação), o Filho unigênito (dádiva), para que todo aquele que nele crê (condição), não pereça (conseqüência negativa), mas tenha a vida eterna (positiva).",
+            KeyThemes      = "Novo nascimento · Soberania do Espírito · Amor divino · Fé · Vida eterna · Condenação · Luz e trevas",
+            CrossReferences = "1 Pedro 1:3,23; Tiago 1:18; Efésios 2:4-5; Tito 3:5; 1 João 5:1; Romanos 8:14-16",
+            Commentary      = "'Pois Deus amou o mundo de tal maneira' — o amor de Deus é a causa, não o efeito, da fé humana. 'Unigênito' (monogenēs) significa 'único de seu tipo', não 'gerado no tempo' — aponta para a relação única e eterna do Filho com o Pai. 'Não pereça' (apollymi) é perda total, destruição — a seriedade do julgamento eterno legitima a urgência da missão.",
+            AuthorNote      = "Baseado em Calvino (Commentary on John), Leon Morris (The Gospel According to John, NICNT), Matthew Henry"
+        });
+
+        // ── Romanos 3 ─────────────────────────────────────────────────────────
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = romans.Id,
+            Chapter = 3,
+            Title   = "Justificação pela Fé — O Coração do Evangelho",
+            Context = "Romanos 1-3 é o grande diagnóstico da condição humana: gentios sem a Lei pecaram contra a luz da criação (1:18-32); judeus com a Lei também pecaram (2:1-29); portanto 'todos pecaram e carecem da glória de Deus' (3:23). Romanos 3:21-31 é a virada — a solução divina para a condenação universal: a justiça de Deus revelada pelo evangelho.",
+            TheologicalSignificance = "Três conceitos-chave em 3:24-25: (1) Justificação (dikaiōsis) — declaração forense de inocência; Deus não nos torna justos gradualmente, mas nos declara justos instantaneamente ao justificar pela fé; (2) Redenção (apolytrōsis) — libertação mediante pagamento de resgate; (3) Propiciação (hilastērion) — satisfação da ira divina; a mesma palavra usada para a 'tampa da arca da aliança' no AT onde o sangue era aspergido. A cruz é onde a justiça e a misericórdia de Deus se encontram: Deus é 'justo e justificador' (v. 26) simultaneamente.",
+            KeyThemes      = "Pecado universal · Justificação · Propiciação · Redenção · Fé · Obras da Lei · Glória de Deus",
+            CrossReferences = "Gálatas 2:16; 3:10-14; Efésios 2:8-9; Filipenses 3:9; 2 Coríntios 5:21; Isaías 53:11; Habacuque 2:4",
+            Commentary      = "'A justiça de Deus' (v. 21) é ambígua — pode ser: (a) atributo de Deus = sua perfeição moral; (b) status que Deus confere = justiça imputada ao crente. Luther descobriu que era ambas: Deus é justo e confere sua justiça ao pecador pela fé — 'a mais doce de todas as doutrinas'. Lutero disse que ao entender v. 17 ('o justo viverá pela fé'), sentiu que havia entrado nas portas do paraíso.",
+            AuthorNote      = "Baseado em Calvino (Commentary on Romans), Douglas Moo (Romans, NICNT), Matthew Henry, Martin Luther (Prefácio a Romanos)"
+        });
+
+        // ── Romanos 8 ─────────────────────────────────────────────────────────
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = romans.Id,
+            Chapter = 8,
+            Title   = "Vida no Espírito e Segurança Eterna",
+            Context = "Romanos 8 é o clímax da carta — após o diagnóstico do pecado (1-3), a justificação pela fé (3-5) e a luta interior do crente (7), Paulo descreve a vida abundante no Espírito. Começa com 'Portanto, agora nenhuma condenação há para os que estão em Cristo Jesus' (v. 1) e termina com a inseperabilidade do amor de Deus (v. 31-39). É o capítulo mais completo sobre o Espírito Santo no NT.",
+            TheologicalSignificance = "O Espírito Santo aparece 19 vezes no capítulo: ele liberta (v. 2), vivifica (v. 10-11), guia (v. 14), adota (v. 15-16), intercede (v. 26-27), e garante a glorificação futura (v. 17,30). A cadeia de ouro da salvação (v. 29-30) — predestinação → chamado → justificação → glorificação — afirma que todos os que Deus chamou serão glorificados, garantindo a perseverança dos santos. 'Quem nos separará do amor de Cristo?' (v. 35) recebe a resposta mais enfática da Bíblia: nada na criação.",
+            KeyThemes      = "Vida no Espírito · Adoção · Gemidos da criação · Intercessão do Espírito · Cadeia áurea da salvação · Segurança do crente",
+            CrossReferences = "João 14:16-17; Gálatas 4:6; Efésios 1:13-14; 1 João 3:1-2; João 10:27-30; Filipenses 1:6",
+            Commentary      = "'O Espírito mesmo intercede por nós com gemidos inexprimíveis' (v. 26) — na oração do crente, o Espírito se une aos nossos gemidos e os apresenta ao Pai de acordo com a vontade divina. Não é que rezamos errado; é que nossa limitação humana é suprida pela intercessão trinitária (Filho intercede no céu, Hb 7:25; Espírito intercede em nós). A segurança do crente não repousa em sua fidelidade, mas na fidelidade de Deus.",
+            AuthorNote      = "Baseado em Calvino (Commentary on Romans), Spurgeon (Romans, sermões), John Murray (Romans, NICNT)"
+        });
+
+        // ── 1 Coríntios 13 ────────────────────────────────────────────────────
+        if (corinth1 != null)
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = corinth1.Id,
+            Chapter = 13,
+            Title   = "O Hino do Amor — Agapē como Critério de Tudo",
+            Context = "1 Coríntios 13 está inserido na discussão sobre dons espirituais (cap. 12-14). A igreja de Corinto era espiritualmente rica em dons mas moralmente imatura — havia divisões, orgulho, imoralidade. Paulo insere este capítulo como o 'caminho mais excelente' (12:31): sem amor, todos os dons são inúteis. É poesia e teologia ao mesmo tempo.",
+            TheologicalSignificance = "O amor (agapē) descrito não é sentimento romântico (eros) nem amizade (philia), mas amor incondicional, decisão de querer o bem do outro. Paulo primeiro mostra que sem amor os maiores dons (línguas angélicas, profecia, conhecimento, fé para milagres, martírio) 'nada valem' (v. 1-3). Depois descreve 15 características do amor (v. 4-7). Finalmente: fé, esperança e amor permanecem, 'mas o maior destes é o amor' (v. 13) — porque amor é o próprio caráter de Deus (1 Jo 4:8).",
+            KeyThemes      = "Amor ágape · Primazia do amor sobre os dons · Maturidade cristã · Permanência do amor · Fé, esperança e amor",
+            CrossReferences = "1 João 4:8,16; João 13:34-35; Gálatas 5:22; Romanos 13:8-10; Colossenses 3:14; Mateus 22:37-40",
+            Commentary      = "As 15 características do amor em v. 4-7 podem ser divididas: 7 negativas (o que o amor NÃO é: invejoso, arrogante, rude, egoísta, irritável, rancoroso, aprazível com injustiça) e 8 positivas. A tradução literal de v. 7 é: 'tudo cobre, tudo crê, tudo espera, tudo suporta' — quatro verbos absolutos que descrevem amor como cobertura incondicional, confiança resiliente, esperança persistente e suporte inabalável.",
+            AuthorNote      = "Baseado em Spurgeon (sermão sobre 1 Co 13), Matthew Henry, Gordon Fee (1 Corinthians, NICNT)"
+        });
+
+        // ── Apocalipse 21 ─────────────────────────────────────────────────────
+        if (rev != null)
+        notes.Add(new BibleStudyNote
+        {
+            BookId  = rev.Id,
+            Chapter = 21,
+            Title   = "A Nova Jerusalém — A Consumação de Todas as Coisas",
+            Context = "Apocalipse 21-22 é o clímax não só do Apocalipse mas de toda a Bíblia — a consumação do plano redentor de Deus. O livro foi escrito por João em Patmos (cerca de 95 d.C.) para igrejas sob perseguição imperial romana. A visão final responde à pergunta de todos os que sofrem: como isso vai terminar? A resposta é triunfante.",
+            TheologicalSignificance = "Três declarações definem a nova criação: (1) 'Eis que faço novas todas as coisas' (v. 5) — não destruição e substituição, mas renovação e transformação; (2) 'E ouvi uma grande voz que dizia: Eis o tabernáculo de Deus com os homens' (v. 3) — o propósito de toda a história: Deus habitando com seu povo; (3) 'Não haverá mais morte, nem luto, nem choro, nem dor' (v. 4) — a reversão total da Queda (Gn 3). A Nova Jerusalém não é lugar para onde vamos, mas realidade que desce — 'descendo do céu de Deus' (v. 2,10).",
+            KeyThemes      = "Nova criação · Habitação de Deus com os homens · Fim do sofrimento · Nova Jerusalém · Noiva de Cristo · Consumação da aliança",
+            CrossReferences = "Gênesis 1-2; Isaías 65:17-25; 2 Pedro 3:13; 1 Coríntios 15:54-55; Ezequiel 37:27; João 14:2-3",
+            Commentary      = "A descrição da Cidade — 12.000 estádios (2.200 km) em cubo perfeito (v. 16) — não é arquitetura literal mas linguagem simbólica de perfeição e completude. O cubo lembra o Santo dos Santos (1 Rs 6:20), sugerindo que a cidade inteira é o lugar da presença divina. 'Não haverá templo' (v. 22) porque Deus e o Cordeiro são o templo — comunhão direta e permanente.",
+            AuthorNote      = "Baseado em Matthew Henry, G. K. Beale (Revelation, NIGTC), e N. T. Wright (Surprised by Hope)"
+        });
+
+        await db.BibleStudyNotes.AddRangeAsync(notes);
+        await db.SaveChangesAsync();
+    }
+
+    // ── Theology ──────────────────────────────────────────────────────────────
+    // Usa UPSERT por Title: insere novos cursos e atualiza ExternalUrl/Provider dos existentes.
+    // Os módulos/quizzes só são inseridos quando o curso é novo (cascade na criação).
+
+    private static async Task SeedTheologyAsync(AppDbContext db)
+    {
+        var seeds = BuildTheologySeeds();
+
+        foreach (var seed in seeds)
+        {
+            var existing = await db.TheologyCourses
+                .FirstOrDefaultAsync(c => c.Title == seed.Title);
+
+            if (existing == null)
+            {
+                await db.TheologyCourses.AddAsync(seed);
+            }
+            else
+            {
+                // Atualiza apenas os campos novos — não toca em módulos/quizzes já seedados
+                existing.ExternalUrl = seed.ExternalUrl;
+                existing.Provider    = seed.Provider;
+            }
+        }
+
+        await db.SaveChangesAsync();
+    }
+
+    private static List<TheologyCourse> BuildTheologySeeds()
+    {
+        return new List<TheologyCourse>
+        {
         // Curso 1: Introdução à Teologia Sistemática
-        var courseSystematic = new TheologyCourse
+        new TheologyCourse
         {
             Title = "Introdução à Teologia Sistemática",
             Description = "Uma visão geral das doutrinas fundamentais da fé cristã, organizadas de forma sistemática.",
@@ -180,6 +392,8 @@ public static class DataSeeder
             DurationHours = 20,
             Level = "Básico",
             ImageIcon = "school",
+            ExternalUrl = "https://www.biblicaltraining.org/systematic-theology/wayne-grudem",
+            Provider = "BiblicalTraining.org",
             Modules = new List<TheologyModule>
             {
                 new()
@@ -253,10 +467,10 @@ public static class DataSeeder
                     }
                 }
             }
-        };
+        },
 
         // Curso 2: Cristologia
-        var courseChristology = new TheologyCourse
+        new TheologyCourse
         {
             Title = "Cristologia: A Pessoa e a Obra de Cristo",
             Description = "Estudo aprofundado sobre quem Jesus é (sua pessoa) e o que ele fez (sua obra redentora).",
@@ -264,6 +478,8 @@ public static class DataSeeder
             DurationHours = 15,
             Level = "Intermediário",
             ImageIcon = "cross",
+            ExternalUrl = "https://www.ligonier.org/learn/series/foundations-an-overview-of-systematic-theology",
+            Provider = "Ligonier Ministries",
             Modules = new List<TheologyModule>
             {
                 new()
@@ -307,10 +523,10 @@ public static class DataSeeder
                     }
                 }
             }
-        };
+        },
 
         // Curso 3: Hermenêutica Bíblica
-        var courseHermeneutics = new TheologyCourse
+        new TheologyCourse
         {
             Title = "Hermenêutica: Como Interpretar a Bíblia",
             Description = "Princípios e métodos para uma interpretação sólida e responsável das Escrituras.",
@@ -318,6 +534,8 @@ public static class DataSeeder
             DurationHours = 12,
             Level = "Básico",
             ImageIcon = "book",
+            ExternalUrl = "https://www.biblicaltraining.org/biblical-hermeneutics/robert-stein",
+            Provider = "BiblicalTraining.org",
             Modules = new List<TheologyModule>
             {
                 new()
@@ -341,13 +559,193 @@ public static class DataSeeder
                     }
                 }
             }
-        };
+        },
 
-        await db.TheologyCourses.AddRangeAsync(courseSystematic, courseChristology, courseHermeneutics);
-        await db.SaveChangesAsync();
+        // Curso 4: Teologia do Antigo Testamento
+        new TheologyCourse
+        {
+            Title = "Teologia do Antigo Testamento",
+            Description = "Estudo das grandes doutrinas e temas teológicos que perpassam o Antigo Testamento, do Gênesis ao Malaquias.",
+            Category = "Teologia Bíblica",
+            DurationHours = 18,
+            Level = "Intermediário",
+            ImageIcon = "history_edu",
+            ExternalUrl = "https://www.biblicaltraining.org/old-testament-theology/john-oswalt",
+            Provider = "BiblicalTraining.org",
+            Modules = new List<TheologyModule>
+            {
+                new()
+                {
+                    OrderIndex = 1,
+                    Title = "A Aliança como Estrutura do AT",
+                    Content = "O conceito de aliança (berith) é o fio condutor do Antigo Testamento. Deus estabelece relações de aliança com Noé (Gn 9), Abraão (Gn 15, 17), Moisés/Israel (Êx 19-24), Davi (2 Sm 7) e anuncia uma Nova Aliança (Jr 31:31-34). Cada aliança revela progressivamente o caráter de Deus e seu plano redentor. A aliança abraâmica promete bênção universal; a mosaica revela a santidade divina e a necessidade de expiação; a davídica aponta para o Rei-Messias eterno; a nova aliança promete transformação interior pelo Espírito. O NT vê todas estas alianças cumpridas em Cristo.",
+                    References = "Gênesis 15; Êxodo 19-24; 2 Samuel 7; Jeremias 31:31-34; Hebreus 8-9",
+                    Quizzes = new List<TheologyQuiz>
+                    {
+                        new()
+                        {
+                            Question = "Qual profeta anunciou explicitamente a 'Nova Aliança' que seria escrita no coração?",
+                            OptionA = "Isaías",
+                            OptionB = "Ezequiel",
+                            OptionC = "Jeremias",
+                            OptionD = "Daniel",
+                            CorrectAnswer = "C",
+                            Explanation = "Jeremias 31:31-34 contém a promessa da Nova Aliança: 'Porei a minha lei no seu interior e a escreverei no seu coração.' Esta é a única ocorrência exata da expressão 'Nova Aliança' no AT, citada em Hebreus 8:8-12."
+                        }
+                    }
+                },
+                new()
+                {
+                    OrderIndex = 2,
+                    Title = "Os Profetas: Mensagem e Missão",
+                    Content = "Os profetas do AT eram porta-vozes de Deus (nabi = chamado, porta-voz). Sua missão era: (1) Forthtelling — proclamar a Palavra de Deus para o presente (chamada ao arrependimento, denúncia da injustiça social, afirmação da soberania divina); (2) Foretelling — revelar eventos futuros, especialmente o Messias. Isaías profetizou o Servo Sofredor (cap. 53), nascimento virginal (7:14) e o reino eterno (9:6-7). Ezequiel viu a glória divina partindo do templo e retornando. Daniel recebeu visões apocalípticas. Os Profetas Menores (Oséias a Malaquias) cobriam Israel, Judá e nações vizinhas.",
+                    References = "Isaías 1:1-20; Isaías 53; Oséias 1-3; Amós 5:21-24; Malaquias 3:1",
+                    Quizzes = new List<TheologyQuiz>
+                    {
+                        new()
+                        {
+                            Question = "Qual é a diferença principal entre 'forthtelling' e 'foretelling' na profecia bíblica?",
+                            OptionA = "Forthtelling prediz o futuro; foretelling fala ao presente",
+                            OptionB = "Forthtelling é profecia oral; foretelling é profecia escrita",
+                            OptionC = "Forthtelling proclama ao presente; foretelling revela o futuro",
+                            OptionD = "Não há diferença — são sinônimos",
+                            CorrectAnswer = "C",
+                            Explanation = "Forthtelling (proclamar para frente) é a função primária: o profeta fala a Palavra de Deus para sua geração — chamando ao arrependimento, denunciando injustiça. Foretelling (predizer) é secundário: Deus revela eventos futuros para confirmar sua soberania e preparar seu povo."
+                        }
+                    }
+                }
+            }
+        },
+
+        // Curso 5: Teologia do Novo Testamento
+        new TheologyCourse
+        {
+            Title = "Teologia do Novo Testamento",
+            Description = "Os grandes temas teológicos do NT: o Reino de Deus, a cristologia paulina, a eclesiologia e a escatologia.",
+            Category = "Teologia Bíblica",
+            DurationHours = 16,
+            Level = "Intermediário",
+            ImageIcon = "auto_stories",
+            ExternalUrl = "https://www.biblicaltraining.org/new-testament-theology/thomas-schreiner",
+            Provider = "BiblicalTraining.org",
+            Modules = new List<TheologyModule>
+            {
+                new()
+                {
+                    OrderIndex = 1,
+                    Title = "O Reino de Deus nos Evangelhos",
+                    Content = "O Reino de Deus (basileia tou Theou) é o tema central da pregação de Jesus. Não é apenas um lugar, mas o reinado soberano de Deus sobre toda a criação. Jesus anuncia: 'O tempo está cumprido e o Reino de Deus está próximo' (Mc 1:15). O Reino tem dois aspectos: (1) Já: inaugurado na vinda de Cristo — curas, exorcismos, perdão de pecados são sinais do Reino presente; (2) Ainda não: a consumação futura quando Cristo voltar, toda injustiça cessar e Deus habitar entre seu povo (Ap 21). Esta tensão 'já-mas-ainda-não' é fundamental para compreender a ética cristã, a missão da Igreja e a esperança escatológica.",
+                    References = "Marcos 1:14-15; Mateus 5-7; Lucas 17:20-21; 1 Coríntios 15:20-28",
+                    Quizzes = new List<TheologyQuiz>
+                    {
+                        new()
+                        {
+                            Question = "O que significa a tensão 'já-mas-ainda-não' no ensino sobre o Reino de Deus?",
+                            OptionA = "O Reino virá no futuro, mas ainda não chegou",
+                            OptionB = "O Reino foi inaugurado por Cristo mas aguarda consumação futura",
+                            OptionC = "O Reino é puramente espiritual e não tem dimensão futura",
+                            OptionD = "O Reino é puramente futuro e não tem impacto no presente",
+                            CorrectAnswer = "B",
+                            Explanation = "A tensão escatológica 'já-mas-ainda-não' (inaugurated eschatology) significa que o Reino foi inaugurado na vinda de Cristo (curas, ressurreição, Pentecostes = 'já'), mas aguarda consumação na Sua volta (fim da morte, do pecado, nova criação = 'ainda não')."
+                        }
+                    }
+                },
+                new()
+                {
+                    OrderIndex = 2,
+                    Title = "A Teologia de Paulo: Graça, Fé e Justificação",
+                    Content = "Paulo é o maior teólogo do NT. Seus temas centrais: (1) Justificação pela Fé — somos declarados justos diante de Deus não por obras, mas pela fé em Cristo (Rm 3:21-26; Gl 2:16); (2) União com Cristo — o crente está 'em Cristo' (en Christō, 164x em Paulo), morrendo e ressuscitando com Ele (Rm 6:1-11); (3) O Espírito Santo — agente da vida nova, que intercede, santifica e garante a herança (Rm 8); (4) Israel e as Nações — o mistério da inclusão dos gentios (Ef 2:11-22; Rm 9-11); (5) A Igreja como Corpo de Cristo — diversidade de dons, unidade no Espírito (1 Co 12; Ef 4). Paulo responde à questão: como um pecador pode ser aceito por um Deus santo?",
+                    References = "Romanos 3:21-26; Gálatas 2:16; Efésios 2:8-9; Filipenses 3:9",
+                    Quizzes = new List<TheologyQuiz>
+                    {
+                        new()
+                        {
+                            Question = "Em quantas ocorrências aproximadas Paulo usa a expressão 'em Cristo' (en Christō) em suas epístolas?",
+                            OptionA = "Cerca de 20 vezes",
+                            OptionB = "Cerca de 60 vezes",
+                            OptionC = "Cerca de 164 vezes",
+                            OptionD = "Cerca de 300 vezes",
+                            CorrectAnswer = "C",
+                            Explanation = "'Em Cristo' (en Christō / en Kyriō) aparece aproximadamente 164 vezes nas cartas paulinas, tornando a 'união com Cristo' a categoria mais frequente e fundamental da teologia de Paulo — mais central que 'justificação pela fé'."
+                        }
+                    }
+                }
+            }
+        },
+
+        // Curso 6: Apologética Cristã
+        new TheologyCourse
+        {
+            Title = "Apologética Cristã",
+            Description = "Defesa racional da fé cristã diante de objeções filosóficas, científicas e históricas. Como dar razão da esperança.",
+            Category = "Apologética",
+            DurationHours = 14,
+            Level = "Avançado",
+            ImageIcon = "shield",
+            ExternalUrl = "https://www.ligonier.org/learn/series/defending-your-faith",
+            Provider = "Ligonier Ministries",
+            Modules = new List<TheologyModule>
+            {
+                new()
+                {
+                    OrderIndex = 1,
+                    Title = "Fundamentos da Apologética",
+                    Content = "Apologética (do grego apologia — defesa) é a disciplina que defende a razoabilidade da fé cristã. 1 Pedro 3:15 ordena: 'Estai sempre preparados para responder com mansidão e temor a qualquer que vos pedir razão da esperança.' As principais escolas apologéticas são: (1) Evidencialismo (Habermas, Montgomery) — argumenta a partir de evidências históricas, especialmente a ressurreição; (2) Apologética Clássica (Sproul, Kreeft) — primeiro estabelece theísmo via argumentos filosóficos, depois especificamente a fé cristã; (3) Pressuposicionalismo (Van Til, Bahnsen) — toda evidência é interpretada dentro de cosmovisões; a cosmovisão cristã é pressuposta como única que torna o conhecimento possível; (4) Apologética Cumulativa (Cumming) — convergência de múltiplas linhas de evidência. C. S. Lewis usou uma abordagem narrativa/literária magistral em 'Mero Cristianismo'.",
+                    References = "1 Pedro 3:15; Atos 17:16-34; Romanos 1:18-20; Mero Cristianismo — C. S. Lewis",
+                    Quizzes = new List<TheologyQuiz>
+                    {
+                        new()
+                        {
+                            Question = "Qual escola apologética argumenta que toda evidência é interpretada dentro de cosmovisões, e que a cristã é a única internamente coerente?",
+                            OptionA = "Evidencialismo",
+                            OptionB = "Apologética Clássica",
+                            OptionC = "Pressuposicionalismo",
+                            OptionD = "Apologética Cumulativa",
+                            CorrectAnswer = "C",
+                            Explanation = "O Pressuposicionalismo, desenvolvido por Cornelius Van Til e Gordon Bahnsen, ensina que o crente deve pressupor a verdade cristã como fundamento do conhecimento. Só a cosmovisão bíblica pode justificar a lógica, a ciência e os valores morais — as outras cosmovisões 'pegam carona' na visão cristã de mundo."
+                        }
+                    }
+                }
+            }
+        },
+
+        // Curso 7: As Cinco Solas da Reforma
+        new TheologyCourse
+        {
+            Title = "As Cinco Solas da Reforma Protestante",
+            Description = "Os cinco pilares doutrinais que definiram a Reforma do séc. XVI e que continuam como fundamentos da fé evangélica.",
+            Category = "Teologia Histórica",
+            DurationHours = 10,
+            Level = "Básico",
+            ImageIcon = "menu_book",
+            ExternalUrl = "https://www.ligonier.org/learn/series/luther-and-the-reformation",
+            Provider = "Ligonier Ministries",
+            Modules = new List<TheologyModule>
+            {
+                new()
+                {
+                    OrderIndex = 1,
+                    Title = "Sola Scriptura e Sola Fide",
+                    Content = "As Cinco Solas sintetizam a teologia da Reforma: (1) Sola Scriptura — somente a Escritura é a autoridade suprema e infalível para fé e prática; rejeita a tradição como autoridade co-igual (contra Roma). Lutero em Worms (1521): 'Aqui estou, não posso fazer de outro modo.' (2) Sola Fide — somente pela fé somos justificados; a fé é o instrumento que nos une a Cristo, não as obras (Rm 3:28; Gl 2:16). Lutero chamou esta doutrina de 'articulus stantis et cadentis ecclesiae' — o artigo pelo qual a Igreja se sustenta ou cai. (3) Sola Gratia — somente pela graça, não por mérito humano, somos salvos (Ef 2:8-9). (4) Solus Christus — somente Cristo é mediador entre Deus e os homens (1 Tm 2:5). (5) Soli Deo Gloria — toda a glória pertence somente a Deus, não ao homem.",
+                    References = "Romanos 3:28; Gálatas 2:16; Efésios 2:8-9; 1 Timóteo 2:5; 2 Timóteo 3:16",
+                    Quizzes = new List<TheologyQuiz>
+                    {
+                        new()
+                        {
+                            Question = "Qual das Cinco Solas Lutero chamou de 'artigo pelo qual a Igreja se sustenta ou cai'?",
+                            OptionA = "Sola Scriptura",
+                            OptionB = "Sola Gratia",
+                            OptionC = "Sola Fide",
+                            OptionD = "Solus Christus",
+                            CorrectAnswer = "C",
+                            Explanation = "Lutero chamou a Sola Fide (justificação somente pela fé) de 'articulus stantis et cadentis ecclesiae' — o artigo pelo qual a Igreja se sustenta ou cai. Esta doutrina era o coração da Reforma porque confrontava diretamente o sistema de méritos e indulgências da Igreja Romana."
+                        }
+                    }
+                }
+            }
+        },
+        }; // fim da lista
     }
-
-    // ── Church History ────────────────────────────────────────────────────────
 
     private static async Task SeedChurchHistoryAsync(AppDbContext db)
     {

@@ -102,7 +102,38 @@ using (var scope = app.Services.CreateScope())
 
     if (!string.IsNullOrEmpty(npgsqlConnectionString))
     {
-        // PostgreSQL (Railway): EnsureCreated cria o schema direto do modelo.
+        // Passo 1: ALTER TABLE para colunas novas em tabelas já existentes.
+        // IF NOT EXISTS é idempotente — seguro para re-deploy.
+        // EnsureCreated() não faz ALTER TABLE, apenas CREATE TABLE IF NOT EXISTS.
+        await db.Database.ExecuteSqlRawAsync(@"
+            ALTER TABLE ""TheologyCourses""
+                ADD COLUMN IF NOT EXISTS ""ExternalUrl"" TEXT;
+            ALTER TABLE ""TheologyCourses""
+                ADD COLUMN IF NOT EXISTS ""Provider""    TEXT;
+        ");
+
+        // Passo 2: CREATE TABLE para tabelas completamente novas.
+        await db.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS ""BibleStudyNotes"" (
+                ""Id""                      SERIAL PRIMARY KEY,
+                ""BookId""                  INTEGER NOT NULL,
+                ""Chapter""                 INTEGER NOT NULL,
+                ""Title""                   TEXT NOT NULL DEFAULT '',
+                ""Context""                 TEXT NOT NULL DEFAULT '',
+                ""TheologicalSignificance"" TEXT NOT NULL DEFAULT '',
+                ""KeyThemes""               TEXT NOT NULL DEFAULT '',
+                ""CrossReferences""         TEXT NOT NULL DEFAULT '',
+                ""Commentary""              TEXT NOT NULL DEFAULT '',
+                ""AuthorNote""              TEXT NOT NULL DEFAULT '',
+                ""CreatedAt""               TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+                CONSTRAINT ""FK_BibleStudyNotes_BibleBooks_BookId""
+                    FOREIGN KEY (""BookId"") REFERENCES ""BibleBooks""(""Id"") ON DELETE CASCADE,
+                CONSTRAINT ""UQ_BibleStudyNotes_BookId_Chapter""
+                    UNIQUE (""BookId"", ""Chapter"")
+            );
+        ");
+
+        // Passo 3: EnsureCreated cuida de tabelas novas que ainda não existem.
         db.Database.EnsureCreated();
     }
     else

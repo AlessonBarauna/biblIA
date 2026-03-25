@@ -7,7 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ApiService, BibleBook, BibleVerse } from '../../services/api.service';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { ApiService, BibleBook, BibleVerse, BibleStudyNote } from '../../services/api.service';
 import { AiPanelComponent } from '../../shared/ai-panel/ai-panel.component';
 
 // O componente funciona como uma máquina de estados com 3 "vistas":
@@ -30,6 +31,7 @@ interface Translation { key: TranslationKey; label: string; name: string; }
     MatProgressSpinnerModule,
     MatChipsModule,
     MatTooltipModule,
+    MatExpansionModule,
     AiPanelComponent
   ],
   templateUrl: './bible.component.html',
@@ -46,6 +48,8 @@ export class BibleComponent implements OnInit {
   selectedBook = signal<BibleBook | null>(null);
   selectedChapter = signal<number | null>(null);
   verses = signal<BibleVerse[]>([]);
+  studyNote = signal<BibleStudyNote | null>(null);
+  noteExpanded = signal(false);
 
   // Traduções disponíveis — adicionadas na ordem de preferência de exibição
   readonly translations: Translation[] = [
@@ -102,6 +106,8 @@ export class BibleComponent implements OnInit {
     this.selectedChapter.set(chapter);
     this.loading.set(true);
     this.view.set('verses');
+    this.studyNote.set(null);
+    this.noteExpanded.set(false);
 
     this.api.getChapter(book.id, chapter).subscribe({
       next: verses => {
@@ -110,11 +116,19 @@ export class BibleComponent implements OnInit {
       },
       error: () => this.loading.set(false)
     });
+
+    // Fire-and-forget: 404 é silenciado pois nem todo capítulo tem nota
+    this.api.getChapterNote(book.id, chapter).subscribe({
+      next: note => this.studyNote.set(note),
+      error: () => {} // 404 esperado para capítulos sem nota
+    });
   }
 
   goBack(): void {
     if (this.view() === 'verses') {
       this.view.set('chapters');
+      this.studyNote.set(null);
+      this.noteExpanded.set(false);
     } else if (this.view() === 'chapters') {
       this.view.set('books');
     }

@@ -41,7 +41,9 @@ public class TheologyController : ControllerBase
             DurationHours = c.DurationHours,
             Level = c.Level,
             ImageIcon = c.ImageIcon,
-            ModuleCount = c.Modules.Count
+            ModuleCount = c.Modules.Count,
+            ExternalUrl = c.ExternalUrl,
+            Provider    = c.Provider
         }));
     }
 

@@ -11,6 +11,8 @@ public class TheologyCourseDto
     public string Level { get; set; } = string.Empty;
     public string ImageIcon { get; set; } = string.Empty;
     public int ModuleCount { get; set; }
+    public string? ExternalUrl { get; set; }
+    public string? Provider { get; set; }
 }
 
 /// <summary>Módulo dentro de um curso de teologia</summary>

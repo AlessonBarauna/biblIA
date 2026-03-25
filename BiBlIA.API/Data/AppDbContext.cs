@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     // Bíblia
     public DbSet<BibleBook> BibleBooks { get; set; }
     public DbSet<BibleVerse> BibleVerses { get; set; }
+    public DbSet<BibleStudyNote> BibleStudyNotes { get; set; }
 
     // Teologia
     public DbSet<TheologyCourse> TheologyCourses { get; set; }
@@ -62,6 +63,17 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<BibleVerse>()
             .HasIndex(v => new { v.BookId, v.Chapter, v.Verse })
             .IsUnique();
+
+        // Uma nota de estudo por capítulo
+        modelBuilder.Entity<BibleStudyNote>()
+            .HasIndex(n => new { n.BookId, n.Chapter })
+            .IsUnique();
+
+        modelBuilder.Entity<BibleBook>()
+            .HasMany<BibleStudyNote>()
+            .WithOne(n => n.Book)
+            .HasForeignKey(n => n.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Course → Modules → Quizzes
         modelBuilder.Entity<TheologyCourse>()

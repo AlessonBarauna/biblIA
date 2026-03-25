@@ -107,6 +107,57 @@
         </div>
       }
     </div>
+
+    <!-- ── Notas de Estudo (Bíblia de Estudo) ────────────────────────────── -->
+    @if (studyNote()) {
+      <mat-expansion-panel class="study-note-panel" [expanded]="noteExpanded()" (opened)="noteExpanded.set(true)" (closed)="noteExpanded.set(false)">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>auto_stories</mat-icon>
+            Notas de Estudo — {{ studyNote()!.title }}
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="study-note-body">
+          @if (studyNote()!.context) {
+            <div class="note-section">
+              <h4><mat-icon>history_edu</mat-icon> Contexto Histórico</h4>
+              <p>{{ studyNote()!.context }}</p>
+            </div>
+          }
+          @if (studyNote()!.theologicalSignificance) {
+            <div class="note-section">
+              <h4><mat-icon>church</mat-icon> Significado Teológico</h4>
+              <p>{{ studyNote()!.theologicalSignificance }}</p>
+            </div>
+          }
+          @if (studyNote()!.keyThemes) {
+            <div class="note-section">
+              <h4><mat-icon>label</mat-icon> Temas Principais</h4>
+              <p>{{ studyNote()!.keyThemes }}</p>
+            </div>
+          }
+          @if (studyNote()!.crossReferences) {
+            <div class="note-section">
+              <h4><mat-icon>link</mat-icon> Referências Cruzadas</h4>
+              <p>{{ studyNote()!.crossReferences }}</p>
+            </div>
+          }
+          @if (studyNote()!.commentary) {
+            <div class="note-section">
+              <h4><mat-icon>rate_review</mat-icon> Comentário</h4>
+              <p>{{ studyNote()!.commentary }}</p>
+            </div>
+          }
+          @if (studyNote()!.authorNote) {
+            <div class="note-section author-note">
+              <h4><mat-icon>format_quote</mat-icon> Nota do Expositor</h4>
+              <p>{{ studyNote()!.authorNote }}</p>
+            </div>
+          }
+        </div>
+      </mat-expansion-panel>
+    }
   }
 
   <app-ai-panel
