@@ -54,3 +54,26 @@ mat-card-content {
 mat-card-actions {
   justify-content: flex-end;
 }
+
+@media (max-width: 768px) {
+  .home-container {
+    padding: 1rem;
+  }
+
+  .home-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .home-header h1 {
+    font-size: 2rem;
+  }
+
+  .home-header p {
+    font-size: 1rem;
+  }
+
+  .features-grid {
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+}

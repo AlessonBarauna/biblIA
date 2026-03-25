@@ -75,6 +75,7 @@
 
 .app-main {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   background: var(--bg);
 }
@@ -92,12 +93,37 @@
     flex-direction: column;
   }
 
+  /* Nav vira uma barra horizontal rolável no mobile (padrão de tabs) */
   .app-nav {
     width: 100%;
     height: auto;
+    max-height: none;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    max-height: 200px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-shrink: 0;
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .app-nav::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  /* Força os itens de nav em linha horizontal */
+  .app-nav ::ng-deep .mat-mdc-list-base {
+    display: flex !important;
+    flex-direction: row !important;
+    padding: 4px 8px !important;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .app-nav mat-list-item {
+    flex-shrink: 0 !important;
+    width: auto !important;
+    min-width: 80px !important;
+    border-radius: 8px !important;
   }
 
   .user-name {

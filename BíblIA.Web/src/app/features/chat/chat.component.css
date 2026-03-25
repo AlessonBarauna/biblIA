@@ -1,9 +1,19 @@
+/* ── Host — garante que o componente preencha o app-main sem vazar */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 .chat-wrapper {
   display: flex;
-  height: 100vh;
+  flex: 1;
+  min-height: 0;        /* essencial: permite que flex items internos scrollem */
   background: var(--bg);
   overflow: hidden;
+  position: relative;   /* ancora a sidebar overlay no mobile */
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
@@ -23,7 +33,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  height: 100vh;
+  height: 100%;
 }
 
 .sidebar-header {
@@ -507,14 +517,44 @@
     position: absolute;
     left: 0;
     top: 0;
-    height: 100vh;
+    height: 100%;     /* relativo ao .chat-wrapper (position: relative) */
     transform: translateX(-100%);
+    z-index: 200;
   }
 
   .sidebar:not(.collapsed) { transform: translateX(0); }
   .toggle-btn { display: flex; }
   .menu-toggle { display: flex !important; }
   .menu-toggle.hidden { display: none !important; }
-  .message-bubble { max-width: 85%; }
-  .chat-header h1 { font-size: 1.1rem; }
+  .message-bubble { max-width: 88%; }
+
+  .chat-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .chat-header h1 {
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100vw - 130px); /* espaço para ícones */
+  }
+
+  .messages {
+    padding: 1rem;
+  }
+
+  .send-btn {
+    min-width: 80px;
+  }
+
+  .biblical-selector {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .select-context-btn {
+    min-width: 0;
+    font-size: 0.85rem;
+  }
 }
