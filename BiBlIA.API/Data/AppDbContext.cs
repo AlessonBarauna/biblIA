@@ -92,8 +92,16 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<ChatSession>()
             .HasIndex(s => s.SessionId);
 
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Progress)
+            .WithOne(p => p.User)
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Um registro de progresso por módulo por usuário
         modelBuilder.Entity<UserProgress>()
-            .HasIndex(p => p.SessionId);
+            .HasIndex(p => new { p.UserId, p.ModuleId })
+            .IsUnique();
 
         modelBuilder.Entity<User>()
             .HasMany(u => u.Bookmarks)

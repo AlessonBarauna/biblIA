@@ -154,7 +154,28 @@ using (var scope = app.Services.CreateScope())
             CREATE INDEX IF NOT EXISTS ""IX_BookmarkVerses_UserId"" ON ""BookmarkVerses""(""UserId"");
         ");
 
-        // Passo 4: EnsureCreated cuida de tabelas novas que ainda não existem.
+        // Passo 5: UserProgress — tabela antiga usava SessionId (anônimo).
+        // Nova versão usa UserId (FK) + CourseId. Sem dados para preservar.
+        await db.Database.ExecuteSqlRawAsync(@"
+            DROP TABLE IF EXISTS ""UserProgress"";
+            CREATE TABLE IF NOT EXISTS ""UserProgress"" (
+                ""Id""          SERIAL PRIMARY KEY,
+                ""UserId""      INTEGER NOT NULL,
+                ""CourseId""    INTEGER NOT NULL,
+                ""ModuleId""    INTEGER NOT NULL,
+                ""Completed""   BOOLEAN NOT NULL DEFAULT FALSE,
+                ""CompletedAt"" TIMESTAMP WITHOUT TIME ZONE,
+                ""Score""       INTEGER NOT NULL DEFAULT 0,
+                ""CreatedAt""   TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+                CONSTRAINT ""FK_UserProgress_Users_UserId""
+                    FOREIGN KEY (""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE,
+                CONSTRAINT ""UQ_UserProgress_UserId_ModuleId""
+                    UNIQUE (""UserId"", ""ModuleId"")
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_UserProgress_UserId"" ON ""UserProgress""(""UserId"");
+        ");
+
+        // Passo 6: EnsureCreated cuida de tabelas novas que ainda não existem.
         db.Database.EnsureCreated();
     }
     else

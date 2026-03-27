@@ -20,108 +20,58 @@
   <!-- ── Lista de cursos ─────────────────────────────────────────────── -->
   @if (view() === 'courses' && !loading()) {
 
-    @if (basicCourses().length > 0) {
-      <section class="level-section">
-        <div class="level-header">
-          <mat-icon>school</mat-icon>
-          <span>Básico</span>
-        </div>
-        <div class="courses-grid">
-          @for (course of basicCourses(); track course.id) {
-            <mat-card class="course-card" (click)="selectCourse(course)">
-              <mat-card-header>
-                <mat-icon mat-card-avatar class="course-icon">{{ course.imageIcon || 'menu_book' }}</mat-icon>
-                <mat-card-title>{{ course.title }}</mat-card-title>
-                <mat-card-subtitle>{{ course.category }}</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content>
-                <p>{{ course.description }}</p>
-                <div class="course-meta">
-                  <span><mat-icon inline>schedule</mat-icon> {{ course.durationHours }}h</span>
-                  <span><mat-icon inline>layers</mat-icon> {{ course.moduleCount }} módulos</span>
-                  @if (course.provider) {
-                    <span class="provider-chip"><mat-icon inline>school</mat-icon> {{ course.provider }}</span>
+    @for (levelName of levelOrder; track levelName) {
+      @let levelCourses = levelName === 'Básico' ? basicCourses() : levelName === 'Intermediário' ? intermCourses() : advancedCourses();
+      @if (levelCourses.length > 0) {
+        <section class="level-section">
+          <div class="level-header">
+            <mat-icon>{{ getLevelIcon(levelName) }}</mat-icon>
+            <span>{{ levelName }}</span>
+          </div>
+          <div class="courses-grid">
+            @for (course of levelCourses; track course.id) {
+              <mat-card class="course-card" (click)="selectCourse(course)">
+                <mat-card-header>
+                  <mat-icon mat-card-avatar class="course-icon">{{ course.imageIcon || 'menu_book' }}</mat-icon>
+                  <mat-card-title>{{ course.title }}</mat-card-title>
+                  <mat-card-subtitle>{{ course.category }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <p>{{ course.description }}</p>
+                  <div class="course-meta">
+                    <span><mat-icon inline>schedule</mat-icon> {{ course.durationHours }}h</span>
+                    <span><mat-icon inline>layers</mat-icon> {{ course.moduleCount }} módulos</span>
+                    @if (course.provider) {
+                      <span class="provider-chip"><mat-icon inline>school</mat-icon> {{ course.provider }}</span>
+                    }
+                  </div>
+                  @if (isLoggedIn() && courseCompletedCount(course.id) > 0) {
+                    <div class="course-progress">
+                      <mat-progress-bar
+                        mode="determinate"
+                        [value]="(courseCompletedCount(course.id) / course.moduleCount) * 100">
+                      </mat-progress-bar>
+                      <span class="progress-label">
+                        {{ courseCompletedCount(course.id) }}/{{ course.moduleCount }} módulos concluídos
+                      </span>
+                    </div>
                   }
-                </div>
-              </mat-card-content>
-              <mat-card-actions align="end">
-                @if (course.externalUrl) {
-                  <a mat-stroked-button [href]="course.externalUrl" target="_blank" rel="noopener" (click)="$event.stopPropagation()">
-                    <mat-icon>open_in_new</mat-icon> Curso Online
-                  </a>
-                }
-                <button mat-flat-button color="primary">Iniciar</button>
-              </mat-card-actions>
-            </mat-card>
-          }
-        </div>
-      </section>
-    }
-
-    @if (intermCourses().length > 0) {
-      <section class="level-section">
-        <div class="level-header">
-          <mat-icon>menu_book</mat-icon>
-          <span>Intermediário</span>
-        </div>
-        <div class="courses-grid">
-          @for (course of intermCourses(); track course.id) {
-            <mat-card class="course-card" (click)="selectCourse(course)">
-              <mat-card-header>
-                <mat-icon mat-card-avatar class="course-icon">{{ course.imageIcon || 'menu_book' }}</mat-icon>
-                <mat-card-title>{{ course.title }}</mat-card-title>
-                <mat-card-subtitle>{{ course.category }}</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content>
-                <p>{{ course.description }}</p>
-                <div class="course-meta">
-                  <span><mat-icon inline>schedule</mat-icon> {{ course.durationHours }}h</span>
-                  <span><mat-icon inline>layers</mat-icon> {{ course.moduleCount }} módulos</span>
-                  @if (course.provider) {
-                    <span class="provider-chip"><mat-icon inline>school</mat-icon> {{ course.provider }}</span>
+                </mat-card-content>
+                <mat-card-actions align="end">
+                  @if (course.externalUrl) {
+                    <a mat-stroked-button [href]="course.externalUrl" target="_blank" rel="noopener" (click)="$event.stopPropagation()">
+                      <mat-icon>open_in_new</mat-icon> Curso Online
+                    </a>
                   }
-                </div>
-              </mat-card-content>
-              <mat-card-actions align="end">
-                <button mat-flat-button color="accent">Iniciar</button>
-              </mat-card-actions>
-            </mat-card>
-          }
-        </div>
-      </section>
-    }
-
-    @if (advancedCourses().length > 0) {
-      <section class="level-section">
-        <div class="level-header">
-          <mat-icon>psychology</mat-icon>
-          <span>Avançado</span>
-        </div>
-        <div class="courses-grid">
-          @for (course of advancedCourses(); track course.id) {
-            <mat-card class="course-card" (click)="selectCourse(course)">
-              <mat-card-header>
-                <mat-icon mat-card-avatar class="course-icon">{{ course.imageIcon || 'menu_book' }}</mat-icon>
-                <mat-card-title>{{ course.title }}</mat-card-title>
-                <mat-card-subtitle>{{ course.category }}</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content>
-                <p>{{ course.description }}</p>
-                <div class="course-meta">
-                  <span><mat-icon inline>schedule</mat-icon> {{ course.durationHours }}h</span>
-                  <span><mat-icon inline>layers</mat-icon> {{ course.moduleCount }} módulos</span>
-                  @if (course.provider) {
-                    <span class="provider-chip"><mat-icon inline>school</mat-icon> {{ course.provider }}</span>
-                  }
-                </div>
-              </mat-card-content>
-              <mat-card-actions align="end">
-                <button mat-flat-button color="warn">Iniciar</button>
-              </mat-card-actions>
-            </mat-card>
-          }
-        </div>
-      </section>
+                  <button mat-flat-button [color]="getLevelColor(levelName)">
+                    {{ courseCompletedCount(course.id) > 0 ? 'Continuar' : 'Iniciar' }}
+                  </button>
+                </mat-card-actions>
+              </mat-card>
+            }
+          </div>
+        </section>
+      }
     }
 
     @if (courses().length === 0) {
@@ -139,10 +89,15 @@
     </div>
 
     @for (item of modulesWithQuizzes(); track item.module.id) {
-      <mat-expansion-panel class="module-panel" (opened)="loadQuizzes(item)">
+      <mat-expansion-panel class="module-panel" (opened)="loadQuizzes(item)"
+        [class.module-completed]="isLoggedIn() && isModuleCompleted(item.module.id)">
         <mat-expansion-panel-header>
           <mat-panel-title>
-            <span class="module-index">{{ item.module.orderIndex }}</span>
+            @if (isLoggedIn() && isModuleCompleted(item.module.id)) {
+              <mat-icon class="completed-icon" matTooltip="Módulo concluído">check_circle</mat-icon>
+            } @else {
+              <span class="module-index">{{ item.module.orderIndex }}</span>
+            }
             {{ item.module.title }}
           </mat-panel-title>
         </mat-expansion-panel-header>
@@ -156,6 +111,17 @@
             </div>
           }
         </div>
+
+        @if (isLoggedIn()) {
+          <div class="module-actions">
+            <button mat-stroked-button
+              [color]="isModuleCompleted(item.module.id) ? 'warn' : 'primary'"
+              (click)="toggleModuleComplete(item)">
+              <mat-icon>{{ isModuleCompleted(item.module.id) ? 'undo' : 'check_circle_outline' }}</mat-icon>
+              {{ isModuleCompleted(item.module.id) ? 'Desmarcar' : 'Marcar como concluído' }}
+            </button>
+          </div>
+        }
 
         @if (item.quizzesLoaded && item.quizzes.length > 0) {
           <mat-divider></mat-divider>

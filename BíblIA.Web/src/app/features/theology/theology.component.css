@@ -247,3 +247,34 @@
   font-size: 0.9rem;
   line-height: 1.6;
 }
+
+/* ── Progresso ────────────────────────────────────────────────────────────── */
+.course-progress {
+  margin-top: 12px;
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+  display: block;
+}
+
+.completed-icon {
+  color: var(--success, #4caf50);
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.module-completed .mat-expansion-panel-header {
+  opacity: 0.85;
+}
+
+.module-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 0 4px;
+}

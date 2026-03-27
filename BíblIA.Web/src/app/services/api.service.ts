@@ -126,6 +126,15 @@ export interface EschatologyView {
   tribulationView: string;
 }
 
+export interface UserProgress {
+  id: number;
+  courseId: number;
+  moduleId: number;
+  completed: boolean;
+  completedAt: string | null;
+  score: number;
+}
+
 export interface Bookmark {
   id: number;
   userId: number;
@@ -267,6 +276,20 @@ export class ApiService {
 
   getChapterNote(bookId: number, chapter: number): Observable<BibleStudyNote> {
     return this.http.get<BibleStudyNote>(`${this.apiUrl}/bible/books/${bookId}/chapters/${chapter}/note`);
+  }
+
+  // ── Progress ─────────────────────────────────────────────────────────────
+
+  getProgress(): Observable<UserProgress[]> {
+    return this.http.get<UserProgress[]>(`${this.apiUrl}/progress`);
+  }
+
+  completeModule(data: { courseId: number; moduleId: number; score?: number }): Observable<UserProgress> {
+    return this.http.post<UserProgress>(`${this.apiUrl}/progress`, data);
+  }
+
+  undoModule(moduleId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/progress/modules/${moduleId}`);
   }
 
   // ── Bookmarks ────────────────────────────────────────────────────────────

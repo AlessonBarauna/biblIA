@@ -5,8 +5,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ApiService, TheologyCourse, TheologyModule, TheologyQuiz } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { AiPanelComponent } from '../../shared/ai-panel/ai-panel.component';
 
 // Nível de detalhe da view — padrão de máquina de estados finitos.
@@ -38,14 +41,17 @@ interface ModuleWithQuizzes {
     MatChipsModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatProgressBarModule,
     MatDividerModule,
+    MatTooltipModule,
     AiPanelComponent,
   ],
   templateUrl: './theology.component.html',
   styleUrls: ['./theology.component.css']
 })
 export class TheologyComponent implements OnInit {
-  private api = inject(ApiService);
+  private api  = inject(ApiService);
+  private auth = inject(AuthService);
 
   // ── Estado ────────────────────────────────────────────────────────────────
   view = signal<View>('courses');
@@ -56,6 +62,13 @@ export class TheologyComponent implements OnInit {
   selectedCourse = signal<TheologyCourse | null>(null);
   modulesWithQuizzes = signal<ModuleWithQuizzes[]>([]);
 
+  // progressSet: conjunto de moduleIds concluídos — lookup O(1)
+  progressSet = signal<Set<number>>(new Set());
+  // courseProgressMap: courseId → quantidade de módulos concluídos
+  courseProgressMap = signal<Map<number, number>>(new Map());
+
+  readonly isLoggedIn = this.auth.isLoggedIn;
+
   // Separa cursos por nível para exibição agrupada
   basicCourses    = computed(() => this.courses().filter(c => c.level === 'Básico'));
   intermCourses   = computed(() => this.courses().filter(c => c.level === 'Intermediário'));
@@ -65,6 +78,70 @@ export class TheologyComponent implements OnInit {
 
   ngOnInit() {
     this.loadCourses();
+    if (this.auth.isLoggedIn()) {
+      this.loadProgress();
+    }
+  }
+
+  private loadProgress() {
+    this.api.getProgress().subscribe({
+      next: list => {
+        const modules = new Set<number>(list.map(p => p.moduleId));
+        const courses = new Map<number, number>();
+        list.forEach(p => courses.set(p.courseId, (courses.get(p.courseId) ?? 0) + 1));
+        this.progressSet.set(modules);
+        this.courseProgressMap.set(courses);
+      },
+      error: () => {}
+    });
+  }
+
+  isModuleCompleted(moduleId: number): boolean {
+    return this.progressSet().has(moduleId);
+  }
+
+  courseCompletedCount(courseId: number): number {
+    return this.courseProgressMap().get(courseId) ?? 0;
+  }
+
+  toggleModuleComplete(item: ModuleWithQuizzes) {
+    const course = this.selectedCourse()!;
+    const moduleId = item.module.id;
+
+    if (this.isModuleCompleted(moduleId)) {
+      this.api.undoModule(moduleId).subscribe({
+        next: () => {
+          const modules = new Set(this.progressSet());
+          modules.delete(moduleId);
+          this.progressSet.set(modules);
+
+          const courses = new Map(this.courseProgressMap());
+          courses.set(course.id, Math.max(0, (courses.get(course.id) ?? 1) - 1));
+          this.courseProgressMap.set(courses);
+        }
+      });
+    } else {
+      const score = this.calcModuleScore(item);
+      this.api.completeModule({ courseId: course.id, moduleId, score }).subscribe({
+        next: () => {
+          const modules = new Set(this.progressSet());
+          modules.add(moduleId);
+          this.progressSet.set(modules);
+
+          const courses = new Map(this.courseProgressMap());
+          courses.set(course.id, (courses.get(course.id) ?? 0) + 1);
+          this.courseProgressMap.set(courses);
+        }
+      });
+    }
+  }
+
+  // Calcula pontuação dos quizzes do módulo (0–100). 0 se sem quizzes respondidos.
+  private calcModuleScore(item: ModuleWithQuizzes): number {
+    const answered = item.quizzes.filter(q => item.quizStates[q.id]?.showResult);
+    if (answered.length === 0) return 0;
+    const correct = answered.filter(q => item.quizStates[q.id].selectedAnswer === q.correctAnswer).length;
+    return Math.round((correct / answered.length) * 100);
   }
 
   private loadCourses() {
