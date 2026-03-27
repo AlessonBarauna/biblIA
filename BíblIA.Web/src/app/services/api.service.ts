@@ -308,6 +308,10 @@ export class ApiService {
 
   // ── Bible: Busca de versículos ─────────────────────────────────────────────
 
+  getVerseOfDay(): Observable<BibleVerse> {
+    return this.http.get<BibleVerse>(`${this.apiUrl}/bible/verse-of-day`);
+  }
+
   searchBibleVerses(query: string, limit = 20): Observable<BibleVerse[]> {
     return this.http.get<BibleVerse[]>(`${this.apiUrl}/bible/search`, { params: { query, limit } });
   }

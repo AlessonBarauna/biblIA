@@ -4,6 +4,39 @@
     <p>Inteligência Artificial Especializada em Teologia Bíblica</p>
   </header>
 
+  <!-- ── Versículo do dia ──────────────────────────────────────────────── -->
+  <section class="verse-of-day">
+    <div class="vod-label">
+      <mat-icon>wb_sunny</mat-icon>
+      <span>Versículo do dia — {{ todayLabel }}</span>
+    </div>
+
+    @if (loadingVerse()) {
+      <div class="vod-loading">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    }
+
+    @if (verseOfDay(); as v) {
+      <blockquote class="vod-verse">
+        <p class="vod-text">{{ v.textACF || v.textKJV }}</p>
+        <footer class="vod-ref">
+          {{ v.bookName }} {{ v.chapter }}:{{ v.verse }}
+          <span class="vod-translation">ACF</span>
+        </footer>
+      </blockquote>
+      <div class="vod-actions">
+        <a mat-stroked-button routerLink="/bible">
+          <mat-icon>book</mat-icon> Ler capítulo
+        </a>
+        <a mat-stroked-button routerLink="/chat">
+          <mat-icon>chat</mat-icon> Perguntar à IA
+        </a>
+      </div>
+    }
+  </section>
+
+  <!-- ── Features ─────────────────────────────────────────────────────── -->
   <div class="features-grid">
     <mat-card *ngFor="let feature of features" class="feature-card">
       <div class="feature-icon">{{ feature.icon }}</div>

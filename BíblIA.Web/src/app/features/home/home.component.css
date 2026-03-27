@@ -21,6 +21,73 @@
   margin: 0.5rem 0 0 0;
 }
 
+/* ── Versículo do dia ────────────────────────────────────────────────────── */
+.verse-of-day {
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface) 100%);
+  border: 1px solid var(--border-soft);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 3rem;
+}
+
+.vod-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+.vod-loading {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.vod-verse {
+  margin: 0 0 16px;
+  padding: 0;
+  border: none;
+}
+
+.vod-text {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: var(--text);
+  font-style: italic;
+  margin: 0 0 12px;
+}
+
+.vod-ref {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  font-style: normal;
+}
+
+.vod-translation {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.vod-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

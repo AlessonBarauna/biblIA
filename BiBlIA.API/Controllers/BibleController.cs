@@ -291,6 +291,45 @@ public class BibleController : ControllerBase
 
         return Ok(verses);
     }
+
+    // GET /api/bible/verse-of-day
+    // Retorna um versículo determinístico para o dia atual.
+    // A seleção usa (ano * 366 + diaDoAno) % total para variar todo dia
+    // e ciclar por todos os 31k versículos ao longo dos anos — sem randomness,
+    // sem estado: qualquer instância do servidor retorna o mesmo versículo no mesmo dia.
+    [HttpGet("verse-of-day")]
+    public async Task<ActionResult<BibleVerseDto>> GetVerseOfDay()
+    {
+        var total = await _context.BibleVerses.CountAsync();
+        if (total == 0)
+            return NotFound("Nenhum versículo importado.");
+
+        var today = DateTime.UtcNow;
+        var dayIndex = (today.Year * 366 + today.DayOfYear) % total;
+
+        var verse = await _context.BibleVerses
+            .OrderBy(v => v.Id)
+            .Skip(dayIndex)
+            .Take(1)
+            .Join(_context.BibleBooks,
+                  v => v.BookId,
+                  b => b.Id,
+                  (v, b) => new BibleVerseDto
+                  {
+                      Id       = v.Id,
+                      BookId   = v.BookId,
+                      BookName = b.Name,
+                      Chapter  = v.Chapter,
+                      Verse    = v.Verse,
+                      TextKJV  = v.TextKJV,
+                      TextAA   = v.TextAA,
+                      TextACF  = v.TextACF,
+                      TextNVI  = v.TextNVI
+                  })
+            .FirstOrDefaultAsync();
+
+        return verse is null ? NotFound() : Ok(verse);
+    }
 }
 
 // DTO auxiliar — representa o resumo de um capítulo
