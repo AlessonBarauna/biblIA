@@ -126,6 +126,18 @@ export interface EschatologyView {
   tribulationView: string;
 }
 
+export interface Bookmark {
+  id: number;
+  userId: number;
+  bookId: number;
+  bookName: string;
+  chapter: number;
+  verse: number;
+  verseText: string;
+  note: string;
+  createdAt: string;
+}
+
 export interface Chat {
   id: number;
   userId: number;
@@ -255,6 +267,20 @@ export class ApiService {
 
   getChapterNote(bookId: number, chapter: number): Observable<BibleStudyNote> {
     return this.http.get<BibleStudyNote>(`${this.apiUrl}/bible/books/${bookId}/chapters/${chapter}/note`);
+  }
+
+  // ── Bookmarks ────────────────────────────────────────────────────────────
+
+  getBookmarks(): Observable<Bookmark[]> {
+    return this.http.get<Bookmark[]>(`${this.apiUrl}/bookmarks`);
+  }
+
+  addBookmark(data: { bookId: number; chapter: number; verse: number; verseText: string; note?: string }): Observable<Bookmark> {
+    return this.http.post<Bookmark>(`${this.apiUrl}/bookmarks`, data);
+  }
+
+  removeBookmark(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/bookmarks/${id}`);
   }
 
   // ── Bible: Busca de versículos ─────────────────────────────────────────────

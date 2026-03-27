@@ -11,4 +11,5 @@ public class User
     
     // Relacionamentos
     public ICollection<Chat> Chats { get; set; } = new List<Chat>();
+    public ICollection<BookmarkVerse> Bookmarks { get; set; } = new List<BookmarkVerse>();
 }

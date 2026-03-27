@@ -8,7 +8,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { ApiService, BibleBook, BibleVerse, BibleStudyNote } from '../../services/api.service';
+import { ApiService, BibleBook, BibleVerse, BibleStudyNote, Bookmark } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { AiPanelComponent } from '../../shared/ai-panel/ai-panel.component';
 
 // O componente funciona como uma máquina de estados com 3 "vistas":
@@ -38,7 +39,8 @@ interface Translation { key: TranslationKey; label: string; name: string; }
   styleUrls: ['./bible.component.css']
 })
 export class BibleComponent implements OnInit {
-  private api = inject(ApiService);
+  private api  = inject(ApiService);
+  private auth = inject(AuthService);
 
   // ── Estado ──────────────────────────────────────────────────────────────
   view = signal<View>('books');
@@ -50,6 +52,11 @@ export class BibleComponent implements OnInit {
   verses = signal<BibleVerse[]>([]);
   studyNote = signal<BibleStudyNote | null>(null);
   noteExpanded = signal(false);
+
+  // bookmarkMap: Map<verseNumber, bookmarkId> — permite checar e remover em O(1)
+  bookmarkMap = signal<Map<number, number>>(new Map());
+
+  readonly isLoggedIn = this.auth.isLoggedIn;
 
   // Traduções disponíveis — adicionadas na ordem de preferência de exibição
   readonly translations: Translation[] = [
@@ -77,9 +84,56 @@ export class BibleComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadBooks();
+    if (this.auth.isLoggedIn()) {
+      this.loadBookmarks();
+    }
   }
 
   // ── Ações ────────────────────────────────────────────────────────────────
+
+  loadBookmarks(): void {
+    this.api.getBookmarks().subscribe({
+      next: bookmarks => {
+        const map = new Map<number, number>();
+        bookmarks.forEach(b => map.set(b.verse, b.id));
+        this.bookmarkMap.set(map);
+      },
+      error: () => {} // silencioso — usuário não-logado recebe 401, esperado
+    });
+  }
+
+  isBookmarked(v: BibleVerse): boolean {
+    return this.bookmarkMap().has(v.verse);
+  }
+
+  toggleBookmark(v: BibleVerse): void {
+    const existingId = this.bookmarkMap().get(v.verse);
+
+    if (existingId !== undefined) {
+      // Remove: atualiza o Map localmente antes da resposta para feedback imediato
+      this.api.removeBookmark(existingId).subscribe({
+        next: () => {
+          const map = new Map(this.bookmarkMap());
+          map.delete(v.verse);
+          this.bookmarkMap.set(map);
+        }
+      });
+    } else {
+      const book = this.selectedBook()!;
+      this.api.addBookmark({
+        bookId: book.id,
+        chapter: this.selectedChapter()!,
+        verse: v.verse,
+        verseText: this.verseText(v),
+      }).subscribe({
+        next: bookmark => {
+          const map = new Map(this.bookmarkMap());
+          map.set(bookmark.verse, bookmark.id);
+          this.bookmarkMap.set(map);
+        }
+      });
+    }
+  }
 
   loadBooks(): void {
     this.loading.set(true);

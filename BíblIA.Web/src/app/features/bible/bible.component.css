@@ -172,6 +172,23 @@
   border-radius: 4px;
 }
 
+.bookmark-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+  color: var(--text-dim);
+}
+
+.verse-row:hover .bookmark-btn,
+.bookmark-btn.bookmarked {
+  opacity: 1;
+}
+
+.bookmark-btn.bookmarked {
+  color: var(--accent);
+}
+
 .verse-number {
   min-width: 28px;
   font-size: 0.75rem;

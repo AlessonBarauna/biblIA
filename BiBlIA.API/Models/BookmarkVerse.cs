@@ -3,8 +3,10 @@ namespace BíblIA.Api.Models;
 public class BookmarkVerse
 {
     public int Id { get; set; }
-    public string SessionId { get; set; } = string.Empty;
-    public string Book { get; set; } = string.Empty;
+    public int UserId { get; set; }
+    public User User { get; set; } = null!;
+    public int BookId { get; set; }
+    public BibleBook Book { get; set; } = null!;
     public int Chapter { get; set; }
     public int Verse { get; set; }
     public string VerseText { get; set; } = string.Empty;

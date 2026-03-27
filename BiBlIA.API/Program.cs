@@ -133,7 +133,28 @@ using (var scope = app.Services.CreateScope())
             );
         ");
 
-        // Passo 3: EnsureCreated cuida de tabelas novas que ainda não existem.
+        // Passo 3: BookmarkVerses — tabela antiga usava SessionId (anônimo).
+        // Nova versão usa UserId (FK para Users). Sem dados para preservar (feature nunca foi exposta).
+        await db.Database.ExecuteSqlRawAsync(@"
+            DROP TABLE IF EXISTS ""BookmarkVerses"";
+            CREATE TABLE IF NOT EXISTS ""BookmarkVerses"" (
+                ""Id""          SERIAL PRIMARY KEY,
+                ""UserId""      INTEGER NOT NULL,
+                ""BookId""      INTEGER NOT NULL,
+                ""Chapter""     INTEGER NOT NULL,
+                ""Verse""       INTEGER NOT NULL,
+                ""VerseText""   TEXT NOT NULL DEFAULT '',
+                ""Note""        TEXT NOT NULL DEFAULT '',
+                ""CreatedAt""   TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+                CONSTRAINT ""FK_BookmarkVerses_Users_UserId""
+                    FOREIGN KEY (""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE,
+                CONSTRAINT ""FK_BookmarkVerses_BibleBooks_BookId""
+                    FOREIGN KEY (""BookId"") REFERENCES ""BibleBooks""(""Id"") ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_BookmarkVerses_UserId"" ON ""BookmarkVerses""(""UserId"");
+        ");
+
+        // Passo 4: EnsureCreated cuida de tabelas novas que ainda não existem.
         db.Database.EnsureCreated();
     }
     else

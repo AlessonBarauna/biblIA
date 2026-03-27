@@ -95,7 +95,19 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<UserProgress>()
             .HasIndex(p => p.SessionId);
 
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Bookmarks)
+            .WithOne(b => b.User)
+            .HasForeignKey(b => b.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<BookmarkVerse>()
-            .HasIndex(b => b.SessionId);
+            .HasOne(b => b.Book)
+            .WithMany()
+            .HasForeignKey(b => b.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<BookmarkVerse>()
+            .HasIndex(b => b.UserId);
     }
 }
