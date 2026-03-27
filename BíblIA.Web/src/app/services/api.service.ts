@@ -308,8 +308,8 @@ export class ApiService {
 
   // ── Bible: Busca de versículos ─────────────────────────────────────────────
 
-  searchBibleVerses(query: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/bible/search`, { params: { query } });
+  searchBibleVerses(query: string, limit = 20): Observable<BibleVerse[]> {
+    return this.http.get<BibleVerse[]>(`${this.apiUrl}/bible/search`, { params: { query, limit } });
   }
 
   // ── AI: Perguntas pontuais por domínio (stateless) ──────────────────────────

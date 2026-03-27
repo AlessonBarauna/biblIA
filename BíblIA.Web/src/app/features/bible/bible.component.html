@@ -1,5 +1,42 @@
 <div class="bible-container">
 
+  <!-- ── Barra de busca ─────────────────────────────────────────────────── -->
+  <div class="search-bar">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Buscar versículos (min. 3 letras)..."
+      [ngModel]="searchQuery()"
+      (ngModelChange)="onSearchInput($event)"
+      autocomplete="off">
+    @if (searchQuery()) {
+      <button mat-icon-button class="search-clear" (click)="clearSearch()" matTooltip="Limpar busca">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+    @if (searching()) {
+      <mat-spinner diameter="20" class="search-spinner"></mat-spinner>
+    }
+  </div>
+
+  <!-- ── Resultados da busca ─────────────────────────────────────────────── -->
+  @if (searchResults().length > 0) {
+    <div class="search-results">
+      <p class="search-count">{{ searchResults().length }} resultado(s) para "{{ searchQuery() }}"</p>
+      @for (v of searchResults(); track v.id) {
+        <div class="search-result-item" (click)="goToVerse(v)">
+          <span class="result-ref">{{ v.bookName }} {{ v.chapter }}:{{ v.verse }}</span>
+          <span class="result-text">{{ searchPreview(v.textACF || v.textKJV) }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  @if (searchQuery().length >= 3 && !searching() && searchResults().length === 0) {
+    <p class="empty-state">Nenhum versículo encontrado para "{{ searchQuery() }}".</p>
+  }
+
   <!-- ── Cabeçalho com navegação breadcrumb ─────────────────────────────── -->
   <div class="bible-header">
     @if (view() !== 'books') {

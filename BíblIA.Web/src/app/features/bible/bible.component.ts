@@ -1,4 +1,7 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, EMPTY, of } from 'rxjs';
+import { debounceTime, switchMap, catchError } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { FormsModule } from '@angular/forms';
 import { ApiService, BibleBook, BibleVerse, BibleStudyNote, Bookmark } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { AiPanelComponent } from '../../shared/ai-panel/ai-panel.component';
@@ -25,6 +29,7 @@ interface Translation { key: TranslationKey; label: string; name: string; }
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatTabsModule,
     MatButtonModule,
     MatCardModule,
@@ -39,8 +44,11 @@ interface Translation { key: TranslationKey; label: string; name: string; }
   styleUrls: ['./bible.component.css']
 })
 export class BibleComponent implements OnInit {
-  private api  = inject(ApiService);
-  private auth = inject(AuthService);
+  private api        = inject(ApiService);
+  private auth       = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
+
+  private searchSubject = new Subject<string>();
 
   // ── Estado ──────────────────────────────────────────────────────────────
   view = signal<View>('books');
@@ -52,6 +60,11 @@ export class BibleComponent implements OnInit {
   verses = signal<BibleVerse[]>([]);
   studyNote = signal<BibleStudyNote | null>(null);
   noteExpanded = signal(false);
+
+  // ── Busca ────────────────────────────────────────────────────────────────
+  searchQuery   = signal('');
+  searchResults = signal<BibleVerse[]>([]);
+  searching     = signal(false);
 
   // bookmarkMap: Map<verseNumber, bookmarkId> — permite checar e remover em O(1)
   bookmarkMap = signal<Map<number, number>>(new Map());
@@ -87,9 +100,68 @@ export class BibleComponent implements OnInit {
     if (this.auth.isLoggedIn()) {
       this.loadBookmarks();
     }
+
+    // Debounce: só dispara request depois de 300ms sem digitar.
+    // switchMap cancela a request anterior se o usuário continuar digitando — evita race condition.
+    this.searchSubject.pipe(
+      debounceTime(300),
+      switchMap(query => {
+        if (query.length < 3) {
+          this.searchResults.set([]);
+          this.searching.set(false);
+          return EMPTY;
+        }
+        this.searching.set(true);
+        return this.api.searchBibleVerses(query).pipe(
+          catchError(() => of([] as BibleVerse[]))
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(results => {
+      this.searchResults.set(results);
+      this.searching.set(false);
+    });
   }
 
   // ── Ações ────────────────────────────────────────────────────────────────
+
+  onSearchInput(query: string): void {
+    this.searchQuery.set(query);
+    this.searchSubject.next(query.trim());
+  }
+
+  clearSearch(): void {
+    this.searchQuery.set('');
+    this.searchResults.set([]);
+    this.searching.set(false);
+  }
+
+  // Navega diretamente para o capítulo do versículo encontrado na busca.
+  // Reutiliza selectBook/selectChapter para não duplicar lógica de navegação.
+  goToVerse(v: BibleVerse): void {
+    this.clearSearch();
+    const book = this.books().find(b => b.id === v.bookId);
+    if (book) {
+      this.selectedBook.set(book);
+      this.selectChapter(v.chapter);
+    } else {
+      this.api.getBook(v.bookId).subscribe(b => {
+        this.selectedBook.set(b);
+        this.selectChapter(v.chapter);
+      });
+    }
+  }
+
+  // Extrai um trecho do texto em volta do termo buscado para exibir como preview.
+  searchPreview(text: string): string {
+    const query = this.searchQuery().trim().toLowerCase();
+    if (!query || !text) return text.slice(0, 100);
+    const idx = text.toLowerCase().indexOf(query);
+    if (idx === -1) return text.slice(0, 100);
+    const start = Math.max(0, idx - 40);
+    const end   = Math.min(text.length, idx + query.length + 60);
+    return (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
+  }
 
   loadBookmarks(): void {
     this.api.getBookmarks().subscribe({
