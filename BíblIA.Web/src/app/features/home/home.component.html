@@ -36,6 +36,44 @@
     }
   </section>
 
+  <!-- ── Dashboard de progresso (apenas logado) ────────────────────────── -->
+  @if (isLoggedIn()) {
+    <section class="dashboard">
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <a class="stat-card" routerLink="/bible">
+          <mat-icon class="stat-icon">bookmark</mat-icon>
+          @if (loadingStats()) {
+            <span class="stat-value">—</span>
+          } @else {
+            <span class="stat-value">{{ bookmarkCount() }}</span>
+          }
+          <span class="stat-label">Favoritos</span>
+        </a>
+
+        <a class="stat-card" routerLink="/theology">
+          <mat-icon class="stat-icon">check_circle</mat-icon>
+          @if (loadingStats()) {
+            <span class="stat-value">—</span>
+          } @else {
+            <span class="stat-value">{{ completedModuleCount() }}</span>
+          }
+          <span class="stat-label">Módulos concluídos</span>
+        </a>
+
+        <a class="stat-card" routerLink="/chat">
+          <mat-icon class="stat-icon">{{ activeChatId() ? 'chat' : 'add_comment' }}</mat-icon>
+          <span class="stat-value">
+            <mat-icon class="stat-value-icon">{{ activeChatId() ? 'play_arrow' : 'add' }}</mat-icon>
+          </span>
+          <span class="stat-label">{{ activeChatId() ? 'Continuar conversa' : 'Nova conversa' }}</span>
+        </a>
+      </div>
+
+    </section>
+  }
+
   <!-- ── Features ─────────────────────────────────────────────────────── -->
   <div class="features-grid">
     <mat-card *ngFor="let feature of features" class="feature-card">
