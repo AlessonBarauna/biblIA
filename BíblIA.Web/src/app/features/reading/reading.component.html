@@ -23,7 +23,15 @@
     </div>
   }
 
-  @if (!loading() && !activePlan()) {
+  @if (!loading() && !activePlan() && !showStats() && isLoggedIn()) {
+    <div class="stats-link-row">
+      <button mat-button (click)="openStats()">
+        <mat-icon>bar_chart</mat-icon> Ver estatísticas
+      </button>
+    </div>
+  }
+
+  @if (!loading() && !activePlan() && !showStats()) {
     <div class="plans-grid">
       @for (plan of plans(); track plan.id) {
         <div class="plan-card" (click)="openPlan(plan)">
@@ -51,6 +59,96 @@
           <mat-icon class="plan-arrow">chevron_right</mat-icon>
         </div>
       }
+    </div>
+  }
+
+  <!-- ── Estatísticas ─────────────────────────────────────────────────────── -->
+  @if (!loading() && showStats()) {
+    <div class="stats-view">
+
+      <div class="detail-header">
+        <button mat-icon-button (click)="closeStats()" matTooltip="Voltar">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h2 class="stats-title">Estatísticas de Leitura</h2>
+      </div>
+
+      <!-- Cards de resumo -->
+      <div class="stat-cards">
+        <div class="stat-card">
+          <span class="stat-icon">🔥</span>
+          <span class="stat-value">{{ streak() }}</span>
+          <span class="stat-label">dia{{ streak() !== 1 ? 's' : '' }} consecutivo{{ streak() !== 1 ? 's' : '' }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">📅</span>
+          <span class="stat-value">{{ totalUniqueDays() }}</span>
+          <span class="stat-label">dias com leitura</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">📖</span>
+          <span class="stat-value">{{ totalReadings() }}</span>
+          <span class="stat-label">leituras no total</span>
+        </div>
+      </div>
+
+      <!-- Heatmap de atividade -->
+      <div class="heatmap-section">
+        <h3 class="heatmap-title">Atividade — últimos 3 meses</h3>
+
+        <!-- Labels de mês (posicionadas por CSS acima do grid) -->
+        <div class="heatmap-month-labels">
+          @for (day of heatmapDays(); track day.date) {
+            @if (day.monthLabel) {
+              <span class="month-label">{{ day.monthLabel }}</span>
+            }
+          }
+        </div>
+
+        <!-- Grid: grid-auto-flow: column, 7 linhas → colunas são semanas -->
+        <div class="heatmap-grid">
+          @for (day of heatmapDays(); track day.date) {
+            <div class="heat-cell"
+                 [class.heat-0]="heatIntensity(day.count) === 0"
+                 [class.heat-1]="heatIntensity(day.count) === 1"
+                 [class.heat-2]="heatIntensity(day.count) === 2"
+                 [class.heat-3]="heatIntensity(day.count) === 3"
+                 [class.heat-future]="day.isFuture"
+                 [class.heat-today]="day.isToday"
+                 [matTooltip]="day.isFuture ? '' : (day.count > 0 ? day.count + ' leitura(s) em ' + day.date : 'Sem leitura em ' + day.date)">
+            </div>
+          }
+        </div>
+
+        <!-- Legenda -->
+        <div class="heatmap-legend">
+          <span class="legend-label">Menos</span>
+          <div class="heat-cell heat-0"></div>
+          <div class="heat-cell heat-1"></div>
+          <div class="heat-cell heat-2"></div>
+          <div class="heat-cell heat-3"></div>
+          <span class="legend-label">Mais</span>
+        </div>
+      </div>
+
+      <!-- Progresso por plano -->
+      <div class="stats-plans">
+        <h3 class="stats-plans-title">Progresso por Plano</h3>
+        @for (plan of plans(); track plan.id) {
+          <div class="stats-plan-row">
+            <span class="stats-plan-icon">{{ plan.icon }}</span>
+            <div class="stats-plan-body">
+              <div class="stats-plan-meta">
+                <span class="stats-plan-name">{{ plan.name }}</span>
+                <span class="stats-plan-pct">{{ progressPct(plan) }}%</span>
+              </div>
+              <mat-progress-bar mode="determinate" [value]="progressPct(plan)"></mat-progress-bar>
+              <span class="stats-plan-days">{{ plan.completedDays }} / {{ plan.totalDays }} dias concluídos</span>
+            </div>
+          </div>
+        }
+      </div>
+
     </div>
   }
 
