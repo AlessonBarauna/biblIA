@@ -90,32 +90,31 @@
       </button>
 
       @if (comparison()) {
-        <div class="comparison-result">
-          <div class="compare-col">
-            <h3>{{ comparison()!.view1.name }}</h3>
-            <p>{{ comparison()!.view1.summary }}</p>
-            <div class="compare-attributes">
-              <div><strong>Milênio:</strong> {{ comparison()!.view1.millenniumView }}</div>
-              <div><strong>Arrebatamento:</strong> {{ comparison()!.view1.raptureView }}</div>
-              <div><strong>Tribulação:</strong> {{ comparison()!.view1.tribulationView }}</div>
-              <div><strong>Teólogos:</strong> {{ comparison()!.view1.mainTheologians }}</div>
+        <div class="compare-table-wrapper">
+          <!-- Cabeçalho com nomes das visões -->
+          <div class="ct-row ct-header">
+            <div class="ct-label-cell"></div>
+            <div class="ct-value-cell ct-name">
+              <mat-icon>looks_one</mat-icon>
+              {{ comparison()!.view1.name }}
+            </div>
+            <div class="ct-value-cell ct-name ct-name-2">
+              <mat-icon>looks_two</mat-icon>
+              {{ comparison()!.view2.name }}
             </div>
           </div>
 
-          <div class="compare-divider">
-            <div class="vs-badge">VS</div>
-          </div>
-
-          <div class="compare-col">
-            <h3>{{ comparison()!.view2.name }}</h3>
-            <p>{{ comparison()!.view2.summary }}</p>
-            <div class="compare-attributes">
-              <div><strong>Milênio:</strong> {{ comparison()!.view2.millenniumView }}</div>
-              <div><strong>Arrebatamento:</strong> {{ comparison()!.view2.raptureView }}</div>
-              <div><strong>Tribulação:</strong> {{ comparison()!.view2.tribulationView }}</div>
-              <div><strong>Teólogos:</strong> {{ comparison()!.view2.mainTheologians }}</div>
+          <!-- Linha por atributo -->
+          @for (row of compareRows; track row.key) {
+            <div class="ct-row" [class.ct-highlight]="row.highlight">
+              <div class="ct-label-cell">
+                <mat-icon class="ct-icon">{{ row.icon }}</mat-icon>
+                {{ row.label }}
+              </div>
+              <div class="ct-value-cell">{{ comparison()!.view1[row.key] }}</div>
+              <div class="ct-value-cell">{{ comparison()!.view2[row.key] }}</div>
             </div>
-          </div>
+          }
         </div>
       }
     </div>
