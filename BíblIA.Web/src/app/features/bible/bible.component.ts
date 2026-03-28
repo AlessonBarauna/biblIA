@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit, DestroyRef } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, DestroyRef, HostListener } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, EMPTY, of } from 'rxjs';
 import { debounceTime, switchMap, catchError } from 'rxjs/operators';
@@ -71,7 +71,19 @@ export class BibleComponent implements OnInit {
   // bookmarkMap: Map<verseNumber, bookmarkId> — permite checar e remover em O(1)
   bookmarkMap = signal<Map<number, number>>(new Map());
 
+  // Verso copiado — exibe "Copiado!" por 2s antes de limpar
+  copiedVerse    = signal<number | null>(null);
+  // Verso a destacar após navegação pela busca — limpo após 2s + animação CSS
+  highlightedVerse = signal<number | null>(null);
+
   readonly isLoggedIn = this.auth.isLoggedIn;
+
+  // Computed para navegação entre capítulos
+  hasPrevChapter = computed(() => (this.selectedChapter() ?? 1) > 1);
+  hasNextChapter = computed(() => {
+    const book = this.selectedBook();
+    return book ? (this.selectedChapter() ?? 0) < book.chapterCount : false;
+  });
 
   // Traduções disponíveis — adicionadas na ordem de preferência de exibição
   readonly translations: Translation[] = [
@@ -139,19 +151,51 @@ export class BibleComponent implements OnInit {
   }
 
   // Navega diretamente para o capítulo do versículo encontrado na busca.
-  // Reutiliza selectBook/selectChapter para não duplicar lógica de navegação.
+  // Passa o número do versículo para que selectChapter o destaque após o carregamento.
   goToVerse(v: BibleVerse): void {
     this.clearSearch();
-    const book = this.books().find(b => b.id === v.bookId);
-    if (book) {
+    const navigate = (book: BibleBook) => {
       this.selectedBook.set(book);
-      this.selectChapter(v.chapter);
-    } else {
-      this.api.getBook(v.bookId).subscribe(b => {
-        this.selectedBook.set(b);
-        this.selectChapter(v.chapter);
-      });
-    }
+      this.selectChapter(v.chapter, v.verse);
+    };
+    const book = this.books().find(b => b.id === v.bookId);
+    if (book) navigate(book);
+    else this.api.getBook(v.bookId).subscribe(b => navigate(b));
+  }
+
+  // ── Cópia de versículo ────────────────────────────────────────────────────
+
+  // Copia o versículo no formato padrão de citação bíblica e dá feedback visual por 2s.
+  copyVerse(v: BibleVerse): void {
+    const ref  = `${this.selectedBook()!.name} ${this.selectedChapter()}:${v.verse}`;
+    const text = `"${this.verseText(v)}" — ${ref}`;
+    navigator.clipboard.writeText(text).then(() => {
+      this.copiedVerse.set(v.verse);
+      setTimeout(() => this.copiedVerse.set(null), 2000);
+    });
+  }
+
+  // ── Navegação entre capítulos ─────────────────────────────────────────────
+
+  prevChapter(): void {
+    const ch = this.selectedChapter();
+    if (ch && ch > 1) this.selectChapter(ch - 1);
+  }
+
+  nextChapter(): void {
+    const ch   = this.selectedChapter();
+    const book = this.selectedBook();
+    if (ch && book && ch < book.chapterCount) this.selectChapter(ch + 1);
+  }
+
+  // Captura setas do teclado apenas quando na view de versículos e fora de inputs.
+  @HostListener('window:keydown', ['$event'])
+  onKeydown(e: KeyboardEvent): void {
+    if (this.view() !== 'verses') return;
+    const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+    if (tag === 'input' || tag === 'textarea') return;
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); this.prevChapter(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); this.nextChapter(); }
   }
 
   // Extrai um trecho do texto em volta do termo buscado para exibir como preview.
@@ -241,7 +285,7 @@ export class BibleComponent implements OnInit {
     this.view.set('chapters');
   }
 
-  selectChapter(chapter: number): void {
+  selectChapter(chapter: number, highlightVerse?: number): void {
     const book = this.selectedBook();
     if (!book) return;
 
@@ -250,11 +294,17 @@ export class BibleComponent implements OnInit {
     this.view.set('verses');
     this.studyNote.set(null);
     this.noteExpanded.set(false);
+    this.highlightedVerse.set(null);
 
     this.api.getChapter(book.id, chapter).subscribe({
       next: verses => {
         this.verses.set(verses);
         this.loading.set(false);
+        // Destaca o versículo alvo por 2.5s após carregamento
+        if (highlightVerse) {
+          this.highlightedVerse.set(highlightVerse);
+          setTimeout(() => this.highlightedVerse.set(null), 2500);
+        }
       },
       error: () => this.loading.set(false)
     });

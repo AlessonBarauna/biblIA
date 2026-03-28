@@ -72,6 +72,22 @@
           </button>
         }
       </div>
+
+      <!-- Navegação entre capítulos -->
+      <div class="chapter-nav">
+        <button mat-icon-button
+                [disabled]="!hasPrevChapter()"
+                (click)="prevChapter()"
+                matTooltip="Capítulo anterior (←)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button mat-icon-button
+                [disabled]="!hasNextChapter()"
+                (click)="nextChapter()"
+                matTooltip="Próximo capítulo (→)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
     }
   </div>
 
@@ -138,17 +154,25 @@
         <p class="empty-state">Nenhum versículo cadastrado neste capítulo ainda.</p>
       }
       @for (v of verses(); track v.id) {
-        <div class="verse-row">
+        <div class="verse-row" [class.verse-highlighted]="highlightedVerse() === v.verse">
           <span class="verse-number">{{ v.verse }}</span>
           <span class="verse-text">{{ verseText(v) }}</span>
-          @if (isLoggedIn()) {
-            <button mat-icon-button class="bookmark-btn"
-              [class.bookmarked]="isBookmarked(v)"
-              (click)="toggleBookmark(v)"
-              [matTooltip]="isBookmarked(v) ? 'Remover dos favoritos' : 'Salvar nos favoritos'">
-              <mat-icon>{{ isBookmarked(v) ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+          <div class="verse-actions">
+            <!-- Botão copiar — aparece ao hover; exibe "check" por 2s após copiar -->
+            <button mat-icon-button class="copy-btn"
+              (click)="copyVerse(v)"
+              [matTooltip]="copiedVerse() === v.verse ? 'Copiado!' : 'Copiar versículo'">
+              <mat-icon>{{ copiedVerse() === v.verse ? 'check' : 'content_copy' }}</mat-icon>
             </button>
-          }
+            @if (isLoggedIn()) {
+              <button mat-icon-button class="bookmark-btn"
+                [class.bookmarked]="isBookmarked(v)"
+                (click)="toggleBookmark(v)"
+                [matTooltip]="isBookmarked(v) ? 'Remover dos favoritos' : 'Salvar nos favoritos'">
+                <mat-icon>{{ isBookmarked(v) ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+              </button>
+            }
+          </div>
         </div>
       }
     </div>

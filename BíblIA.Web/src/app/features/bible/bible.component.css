@@ -149,6 +149,12 @@
   color: #fff !important;
 }
 
+.chapter-nav {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
 /* ── Loading ─────────────────────────────────────────────────────────────── */
 .loading-center {
   display: flex;
@@ -247,11 +253,13 @@
 
 .verse-row {
   display: flex;
+  align-items: flex-start;
   gap: 12px;
   padding: 10px 4px;
   border-bottom: 1px solid var(--border-soft);
   line-height: 1.7;
   transition: background 0.15s;
+  border-left: 3px solid transparent;
 }
 
 .verse-row:hover {
@@ -259,21 +267,54 @@
   border-radius: 4px;
 }
 
-.bookmark-btn {
-  margin-left: auto;
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity 0.15s;
-  color: var(--text-dim);
+/* Highlight pós-busca: pisca por 2.5s com keyframe */
+@keyframes verse-flash {
+  0%   { background: color-mix(in srgb, var(--accent) 18%, transparent); border-left-color: var(--accent); }
+  70%  { background: color-mix(in srgb, var(--accent) 10%, transparent); border-left-color: var(--accent); }
+  100% { background: transparent; border-left-color: transparent; }
 }
 
-.verse-row:hover .bookmark-btn,
-.bookmark-btn.bookmarked {
+.verse-highlighted {
+  animation: verse-flash 2.5s ease-out forwards;
+  border-radius: 4px;
+}
+
+/* Agrupamento de botões de ação (copiar + favorito) */
+.verse-actions {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.verse-row:hover .verse-actions {
   opacity: 1;
+}
+
+.copy-btn {
+  color: var(--text-dim);
+  transition: color 0.15s;
+}
+
+.copy-btn:hover {
+  color: var(--accent);
+}
+
+.bookmark-btn {
+  flex-shrink: 0;
+  color: var(--text-dim);
 }
 
 .bookmark-btn.bookmarked {
   color: var(--accent);
+}
+
+/* Mantém o bookmark visível quando salvo, mesmo sem hover */
+.verse-row:not(:hover) .verse-actions:has(.bookmark-btn.bookmarked) {
+  opacity: 1;
 }
 
 .verse-number {
