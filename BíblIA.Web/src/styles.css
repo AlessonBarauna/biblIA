@@ -26,6 +26,45 @@
   --warning:     #f39c12;
 }
 
+/* ── Tema claro — sobrescreve tokens quando body.theme-light ────────────── */
+body.theme-light {
+  --bg:          #f0f0f8;
+  --surface:     #ffffff;
+  --surface-2:   #f5f5fd;
+  --surface-3:   #ebebf7;
+  --surface-4:   #e0e0f0;
+  --border:      #cccce0;
+  --border-soft: #ddddf0;
+
+  --text:        #1a1a2e;
+  --text-muted:  #44447a;
+  --text-dim:    #8888b0;
+
+  /* Accent igual — mantém identidade visual */
+  --accent:      #5569d4;
+  --accent-2:    #6a3f8f;
+  --accent-glow: rgba(85, 105, 212, 0.15);
+
+  --success-bg:  rgba(46, 204, 113, 0.1);
+  --error-bg:    rgba(231, 76, 60, 0.1);
+
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* Angular Material overrides para o tema claro */
+body.theme-light mat-toolbar         { background: #ffffff !important; border-bottom: 1px solid var(--border) !important; }
+body.theme-light mat-sidenav         { background: #ffffff !important; }
+body.theme-light mat-sidenav-content { background: var(--bg) !important; }
+body.theme-light mat-sidenav-container { background: var(--bg) !important; }
+body.theme-light .mat-mdc-card       { background: var(--surface-2) !important; }
+body.theme-light .mat-mdc-menu-panel { background: #ffffff !important; }
+body.theme-light .mat-mdc-menu-item:hover { background: var(--surface-3) !important; }
+body.theme-light .mat-mdc-tab-header { background: var(--surface-2) !important; }
+body.theme-light .mat-expansion-panel,
+body.theme-light .mat-expansion-panel-header { background: var(--surface-2) !important; }
+body.theme-light .mdc-text-field     { background: var(--surface-3) !important; }
+
 /* ── Reset ───────────────────────────────────────────────────────────────── */
 * {
   margin: 0;

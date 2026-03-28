@@ -8,6 +8,13 @@
 
     <span class="spacer"></span>
 
+    <button mat-icon-button
+            (click)="theme.toggle()"
+            [matTooltip]="theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro'"
+            class="theme-toggle-btn">
+      <mat-icon>{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+
     <div class="user-menu">
       @if (auth.isLoggedIn()) {
         <span class="user-name">{{ auth.currentUser()?.name }}</span>
