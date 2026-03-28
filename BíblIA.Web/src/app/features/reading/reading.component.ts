@@ -47,6 +47,8 @@ export class ReadingComponent implements OnInit {
   books    = signal<BibleBook[]>([]);
   // Set de "planId:dayNumber" para lookup O(1)
   doneSet  = signal<Set<string>>(new Set());
+  // Dias consecutivos de leitura (qualquer plano) — base para o streak
+  streak   = signal(0);
 
   // Plano aberto para detalhe
   activePlan = signal<ReadingPlan | null>(null);
@@ -79,6 +81,7 @@ export class ReadingComponent implements OnInit {
       this.plans.set(plans);
       this.books.set(books);
       this.doneSet.set(new Set(logs.map(l => `${l.planId}:${l.dayNumber}`)));
+      this.streak.set(this.computeStreak(logs));
       this.loading.set(false);
     });
   }
@@ -98,14 +101,19 @@ export class ReadingComponent implements OnInit {
   toggleDay(day: number): void {
     const plan = this.activePlan();
     if (!plan) return;
-    const key = `${plan.id}:${day}`;
+    const key  = `${plan.id}:${day}`;
     const set  = new Set(this.doneSet());
 
     if (set.has(key)) {
       this.api.unmarkReadingDay(plan.id, day).subscribe();
       set.delete(key);
     } else {
-      this.api.markReadingDay(plan.id, day).subscribe();
+      this.api.markReadingDay(plan.id, day).subscribe({
+        next: () => {
+          // Após confirmação do servidor, busca logs frescos para recalcular streak com datas reais
+          this.api.getReadingLogs().subscribe(logs => this.streak.set(this.computeStreak(logs)));
+        }
+      });
       set.add(key);
     }
     this.doneSet.set(set);
@@ -116,7 +124,6 @@ export class ReadingComponent implements OnInit {
         ? { ...p, completedDays: [...set].filter(k => k.startsWith(`${p.id}:`)).length }
         : p)
     );
-    // Reflete no activePlan também
     this.activePlan.update(p => p
       ? { ...p, completedDays: [...set].filter(k => k.startsWith(`${p!.id}:`)).length }
       : p);
@@ -135,6 +142,44 @@ export class ReadingComponent implements OnInit {
 
   bibleParams(chapter: ChapterEntry): Record<string, number> {
     return { bookId: chapter.bookId, chapter: chapter.chapter };
+  }
+
+  // ── Streak ────────────────────────────────────────────────────────────────
+  //
+  // Conta quantos dias calendário CONSECUTIVOS terminando em hoje (ou ontem)
+  // o usuário leu em qualquer plano. Usa apenas as datas de completedAt.
+  //
+  // Por quê aceitar ontem? Evita que o streak caia a zero logo de manhã,
+  // antes de o usuário ter tido tempo de fazer a leitura do dia.
+
+  private computeStreak(logs: ReadingLog[]): number {
+    if (logs.length === 0) return 0;
+
+    // Datas únicas no formato 'YYYY-MM-DD' (UTC, para evitar drift de timezone)
+    const uniqueDates = [...new Set(logs.map(l => l.completedAt.substring(0, 10)))];
+    uniqueDates.sort().reverse(); // mais recente primeiro
+
+    const toDay = (offset: number) => {
+      const d = new Date();
+      d.setDate(d.getDate() + offset);
+      return d.toISOString().substring(0, 10);
+    };
+
+    const today     = toDay(0);
+    const yesterday = toDay(-1);
+
+    // Streak só existe se a leitura mais recente foi hoje ou ontem
+    if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) return 0;
+
+    let streak = 1;
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const prev = new Date(uniqueDates[i - 1]);
+      const curr = new Date(uniqueDates[i]);
+      const diff = Math.round((prev.getTime() - curr.getTime()) / 86_400_000);
+      if (diff === 1) streak++;
+      else break;
+    }
+    return streak;
   }
 
   // ── Geração do cronograma ─────────────────────────────────────────────────

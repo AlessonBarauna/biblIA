@@ -13,6 +13,16 @@
   }
 
   <!-- ── Lista de planos ────────────────────────────────────────────────────── -->
+  @if (!loading() && !activePlan() && isLoggedIn() && streak() > 0) {
+    <div class="streak-banner">
+      <span class="streak-fire">🔥</span>
+      <div class="streak-text">
+        <strong>{{ streak() }} dia{{ streak() !== 1 ? 's' : '' }} consecutivo{{ streak() !== 1 ? 's' : '' }}</strong>
+        <span>Mantenha o ritmo!</span>
+      </div>
+    </div>
+  }
+
   @if (!loading() && !activePlan()) {
     <div class="plans-grid">
       @for (plan of plans(); track plan.id) {
@@ -66,6 +76,12 @@
 
       @if (isLoggedIn()) {
         <mat-progress-bar mode="determinate" [value]="progressPct(plan)" class="detail-bar"></mat-progress-bar>
+      }
+
+      @if (isLoggedIn() && streak() > 0) {
+        <div class="streak-inline">
+          🔥 <strong>{{ streak() }}</strong> dia{{ streak() !== 1 ? 's' : '' }} consecutivo{{ streak() !== 1 ? 's' : '' }}
+        </div>
       }
 
       <!-- Banner do dia atual -->

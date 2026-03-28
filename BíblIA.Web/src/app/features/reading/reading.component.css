@@ -271,6 +271,57 @@
   gap: 0;
 }
 
+/* ── Streak ───────────────────────────────────────────────────────────────── */
+.streak-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, #ff9800 15%, var(--surface-2)),
+    var(--surface-2));
+  border: 1px solid color-mix(in srgb, #ff9800 40%, transparent);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.streak-fire {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.streak-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.streak-text strong {
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.streak-text span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.streak-inline {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  padding: 6px 12px;
+  background: color-mix(in srgb, #ff9800 10%, transparent);
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.streak-inline strong {
+  color: #ff9800;
+}
+
 @media (max-width: 600px) {
   .reading-container { padding: 1rem; }
 
