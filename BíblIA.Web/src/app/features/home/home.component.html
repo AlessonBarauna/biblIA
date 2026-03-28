@@ -40,36 +40,73 @@
   @if (isLoggedIn()) {
     <section class="dashboard">
 
-      <!-- Stats -->
+      <!-- Streak -->
+      @if (!loadingStats() && streak() > 0) {
+        <div class="streak-banner">
+          <span class="streak-fire">🔥</span>
+          <div class="streak-text">
+            <strong>{{ streak() }} dia{{ streak() !== 1 ? 's' : '' }} consecutivo{{ streak() !== 1 ? 's' : '' }} de leitura</strong>
+            <span>Continue assim!</span>
+          </div>
+          <a mat-stroked-button routerLink="/reading" class="streak-cta">Ver planos</a>
+        </div>
+      }
+
+      <!-- Stats cards -->
       <div class="stats-row">
         <a class="stat-card" routerLink="/bookmarks">
           <mat-icon class="stat-icon">bookmark</mat-icon>
-          @if (loadingStats()) {
-            <span class="stat-value">—</span>
-          } @else {
-            <span class="stat-value">{{ bookmarkCount() }}</span>
-          }
+          @if (loadingStats()) { <span class="stat-value">—</span> }
+          @else { <span class="stat-value">{{ bookmarkCount() }}</span> }
           <span class="stat-label">Favoritos</span>
         </a>
 
         <a class="stat-card" routerLink="/theology">
           <mat-icon class="stat-icon">check_circle</mat-icon>
-          @if (loadingStats()) {
-            <span class="stat-value">—</span>
-          } @else {
-            <span class="stat-value">{{ completedModuleCount() }}</span>
-          }
+          @if (loadingStats()) { <span class="stat-value">—</span> }
+          @else { <span class="stat-value">{{ completedModuleCount() }}</span> }
           <span class="stat-label">Módulos concluídos</span>
+        </a>
+
+        <a class="stat-card" routerLink="/reading">
+          <mat-icon class="stat-icon">auto_stories</mat-icon>
+          @if (loadingStats()) { <span class="stat-value">—</span> }
+          @else { <span class="stat-value">{{ plans().length }}</span> }
+          <span class="stat-label">Planos de leitura</span>
         </a>
 
         <a class="stat-card" routerLink="/chat">
           <mat-icon class="stat-icon">{{ activeChatId() ? 'chat' : 'add_comment' }}</mat-icon>
-          <span class="stat-value">
-            <mat-icon class="stat-value-icon">{{ activeChatId() ? 'play_arrow' : 'add' }}</mat-icon>
-          </span>
+          <span class="stat-value"><mat-icon class="stat-value-icon">{{ activeChatId() ? 'play_arrow' : 'add' }}</mat-icon></span>
           <span class="stat-label">{{ activeChatId() ? 'Continuar conversa' : 'Nova conversa' }}</span>
         </a>
       </div>
+
+      <!-- Planos em andamento -->
+      @if (!loadingStats() && activePlans().length > 0) {
+        <div class="active-plans">
+          <h3 class="section-label">
+            <mat-icon>auto_stories</mat-icon>
+            Planos em andamento
+          </h3>
+          @for (plan of activePlans(); track plan.id) {
+            <div class="plan-progress-card">
+              <span class="plan-emoji">{{ plan.icon }}</span>
+              <div class="plan-info">
+                <div class="plan-row">
+                  <span class="plan-name">{{ plan.name }}</span>
+                  <span class="plan-pct">{{ progressPct(plan) }}%</span>
+                </div>
+                <mat-progress-bar mode="determinate" [value]="progressPct(plan)"></mat-progress-bar>
+                <span class="plan-days">{{ plan.completedDays }} / {{ plan.totalDays }} dias</span>
+              </div>
+              <a mat-icon-button routerLink="/reading" matTooltip="Continuar leitura">
+                <mat-icon>arrow_forward</mat-icon>
+              </a>
+            </div>
+          }
+        </div>
+      }
 
     </section>
   }
