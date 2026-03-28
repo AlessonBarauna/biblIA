@@ -47,11 +47,12 @@ export class AppComponent {
   }
 
   menuItems = [
-    { label: 'Início',     route: '/',           icon: 'home' },
-    { label: 'Chat',       route: '/chat',        icon: 'chat' },
-    { label: 'Bíblia',     route: '/bible',       icon: 'book' },
-    { label: 'Teologia',   route: '/theology',    icon: 'school' },
-    { label: 'Escatologia',route: '/eschatology', icon: 'public' },
-    { label: 'História',   route: '/history',     icon: 'history' }
+    { label: 'Início',     route: '/',            icon: 'home' },
+    { label: 'Chat',       route: '/chat',         icon: 'chat' },
+    { label: 'Bíblia',     route: '/bible',        icon: 'book' },
+    { label: 'Favoritos',  route: '/bookmarks',    icon: 'bookmark' },
+    { label: 'Teologia',   route: '/theology',     icon: 'school' },
+    { label: 'Escatologia',route: '/eschatology',  icon: 'public' },
+    { label: 'História',   route: '/history',      icon: 'history' }
   ];
 }

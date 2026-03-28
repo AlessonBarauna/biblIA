@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, EMPTY, of } from 'rxjs';
 import { debounceTime, switchMap, catchError } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -46,6 +47,7 @@ interface Translation { key: TranslationKey; label: string; name: string; }
 export class BibleComponent implements OnInit {
   private api        = inject(ApiService);
   private auth       = inject(AuthService);
+  private route      = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
 
   private searchSubject = new Subject<string>();
@@ -208,11 +210,25 @@ export class BibleComponent implements OnInit {
   }
 
   loadBooks(): void {
+    // Lê query params uma vez — usados para deep link vindo da página de favoritos
+    const params      = this.route.snapshot.queryParamMap;
+    const deepBookId  = params.get('bookId')  ? Number(params.get('bookId'))  : null;
+    const deepChapter = params.get('chapter') ? Number(params.get('chapter')) : null;
+
     this.loading.set(true);
     this.api.getBooks().subscribe({
       next: books => {
         this.books.set(books);
         this.loading.set(false);
+
+        // Auto-navega quando o componente foi aberto via link de favorito
+        if (deepBookId && deepChapter) {
+          const book = books.find(b => b.id === deepBookId);
+          if (book) {
+            this.selectedBook.set(book);
+            this.selectChapter(deepChapter);
+          }
+        }
       },
       error: () => this.loading.set(false)
     });

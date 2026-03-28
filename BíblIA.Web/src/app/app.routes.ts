@@ -6,6 +6,7 @@ import { TheologyComponent } from './features/theology/theology.component';
 import { EschatologyComponent } from './features/eschatology/eschatology.component';
 import { HistoryComponent } from './features/history/history.component';
 import { AuthComponent } from './features/auth/auth.component';
+import { BookmarksComponent } from './features/bookmarks/bookmarks.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -16,5 +17,6 @@ export const routes: Routes = [
   { path: 'theology',    component: TheologyComponent,    canActivate: [authGuard] },
   { path: 'eschatology', component: EschatologyComponent, canActivate: [authGuard] },
   { path: 'history',     component: HistoryComponent,     canActivate: [authGuard] },
+  { path: 'bookmarks',   component: BookmarksComponent,   canActivate: [authGuard] },
   { path: '**',          redirectTo: '' }
 ];

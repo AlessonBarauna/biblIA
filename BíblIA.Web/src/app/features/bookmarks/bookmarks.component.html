@@ -1,0 +1,63 @@
+<div class="bookmarks-container">
+  <header class="bookmarks-header">
+    <div class="header-title">
+      <mat-icon>bookmark</mat-icon>
+      <h1>Meus Favoritos</h1>
+    </div>
+    @if (!loading() && bookmarks().length > 0) {
+      <span class="bookmark-count">{{ bookmarks().length }} versículo{{ bookmarks().length !== 1 ? 's' : '' }}</span>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="loading-center">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else if (bookmarks().length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">bookmark_border</mat-icon>
+      <p>Você ainda não tem favoritos.</p>
+      <a mat-stroked-button routerLink="/bible">
+        <mat-icon>book</mat-icon> Ir para a Bíblia
+      </a>
+    </div>
+  } @else {
+    <ul class="bookmark-list">
+      @for (b of bookmarks(); track b.id) {
+        <li class="bookmark-card" [class.removing]="isRemoving(b.id)">
+          <div class="bookmark-ref">
+            <span class="ref-text">{{ b.bookName }} {{ b.chapter }}:{{ b.verse }}</span>
+          </div>
+
+          <blockquote class="bookmark-verse">{{ b.verseText }}</blockquote>
+
+          @if (b.note) {
+            <p class="bookmark-note">
+              <mat-icon class="note-icon">notes</mat-icon>
+              {{ b.note }}
+            </p>
+          }
+
+          <div class="bookmark-footer">
+            <span class="bookmark-date">{{ formatDate(b.createdAt) }}</span>
+            <div class="bookmark-actions">
+              <a mat-stroked-button
+                 routerLink="/bible"
+                 [queryParams]="bibleParams(b)"
+                 matTooltip="Abrir capítulo na Bíblia">
+                <mat-icon>open_in_new</mat-icon> Ir ao capítulo
+              </a>
+              <button mat-icon-button
+                      color="warn"
+                      (click)="remove(b)"
+                      [disabled]="isRemoving(b.id)"
+                      matTooltip="Remover favorito">
+                <mat-icon>{{ isRemoving(b.id) ? 'hourglass_empty' : 'delete_outline' }}</mat-icon>
+              </button>
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>
