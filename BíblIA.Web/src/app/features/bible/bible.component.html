@@ -164,6 +164,12 @@
               [matTooltip]="copiedVerse() === v.verse ? 'Copiado!' : 'Copiar versículo'">
               <mat-icon>{{ copiedVerse() === v.verse ? 'check' : 'content_copy' }}</mat-icon>
             </button>
+            <!-- Botão compartilhar — Web Share API no mobile; fallback copia link -->
+            <button mat-icon-button class="share-btn"
+              (click)="shareVerse(v)"
+              [matTooltip]="sharedVerse() === v.verse ? 'Compartilhado!' : 'Compartilhar versículo'">
+              <mat-icon>{{ sharedVerse() === v.verse ? 'check' : 'share' }}</mat-icon>
+            </button>
             @if (isLoggedIn()) {
               <button mat-icon-button class="bookmark-btn"
                 [class.bookmarked]="isBookmarked(v)"

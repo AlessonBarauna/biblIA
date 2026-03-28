@@ -303,6 +303,15 @@
   color: var(--accent);
 }
 
+.share-btn {
+  color: var(--text-dim);
+  transition: color 0.15s;
+}
+
+.share-btn:hover {
+  color: var(--accent);
+}
+
 .bookmark-btn {
   flex-shrink: 0;
   color: var(--text-dim);

@@ -73,6 +73,8 @@ export class BibleComponent implements OnInit {
 
   // Verso copiado — exibe "Copiado!" por 2s antes de limpar
   copiedVerse    = signal<number | null>(null);
+  // Verso compartilhado — exibe "Compartilhado!" por 2s
+  sharedVerse    = signal<number | null>(null);
   // Verso a destacar após navegação pela busca — limpo após 2s + animação CSS
   highlightedVerse = signal<number | null>(null);
 
@@ -173,6 +175,32 @@ export class BibleComponent implements OnInit {
       this.copiedVerse.set(v.verse);
       setTimeout(() => this.copiedVerse.set(null), 2000);
     });
+  }
+
+  // ── Compartilhar versículo ────────────────────────────────────────────────
+  //
+  // Usa a Web Share API (navigator.share) quando disponível — abre a sheet nativa
+  // do SO com opções como WhatsApp, e-mail, copiar etc.
+  // Fallback: copia o texto + URL para a área de transferência.
+
+  shareVerse(v: BibleVerse): void {
+    const book  = this.selectedBook()!;
+    const ref   = `${book.name} ${this.selectedChapter()}:${v.verse}`;
+    const text  = `"${this.verseText(v)}" — ${ref}`;
+    const url   = `${window.location.origin}/bible?bookId=${book.id}&chapter=${this.selectedChapter()}`;
+
+    const markShared = () => {
+      this.sharedVerse.set(v.verse);
+      setTimeout(() => this.sharedVerse.set(null), 2000);
+    };
+
+    if (navigator.share) {
+      // navigator.share retorna Promise — catch silencia o cancelamento pelo usuário
+      navigator.share({ title: ref, text, url }).then(markShared).catch(() => {});
+    } else {
+      // Fallback: copia texto + link para área de transferência
+      navigator.clipboard.writeText(`${text}\n${url}`).then(markShared);
+    }
   }
 
   // ── Navegação entre capítulos ─────────────────────────────────────────────
