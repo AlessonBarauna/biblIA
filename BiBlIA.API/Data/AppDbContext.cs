@@ -38,6 +38,9 @@ public class AppDbContext : DbContext
     public DbSet<ReadingPlan> ReadingPlans { get; set; }
     public DbSet<ReadingLog> ReadingLogs { get; set; }
 
+    // Anotações pessoais em versículos
+    public DbSet<VerseNote> VerseNotes { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -139,6 +142,18 @@ public class AppDbContext : DbContext
         // Um dia por plano por usuário
         modelBuilder.Entity<ReadingLog>()
             .HasIndex(l => new { l.UserId, l.PlanId, l.DayNumber })
+            .IsUnique();
+
+        // User → VerseNotes
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.VerseNotes)
+            .WithOne(n => n.User)
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Uma anotação por usuário/livro/capítulo/versículo
+        modelBuilder.Entity<VerseNote>()
+            .HasIndex(n => new { n.UserId, n.BookId, n.Chapter, n.Verse })
             .IsUnique();
     }
 }

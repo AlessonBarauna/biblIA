@@ -455,6 +455,80 @@
   color: var(--accent);
 }
 
+.verse-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Nota exibida abaixo do versículo */
+.verse-note-display {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-left: 3px solid var(--accent);
+  padding: 6px 10px;
+  border-radius: 0 6px 6px 0;
+  line-height: 1.5;
+}
+
+.note-display-icon {
+  font-size: 0.95rem !important;
+  height: 0.95rem !important;
+  width: 0.95rem !important;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Editor inline de anotação */
+.note-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.note-textarea {
+  width: 100%;
+  resize: vertical;
+  background: var(--surface-2);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.875rem;
+  padding: 8px 10px;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.note-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.note-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.note-btn {
+  color: var(--text-dim);
+  transition: color 0.15s;
+}
+
+.note-btn:hover,
+.note-btn.has-note {
+  color: var(--accent);
+}
+
 .share-btn {
   color: var(--text-dim);
   transition: color 0.15s;

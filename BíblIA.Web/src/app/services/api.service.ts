@@ -161,6 +161,15 @@ export interface ReadingLog {
   completedAt: string;
 }
 
+export interface VerseNote {
+  id: number;
+  bookId: number;
+  chapter: number;
+  verse: number;
+  note: string;
+  updatedAt: string;
+}
+
 export interface Bookmark {
   id: number;
   userId: number;
@@ -375,6 +384,20 @@ export class ApiService {
 
   unmarkReadingDay(planId: number, dayNumber: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/reading/logs/${planId}/${dayNumber}`);
+  }
+
+  // ── Anotações em versículos ────────────────────────────────────────────────
+
+  getVerseNotes(bookId: number, chapter: number): Observable<VerseNote[]> {
+    return this.http.get<VerseNote[]>(`${this.apiUrl}/verse-notes`, { params: { bookId, chapter } });
+  }
+
+  upsertVerseNote(bookId: number, chapter: number, verse: number, note: string): Observable<VerseNote> {
+    return this.http.put<VerseNote>(`${this.apiUrl}/verse-notes/${bookId}/${chapter}/${verse}`, { note });
+  }
+
+  deleteVerseNote(bookId: number, chapter: number, verse: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/verse-notes/${bookId}/${chapter}/${verse}`);
   }
 
   // ── AI: Perguntas pontuais por domínio (stateless) ──────────────────────────

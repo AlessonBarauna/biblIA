@@ -14,4 +14,5 @@ public class User
     public ICollection<BookmarkVerse> Bookmarks { get; set; } = new List<BookmarkVerse>();
     public ICollection<UserProgress> Progress { get; set; } = new List<UserProgress>();
     public ICollection<ReadingLog> ReadingLogs { get; set; } = new List<ReadingLog>();
+    public ICollection<VerseNote> VerseNotes { get; set; } = new List<VerseNote>();
 }

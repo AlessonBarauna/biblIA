@@ -207,7 +207,31 @@
       @for (v of verses(); track v.id) {
         <div class="verse-row" [class.verse-highlighted]="highlightedVerse() === v.verse">
           <span class="verse-number">{{ v.verse }}</span>
-          <span class="verse-text">{{ verseText(v) }}</span>
+          <div class="verse-content">
+            <span class="verse-text">{{ verseText(v) }}</span>
+            <!-- Nota existente: exibida inline abaixo do texto -->
+            @if (hasNote(v.verse) && editingNoteVerse() !== v.verse) {
+              <div class="verse-note-display">
+                <mat-icon class="note-display-icon">sticky_note_2</mat-icon>
+                <span>{{ noteMap().get(v.verse)!.note }}</span>
+              </div>
+            }
+            <!-- Editor inline de anotação -->
+            @if (editingNoteVerse() === v.verse) {
+              <div class="note-editor">
+                <textarea class="note-textarea"
+                          [ngModel]="editingNoteText()"
+                          (ngModelChange)="editingNoteText.set($event)"
+                          placeholder="Escreva sua anotação..."
+                          rows="3"
+                          autofocus></textarea>
+                <div class="note-editor-actions">
+                  <button mat-button (click)="cancelNoteEditor()">Cancelar</button>
+                  <button mat-flat-button color="primary" (click)="saveNote(v)">Salvar</button>
+                </div>
+              </div>
+            }
+          </div>
           <div class="verse-actions">
             <!-- Botão copiar — aparece ao hover; exibe "check" por 2s após copiar -->
             <button mat-icon-button class="copy-btn"
@@ -222,6 +246,12 @@
               <mat-icon>{{ sharedVerse() === v.verse ? 'check' : 'share' }}</mat-icon>
             </button>
             @if (isLoggedIn()) {
+              <button mat-icon-button class="note-btn"
+                [class.has-note]="hasNote(v.verse)"
+                (click)="openNoteEditor(v)"
+                [matTooltip]="hasNote(v.verse) ? 'Editar anotação' : 'Adicionar anotação'">
+                <mat-icon>{{ hasNote(v.verse) ? 'sticky_note_2' : 'note_add' }}</mat-icon>
+              </button>
               <button mat-icon-button class="bookmark-btn"
                 [class.bookmarked]="isBookmarked(v)"
                 (click)="toggleBookmark(v)"

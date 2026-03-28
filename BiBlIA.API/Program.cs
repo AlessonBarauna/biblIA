@@ -201,7 +201,26 @@ using (var scope = app.Services.CreateScope())
             CREATE INDEX IF NOT EXISTS ""IX_ReadingLogs_UserId"" ON ""ReadingLogs""(""UserId"");
         ");
 
-        // Passo 7: EnsureCreated cuida de tabelas novas que ainda não existem.
+        // Passo 7: Anotações pessoais em versículos
+        await db.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS ""VerseNotes"" (
+                ""Id""        SERIAL PRIMARY KEY,
+                ""UserId""    INTEGER NOT NULL,
+                ""BookId""    INTEGER NOT NULL,
+                ""Chapter""   INTEGER NOT NULL,
+                ""Verse""     INTEGER NOT NULL,
+                ""Note""      TEXT NOT NULL DEFAULT '',
+                ""CreatedAt"" TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+                ""UpdatedAt"" TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+                CONSTRAINT ""FK_VerseNotes_Users_UserId""
+                    FOREIGN KEY (""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE,
+                CONSTRAINT ""UQ_VerseNotes_User_Book_Chapter_Verse""
+                    UNIQUE (""UserId"", ""BookId"", ""Chapter"", ""Verse"")
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_VerseNotes_UserId"" ON ""VerseNotes""(""UserId"");
+        ");
+
+        // Passo 8: EnsureCreated cuida de tabelas novas que ainda não existem.
         db.Database.EnsureCreated();
     }
     else

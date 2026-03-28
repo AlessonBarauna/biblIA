@@ -13,8 +13,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
-import { ApiService, BibleBook, BibleVerse, BibleStudyNote, Bookmark } from '../../services/api.service';
+import { ApiService, BibleBook, BibleVerse, BibleStudyNote, Bookmark, VerseNote } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { AiPanelComponent } from '../../shared/ai-panel/ai-panel.component';
 
@@ -40,6 +42,8 @@ interface Translation { key: TranslationKey; label: string; name: string; }
     MatChipsModule,
     MatTooltipModule,
     MatExpansionModule,
+    MatInputModule,
+    MatFormFieldModule,
     AiPanelComponent
   ],
   templateUrl: './bible.component.html',
@@ -80,6 +84,13 @@ export class BibleComponent implements OnInit {
 
   // bookmarkMap: Map<verseNumber, bookmarkId> — permite checar e remover em O(1)
   bookmarkMap = signal<Map<number, number>>(new Map());
+
+  // noteMap: Map<verseNumber, VerseNote> — anotações do capítulo atual
+  noteMap = signal<Map<number, VerseNote>>(new Map());
+  // Verso com o painel de anotação aberto (null = nenhum)
+  editingNoteVerse = signal<number | null>(null);
+  // Texto do campo de edição
+  editingNoteText  = signal('');
 
   // Modo leitura — overlay fullscreen sem distrações
   readingMode = signal(false);
@@ -388,6 +399,50 @@ export class BibleComponent implements OnInit {
     }
   }
 
+  // ── Anotações pessoais ────────────────────────────────────────────────────
+
+  hasNote(verseNumber: number): boolean {
+    return this.noteMap().has(verseNumber);
+  }
+
+  openNoteEditor(v: BibleVerse): void {
+    const existing = this.noteMap().get(v.verse);
+    this.editingNoteText.set(existing?.note ?? '');
+    this.editingNoteVerse.set(v.verse);
+  }
+
+  cancelNoteEditor(): void {
+    this.editingNoteVerse.set(null);
+    this.editingNoteText.set('');
+  }
+
+  saveNote(v: BibleVerse): void {
+    const book  = this.selectedBook()!;
+    const text  = this.editingNoteText().trim();
+
+    if (!text) {
+      // Texto vazio = apaga a anotação se existia
+      if (this.noteMap().has(v.verse)) {
+        this.api.deleteVerseNote(book.id, this.selectedChapter()!, v.verse).subscribe({
+          next: () => {
+            const map = new Map(this.noteMap());
+            map.delete(v.verse);
+            this.noteMap.set(map);
+          }
+        });
+      }
+    } else {
+      this.api.upsertVerseNote(book.id, this.selectedChapter()!, v.verse, text).subscribe({
+        next: note => {
+          const map = new Map(this.noteMap());
+          map.set(v.verse, note);
+          this.noteMap.set(map);
+        }
+      });
+    }
+    this.cancelNoteEditor();
+  }
+
   loadBooks(): void {
     // Lê query params uma vez — usados para deep link vindo da página de favoritos
     const params      = this.route.snapshot.queryParamMap;
@@ -430,6 +485,8 @@ export class BibleComponent implements OnInit {
     this.studyNote.set(null);
     this.noteExpanded.set(false);
     this.highlightedVerse.set(null);
+    this.editingNoteVerse.set(null);
+    this.noteMap.set(new Map());
 
     this.api.getChapter(book.id, chapter).subscribe({
       next: verses => {
@@ -443,6 +500,18 @@ export class BibleComponent implements OnInit {
       },
       error: () => this.loading.set(false)
     });
+
+    // Carrega anotações do capítulo (silencioso — usuário não logado recebe 401)
+    if (this.auth.isLoggedIn()) {
+      this.api.getVerseNotes(book.id, chapter).subscribe({
+        next: notes => {
+          const map = new Map<number, VerseNote>();
+          notes.forEach(n => map.set(n.verse, n));
+          this.noteMap.set(map);
+        },
+        error: () => {}
+      });
+    }
 
     // Fire-and-forget: 404 é silenciado pois nem todo capítulo tem nota
     this.api.getChapterNote(book.id, chapter).subscribe({
