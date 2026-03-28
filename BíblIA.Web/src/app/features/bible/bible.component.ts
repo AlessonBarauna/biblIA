@@ -1,4 +1,5 @@
-import { Component, signal, computed, inject, OnInit, DestroyRef, HostListener } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, DestroyRef, HostListener, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, EMPTY, of } from 'rxjs';
 import { debounceTime, switchMap, catchError } from 'rxjs/operators';
@@ -49,6 +50,10 @@ export class BibleComponent implements OnInit {
   private auth       = inject(AuthService);
   private route      = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
+  private platform   = inject(PLATFORM_ID);
+
+  private readonly HISTORY_KEY = 'bible_search_history';
+  private readonly HISTORY_MAX = 10;
 
   private searchSubject = new Subject<string>();
 
@@ -70,6 +75,8 @@ export class BibleComponent implements OnInit {
   // Filtros avançados: testamento ('' = todos) e livro específico (null = todos)
   searchTestament = signal<string>('');
   searchBookId    = signal<number | null>(null);
+  // Histórico das últimas 10 buscas — salvo no localStorage
+  searchHistory   = signal<string[]>(this.loadHistory());
 
   // bookmarkMap: Map<verseNumber, bookmarkId> — permite checar e remover em O(1)
   bookmarkMap = signal<Map<number, number>>(new Map());
@@ -141,6 +148,10 @@ export class BibleComponent implements OnInit {
     ).subscribe(results => {
       this.searchResults.set(results);
       this.searching.set(false);
+      // Salva no histórico quando a busca retornou algum resultado
+      if (results.length > 0) {
+        this.saveToHistory(this.searchQuery().trim());
+      }
     });
   }
 
@@ -179,6 +190,47 @@ export class BibleComponent implements OnInit {
     const testament = this.searchTestament();
     if (!testament) return this.books();
     return this.books().filter(b => b.testament === testament);
+  }
+
+  // ── Histórico de buscas ───────────────────────────────────────────────────
+  //
+  // Salva no localStorage as últimas HISTORY_MAX buscas distintas.
+  // SSR-safe: lê/escreve apenas em ambiente browser.
+
+  private loadHistory(): string[] {
+    if (!isPlatformBrowser(this.platform)) return [];
+    try {
+      return JSON.parse(localStorage.getItem(this.HISTORY_KEY) ?? '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  private saveToHistory(query: string): void {
+    if (!isPlatformBrowser(this.platform) || query.length < 3) return;
+    const prev    = this.searchHistory().filter(q => q !== query); // remove duplicata
+    const updated = [query, ...prev].slice(0, this.HISTORY_MAX);
+    this.searchHistory.set(updated);
+    localStorage.setItem(this.HISTORY_KEY, JSON.stringify(updated));
+  }
+
+  removeHistoryEntry(query: string): void {
+    const updated = this.searchHistory().filter(q => q !== query);
+    this.searchHistory.set(updated);
+    localStorage.setItem(this.HISTORY_KEY, JSON.stringify(updated));
+  }
+
+  clearHistory(): void {
+    this.searchHistory.set([]);
+    if (isPlatformBrowser(this.platform)) {
+      localStorage.removeItem(this.HISTORY_KEY);
+    }
+  }
+
+  // Preenche o campo de busca com um item do histórico e dispara a busca
+  applyHistory(query: string): void {
+    this.searchQuery.set(query);
+    this.searchSubject.next(query);
   }
 
   // Navega diretamente para o capítulo do versículo encontrado na busca.

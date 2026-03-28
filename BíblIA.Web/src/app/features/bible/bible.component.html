@@ -20,6 +20,31 @@
     }
   </div>
 
+  <!-- ── Histórico de buscas (visível quando campo está vazio) ─────────── -->
+  @if (!searchQuery() && searchHistory().length > 0) {
+    <div class="search-history">
+      <div class="history-header">
+        <span class="history-label"><mat-icon>history</mat-icon> Buscas recentes</span>
+        <button mat-button class="history-clear-btn" (click)="clearHistory()">Limpar</button>
+      </div>
+      <div class="history-list">
+        @for (item of searchHistory(); track item) {
+          <div class="history-item">
+            <button class="history-item-btn" (click)="applyHistory(item)">
+              <mat-icon>search</mat-icon>
+              {{ item }}
+            </button>
+            <button mat-icon-button class="history-remove-btn"
+                    (click)="removeHistoryEntry(item)"
+                    matTooltip="Remover">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
   <!-- ── Filtros avançados (visíveis quando há query ativa) ─────────────── -->
   @if (searchQuery().length >= 3) {
     <div class="search-filters">
