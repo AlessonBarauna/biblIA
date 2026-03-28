@@ -1,0 +1,125 @@
+<div class="profile-container">
+
+  @if (loading()) {
+    <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
+  }
+
+  @if (!loading() && profile(); as p) {
+
+    <!-- ── Avatar + identidade ──────────────────────────────────────────────── -->
+    <div class="profile-card">
+      <div class="avatar">{{ initials }}</div>
+
+      <div class="identity">
+        <!-- Nome: modo leitura -->
+        @if (!editingName()) {
+          <div class="name-row">
+            <h1 class="profile-name">{{ p.name }}</h1>
+            <button mat-icon-button (click)="startEditName()" matTooltip="Editar nome">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        }
+
+        <!-- Nome: modo edição -->
+        @if (editingName()) {
+          <div class="name-edit">
+            <input class="name-input"
+                   [ngModel]="editNameValue()"
+                   (ngModelChange)="editNameValue.set($event)"
+                   placeholder="Seu nome"
+                   autofocus>
+            @if (nameError()) {
+              <span class="field-error">{{ nameError() }}</span>
+            }
+            <div class="name-edit-actions">
+              <button mat-flat-button color="primary" (click)="saveName()" [disabled]="savingName()">
+                @if (savingName()) { <mat-spinner diameter="16"></mat-spinner> }
+                @else { Salvar }
+              </button>
+              <button mat-button (click)="cancelEditName()">Cancelar</button>
+            </div>
+          </div>
+        }
+
+        <p class="profile-email">{{ p.email }}</p>
+        <p class="profile-since">Membro desde {{ formatDate(p.createdAt) }}</p>
+      </div>
+    </div>
+
+    <!-- ── Stats ────────────────────────────────────────────────────────────── -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <mat-icon class="stat-icon">bookmark</mat-icon>
+        <span class="stat-value">{{ p.bookmarkCount }}</span>
+        <span class="stat-label">Favoritos</span>
+      </div>
+      <div class="stat-card">
+        <mat-icon class="stat-icon">check_circle</mat-icon>
+        <span class="stat-value">{{ p.completedModuleCount }}</span>
+        <span class="stat-label">Módulos concluídos</span>
+      </div>
+      <div class="stat-card">
+        <mat-icon class="stat-icon">auto_stories</mat-icon>
+        <span class="stat-value">{{ p.readingDaysCount }}</span>
+        <span class="stat-label">Dias lidos</span>
+      </div>
+    </div>
+
+    <!-- ── Segurança / Senha ─────────────────────────────────────────────────── -->
+    <div class="section-card">
+      <div class="section-header" (click)="showPasswordForm.set(!showPasswordForm())">
+        <div class="section-title">
+          <mat-icon>lock</mat-icon>
+          <h2>Alterar senha</h2>
+        </div>
+        <mat-icon>{{ showPasswordForm() ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </div>
+
+      @if (showPasswordForm()) {
+        <div class="password-form">
+          @if (passwordSuccess()) {
+            <div class="success-banner">
+              <mat-icon>check_circle</mat-icon> {{ passwordSuccess() }}
+            </div>
+          }
+          @if (passwordError()) {
+            <div class="error-banner">
+              <mat-icon>error_outline</mat-icon> {{ passwordError() }}
+            </div>
+          }
+
+          <label class="field-label">Senha atual</label>
+          <input class="field-input"
+                 type="password"
+                 [ngModel]="currentPassword()"
+                 (ngModelChange)="currentPassword.set($event)"
+                 placeholder="••••••••">
+
+          <label class="field-label">Nova senha</label>
+          <input class="field-input"
+                 type="password"
+                 [ngModel]="newPassword()"
+                 (ngModelChange)="newPassword.set($event)"
+                 placeholder="Mínimo 6 caracteres">
+
+          <label class="field-label">Confirmar nova senha</label>
+          <input class="field-input"
+                 type="password"
+                 [ngModel]="confirmPassword()"
+                 (ngModelChange)="confirmPassword.set($event)"
+                 placeholder="Repita a nova senha">
+
+          <button mat-flat-button color="primary"
+                  (click)="submitPassword()"
+                  [disabled]="savingPassword()">
+            @if (savingPassword()) { <mat-spinner diameter="18"></mat-spinner> }
+            @else { <mat-icon>lock_reset</mat-icon> Alterar senha }
+          </button>
+        </div>
+      }
+    </div>
+
+  }
+
+</div>

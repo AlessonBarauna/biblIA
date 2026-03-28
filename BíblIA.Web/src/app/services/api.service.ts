@@ -135,6 +135,16 @@ export interface UserProgress {
   score: number;
 }
 
+export interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  createdAt: string;
+  bookmarkCount: number;
+  completedModuleCount: number;
+  readingDaysCount: number;
+}
+
 export interface ReadingPlan {
   id: number;
   name: string;
@@ -330,6 +340,20 @@ export class ApiService {
 
   searchBibleVerses(query: string, limit = 20): Observable<BibleVerse[]> {
     return this.http.get<BibleVerse[]>(`${this.apiUrl}/bible/search`, { params: { query, limit } });
+  }
+
+  // ── Profile ───────────────────────────────────────────────────────────────────
+
+  getProfile(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.apiUrl}/profile`);
+  }
+
+  updateProfile(data: { name: string }): Observable<{ name: string }> {
+    return this.http.put<{ name: string }>(`${this.apiUrl}/profile`, data);
+  }
+
+  changePassword(data: { currentPassword: string; newPassword: string; confirmPassword: string }): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/profile/password`, data);
   }
 
   // ── Reading Plans ─────────────────────────────────────────────────────────────

@@ -22,6 +22,10 @@
             <span>{{ auth.currentUser()?.email }}</span>
           </button>
           <mat-divider></mat-divider>
+          <a mat-menu-item routerLink="/profile">
+            <mat-icon>manage_accounts</mat-icon>
+            <span>Meu Perfil</span>
+          </a>
           <button mat-menu-item (click)="auth.logout()">
             <mat-icon>logout</mat-icon>
             <span>Sair</span>

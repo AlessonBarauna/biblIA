@@ -1,0 +1,245 @@
+.profile-container {
+  padding: 2rem;
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.loading-center {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 0;
+}
+
+/* ── Card principal ───────────────────────────────────────────────────────── */
+.profile-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 28px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2, var(--accent)));
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.profile-email {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0 0 2px;
+}
+
+.profile-since {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ── Edição de nome ───────────────────────────────────────────────────────── */
+.name-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.name-input {
+  padding: 8px 12px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.name-input:focus {
+  border-color: var(--accent);
+}
+
+.name-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.field-error {
+  font-size: 0.8rem;
+  color: #ff6b6b;
+}
+
+/* ── Stats ────────────────────────────────────────────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.stat-icon {
+  color: var(--accent);
+  font-size: 26px;
+  height: 26px;
+  width: 26px;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+/* ── Seção segurança ──────────────────────────────────────────────────────── */
+.section-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.section-header:hover {
+  background: var(--surface-3);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title mat-icon {
+  color: var(--accent);
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 24px 24px;
+}
+
+.field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: -4px;
+}
+
+.field-input {
+  padding: 10px 14px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field-input:focus {
+  border-color: var(--accent);
+}
+
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, #4caf50 15%, transparent);
+  border: 1px solid #4caf50;
+  border-radius: 8px;
+  color: #4caf50;
+  font-size: 0.9rem;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, #ff6b6b 15%, transparent);
+  border: 1px solid #ff6b6b;
+  border-radius: 8px;
+  color: #ff6b6b;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .profile-container { padding: 1rem; }
+  .profile-card { flex-direction: column; align-items: center; text-align: center; }
+  .name-row { justify-content: center; }
+  .stats-row { grid-template-columns: 1fr; }
+}

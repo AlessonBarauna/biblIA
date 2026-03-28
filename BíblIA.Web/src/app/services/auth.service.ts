@@ -97,6 +97,17 @@ export class AuthService {
     return this._user();
   }
 
+  // Chamado após PUT /api/profile — mantém o nome no token local em sincronia com o servidor
+  updateUserName(name: string): void {
+    const user = this._user();
+    if (!user) return;
+    const updated = { ...user, name };
+    this._user.set(updated);
+    if (isPlatformBrowser(this.platform)) {
+      localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    }
+  }
+
   // ── Privado ──────────────────────────────────────────────────────────────
 
   private handleAuthResponse(response: { success: boolean; token?: string; user?: AuthUser }): void {
