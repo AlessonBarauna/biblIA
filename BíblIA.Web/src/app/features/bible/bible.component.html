@@ -135,6 +135,9 @@
                 matTooltip="Próximo capítulo (→)">
           <mat-icon>chevron_right</mat-icon>
         </button>
+        <button mat-icon-button (click)="enterReadingMode()" matTooltip="Modo leitura">
+          <mat-icon>chrome_reader_mode</mat-icon>
+        </button>
       </div>
     }
   </div>
@@ -290,3 +293,47 @@
   </app-ai-panel>
 
 </div>
+
+<!-- ── Modo Leitura (overlay fullscreen) ──────────────────────────────────── -->
+@if (readingMode()) {
+  <div class="reader-overlay" [style.font-size.rem]="currentFontSize">
+
+    <!-- Cabeçalho minimalista -->
+    <div class="reader-header">
+      <span class="reader-ref">{{ selectedBook()?.name }} {{ selectedChapter() }}</span>
+      <span class="reader-translation">{{ versionLabel() }}</span>
+    </div>
+
+    <!-- Versículos -->
+    <div class="reader-body">
+      @for (v of verses(); track v.id) {
+        <p class="reader-verse">
+          <sup class="reader-verse-num">{{ v.verse }}</sup>{{ verseText(v) }}
+        </p>
+      }
+    </div>
+
+    <!-- Barra de controles flutuante -->
+    <div class="reader-controls">
+      <button mat-icon-button (click)="prevChapter()" [disabled]="!hasPrevChapter()" matTooltip="Anterior">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <div class="reader-font-controls">
+        <button mat-icon-button (click)="decreaseFontSize()" [disabled]="fontSizeIdx() === 0" matTooltip="Diminuir fonte">
+          <mat-icon>text_decrease</mat-icon>
+        </button>
+        <span class="reader-font-label">A</span>
+        <button mat-icon-button (click)="increaseFontSize()" [disabled]="fontSizeIdx() === fontSizes.length - 1" matTooltip="Aumentar fonte">
+          <mat-icon>text_increase</mat-icon>
+        </button>
+      </div>
+      <button mat-icon-button (click)="nextChapter()" [disabled]="!hasNextChapter()" matTooltip="Próximo">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+      <button mat-icon-button (click)="exitReadingMode()" matTooltip="Fechar (Esc)" class="reader-close">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+  </div>
+}

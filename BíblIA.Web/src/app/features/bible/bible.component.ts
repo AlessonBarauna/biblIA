@@ -81,6 +81,12 @@ export class BibleComponent implements OnInit {
   // bookmarkMap: Map<verseNumber, bookmarkId> — permite checar e remover em O(1)
   bookmarkMap = signal<Map<number, number>>(new Map());
 
+  // Modo leitura — overlay fullscreen sem distrações
+  readingMode = signal(false);
+  // Índice do tamanho de fonte no array abaixo (padrão = 1 → 1rem)
+  fontSizeIdx = signal(1);
+  readonly fontSizes = [0.9, 1.0, 1.15, 1.3, 1.55];
+
   // Verso copiado — exibe "Copiado!" por 2s antes de limpar
   copiedVerse    = signal<number | null>(null);
   // Verso compartilhado — exibe "Compartilhado!" por 2s
@@ -258,6 +264,25 @@ export class BibleComponent implements OnInit {
     });
   }
 
+  // ── Modo leitura ──────────────────────────────────────────────────────────
+
+  enterReadingMode(): void  { this.readingMode.set(true);  }
+  exitReadingMode(): void   { this.readingMode.set(false); }
+
+  increaseFontSize(): void {
+    if (this.fontSizeIdx() < this.fontSizes.length - 1)
+      this.fontSizeIdx.update(i => i + 1);
+  }
+
+  decreaseFontSize(): void {
+    if (this.fontSizeIdx() > 0)
+      this.fontSizeIdx.update(i => i - 1);
+  }
+
+  get currentFontSize(): number {
+    return this.fontSizes[this.fontSizeIdx()];
+  }
+
   // ── Compartilhar versículo ────────────────────────────────────────────────
   //
   // Usa a Web Share API (navigator.share) quando disponível — abre a sheet nativa
@@ -300,6 +325,7 @@ export class BibleComponent implements OnInit {
   // Captura setas do teclado apenas quando na view de versículos e fora de inputs.
   @HostListener('window:keydown', ['$event'])
   onKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Escape' && this.readingMode()) { this.exitReadingMode(); return; }
     if (this.view() !== 'verses') return;
     const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
     if (tag === 'input' || tag === 'textarea') return;
