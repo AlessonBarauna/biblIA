@@ -64,9 +64,12 @@ export class BibleComponent implements OnInit {
   noteExpanded = signal(false);
 
   // ── Busca ────────────────────────────────────────────────────────────────
-  searchQuery   = signal('');
-  searchResults = signal<BibleVerse[]>([]);
-  searching     = signal(false);
+  searchQuery     = signal('');
+  searchResults   = signal<BibleVerse[]>([]);
+  searching       = signal(false);
+  // Filtros avançados: testamento ('' = todos) e livro específico (null = todos)
+  searchTestament = signal<string>('');
+  searchBookId    = signal<number | null>(null);
 
   // bookmarkMap: Map<verseNumber, bookmarkId> — permite checar e remover em O(1)
   bookmarkMap = signal<Map<number, number>>(new Map());
@@ -128,7 +131,9 @@ export class BibleComponent implements OnInit {
           return EMPTY;
         }
         this.searching.set(true);
-        return this.api.searchBibleVerses(query).pipe(
+        const testament = this.searchTestament() || undefined;
+        const bookId    = this.searchBookId()    ?? undefined;
+        return this.api.searchBibleVerses(query, 20, testament, bookId).pipe(
           catchError(() => of([] as BibleVerse[]))
         );
       }),
@@ -150,6 +155,30 @@ export class BibleComponent implements OnInit {
     this.searchQuery.set('');
     this.searchResults.set([]);
     this.searching.set(false);
+  }
+
+  // Muda o filtro de testamento e re-dispara a busca se já há query ativa
+  setTestamentFilter(testament: string): void {
+    this.searchTestament.set(testament);
+    // Ao mudar testamento, limpa o filtro de livro (pode ser de outro testamento)
+    this.searchBookId.set(null);
+    if (this.searchQuery().length >= 3) {
+      this.searchSubject.next(this.searchQuery().trim());
+    }
+  }
+
+  setBookFilter(bookId: number | null): void {
+    this.searchBookId.set(bookId);
+    if (this.searchQuery().length >= 3) {
+      this.searchSubject.next(this.searchQuery().trim());
+    }
+  }
+
+  // Computed: livros disponíveis para o filtro de livro (depende do filtro de testamento)
+  get filteredBooksForSearch(): BibleBook[] {
+    const testament = this.searchTestament();
+    if (!testament) return this.books();
+    return this.books().filter(b => b.testament === testament);
   }
 
   // Navega diretamente para o capítulo do versículo encontrado na busca.

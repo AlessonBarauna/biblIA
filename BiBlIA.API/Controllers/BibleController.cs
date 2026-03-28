@@ -250,19 +250,27 @@ public class BibleController : ControllerBase
         });
     }
 
-    // GET /api/bible/search?query=...&limit=10
-    // Busca full-text nos campos textKJV e textACF. Retorna até `limit` resultados (padrão 10, máx 50).
-    // Usado pelo chat para sugestão de referências cruzadas.
+    // GET /api/bible/search?query=...&limit=20&testament=OT&bookId=1
+    // Busca full-text em todas as traduções. Filtros opcionais: testamento (OT/NT) e livro.
     [HttpGet("search")]
     public async Task<ActionResult<IEnumerable<BibleVerseDto>>> Search(
         [FromQuery] string query,
-        [FromQuery] int limit = 10)
+        [FromQuery] int limit = 20,
+        [FromQuery] string? testament = null,
+        [FromQuery] int? bookId = null)
     {
         if (string.IsNullOrWhiteSpace(query) || query.Length < 3)
             return BadRequest("Query deve ter pelo menos 3 caracteres.");
 
-        limit = Math.Clamp(limit, 1, 50);
+        limit = Math.Clamp(limit, 1, 100);
         var term = query.ToLower();
+
+        // Filtra livros antes do join para que testament e bookId sejam aplicados no banco
+        var booksQuery = _context.BibleBooks.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(testament))
+            booksQuery = booksQuery.Where(b => b.Testament == testament.ToUpperInvariant());
+        if (bookId.HasValue)
+            booksQuery = booksQuery.Where(b => b.Id == bookId.Value);
 
         // Busca em todas as traduções disponíveis
         var verses = await _context.BibleVerses
@@ -270,9 +278,7 @@ public class BibleController : ControllerBase
                      || v.TextAA.ToLower().Contains(term)
                      || v.TextACF.ToLower().Contains(term)
                      || v.TextNVI.ToLower().Contains(term))
-            .OrderBy(v => v.BookId).ThenBy(v => v.Chapter).ThenBy(v => v.Verse)
-            .Take(limit)
-            .Join(_context.BibleBooks,
+            .Join(booksQuery,
                   v => v.BookId,
                   b => b.Id,
                   (v, b) => new BibleVerseDto
@@ -287,6 +293,8 @@ public class BibleController : ControllerBase
                       TextACF  = v.TextACF,
                       TextNVI  = v.TextNVI
                   })
+            .OrderBy(v => v.BookId).ThenBy(v => v.Chapter).ThenBy(v => v.Verse)
+            .Take(limit)
             .ToListAsync();
 
         return Ok(verses);

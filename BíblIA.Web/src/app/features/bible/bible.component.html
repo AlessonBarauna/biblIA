@@ -20,10 +20,33 @@
     }
   </div>
 
+  <!-- ── Filtros avançados (visíveis quando há query ativa) ─────────────── -->
+  @if (searchQuery().length >= 3) {
+    <div class="search-filters">
+      <div class="filter-group">
+        <button class="filter-chip" [class.active]="searchTestament() === ''"  (click)="setTestamentFilter('')">Todos</button>
+        <button class="filter-chip" [class.active]="searchTestament() === 'OT'" (click)="setTestamentFilter('OT')">Antigo Testamento</button>
+        <button class="filter-chip" [class.active]="searchTestament() === 'NT'" (click)="setTestamentFilter('NT')">Novo Testamento</button>
+      </div>
+      @if (filteredBooksForSearch.length > 0) {
+        <select class="filter-select"
+                [value]="searchBookId() ?? ''"
+                (change)="setBookFilter($any($event.target).value ? +$any($event.target).value : null)">
+          <option value="">Todos os livros</option>
+          @for (b of filteredBooksForSearch; track b.id) {
+            <option [value]="b.id">{{ b.name }}</option>
+          }
+        </select>
+      }
+    </div>
+  }
+
   <!-- ── Resultados da busca ─────────────────────────────────────────────── -->
   @if (searchResults().length > 0) {
     <div class="search-results">
-      <p class="search-count">{{ searchResults().length }} resultado(s) para "{{ searchQuery() }}"</p>
+      <p class="search-count">{{ searchResults().length }} resultado(s) para "{{ searchQuery() }}"
+        @if (searchTestament() || searchBookId()) { <span class="filter-badge">filtrado</span> }
+      </p>
       @for (v of searchResults(); track v.id) {
         <div class="search-result-item" (click)="goToVerse(v)">
           <span class="result-ref">{{ v.bookName }} {{ v.chapter }}:{{ v.verse }}</span>

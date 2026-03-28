@@ -338,8 +338,11 @@ export class ApiService {
     return this.http.get<BibleVerse>(`${this.apiUrl}/bible/verse-of-day`);
   }
 
-  searchBibleVerses(query: string, limit = 20): Observable<BibleVerse[]> {
-    return this.http.get<BibleVerse[]>(`${this.apiUrl}/bible/search`, { params: { query, limit } });
+  searchBibleVerses(query: string, limit = 20, testament?: string, bookId?: number): Observable<BibleVerse[]> {
+    const params: Record<string, string | number> = { query, limit };
+    if (testament) params['testament'] = testament;
+    if (bookId)    params['bookId']    = bookId;
+    return this.http.get<BibleVerse[]>(`${this.apiUrl}/bible/search`, { params });
   }
 
   // ── Profile ───────────────────────────────────────────────────────────────────
