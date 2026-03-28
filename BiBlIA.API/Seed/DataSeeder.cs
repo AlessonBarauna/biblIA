@@ -14,6 +14,7 @@ public static class DataSeeder
         await SeedTheologyAsync(db);
         await SeedChurchHistoryAsync(db);
         await SeedEschatologyAsync(db);
+        await SeedReadingPlansAsync(db);
     }
 
     // ── Bible Books ───────────────────────────────────────────────────────────
@@ -1173,6 +1174,45 @@ public static class DataSeeder
         };
 
         await db.EschatologyViews.AddRangeAsync(views);
+        await db.SaveChangesAsync();
+    }
+
+    // ── Reading Plans ─────────────────────────────────────────────────────────
+
+    private static async Task SeedReadingPlansAsync(AppDbContext db)
+    {
+        if (await db.ReadingPlans.AnyAsync())
+            return;
+
+        var plans = new List<ReadingPlan>
+        {
+            new()
+            {
+                Name        = "Bíblia em 1 Ano",
+                Description = "Percorra os 66 livros da Bíblia em 365 dias com leituras diárias balanceadas do Antigo e Novo Testamento.",
+                TotalDays   = 365,
+                Strategy    = "full_bible",
+                Icon        = "📅"
+            },
+            new()
+            {
+                Name        = "Novo Testamento em 90 Dias",
+                Description = "Leia os 27 livros do Novo Testamento em 3 meses. Ideal para aprofundar no ensino de Cristo e dos apóstolos.",
+                TotalDays   = 90,
+                Strategy    = "new_testament",
+                Icon        = "✝️"
+            },
+            new()
+            {
+                Name        = "Evangelhos em 30 Dias",
+                Description = "Mergulhe nos quatro Evangelhos — Mateus, Marcos, Lucas e João — em 30 dias de leitura focada na vida de Jesus.",
+                TotalDays   = 30,
+                Strategy    = "gospels",
+                Icon        = "🕊️"
+            }
+        };
+
+        await db.ReadingPlans.AddRangeAsync(plans);
         await db.SaveChangesAsync();
     }
 }

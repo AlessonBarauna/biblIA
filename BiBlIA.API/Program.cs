@@ -175,7 +175,33 @@ using (var scope = app.Services.CreateScope())
             CREATE INDEX IF NOT EXISTS ""IX_UserProgress_UserId"" ON ""UserProgress""(""UserId"");
         ");
 
-        // Passo 6: EnsureCreated cuida de tabelas novas que ainda não existem.
+        // Passo 6: Planos de leitura bíblica
+        await db.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS ""ReadingPlans"" (
+                ""Id""          SERIAL PRIMARY KEY,
+                ""Name""        TEXT NOT NULL DEFAULT '',
+                ""Description"" TEXT NOT NULL DEFAULT '',
+                ""TotalDays""   INTEGER NOT NULL DEFAULT 0,
+                ""Strategy""    TEXT NOT NULL DEFAULT '',
+                ""Icon""        TEXT NOT NULL DEFAULT ''
+            );
+            CREATE TABLE IF NOT EXISTS ""ReadingLogs"" (
+                ""Id""          SERIAL PRIMARY KEY,
+                ""UserId""      INTEGER NOT NULL,
+                ""PlanId""      INTEGER NOT NULL,
+                ""DayNumber""   INTEGER NOT NULL,
+                ""CompletedAt"" TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+                CONSTRAINT ""FK_ReadingLogs_Users_UserId""
+                    FOREIGN KEY (""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE,
+                CONSTRAINT ""FK_ReadingLogs_ReadingPlans_PlanId""
+                    FOREIGN KEY (""PlanId"") REFERENCES ""ReadingPlans""(""Id"") ON DELETE CASCADE,
+                CONSTRAINT ""UQ_ReadingLogs_User_Plan_Day""
+                    UNIQUE (""UserId"", ""PlanId"", ""DayNumber"")
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_ReadingLogs_UserId"" ON ""ReadingLogs""(""UserId"");
+        ");
+
+        // Passo 7: EnsureCreated cuida de tabelas novas que ainda não existem.
         db.Database.EnsureCreated();
     }
     else

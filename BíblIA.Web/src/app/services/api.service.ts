@@ -135,6 +135,22 @@ export interface UserProgress {
   score: number;
 }
 
+export interface ReadingPlan {
+  id: number;
+  name: string;
+  description: string;
+  totalDays: number;
+  strategy: string; // 'full_bible' | 'new_testament' | 'gospels'
+  icon: string;
+  completedDays: number;
+}
+
+export interface ReadingLog {
+  planId: number;
+  dayNumber: number;
+  completedAt: string;
+}
+
 export interface Bookmark {
   id: number;
   userId: number;
@@ -314,6 +330,24 @@ export class ApiService {
 
   searchBibleVerses(query: string, limit = 20): Observable<BibleVerse[]> {
     return this.http.get<BibleVerse[]>(`${this.apiUrl}/bible/search`, { params: { query, limit } });
+  }
+
+  // ── Reading Plans ─────────────────────────────────────────────────────────────
+
+  getReadingPlans(): Observable<ReadingPlan[]> {
+    return this.http.get<ReadingPlan[]>(`${this.apiUrl}/reading/plans`);
+  }
+
+  getReadingLogs(): Observable<ReadingLog[]> {
+    return this.http.get<ReadingLog[]>(`${this.apiUrl}/reading/logs`);
+  }
+
+  markReadingDay(planId: number, dayNumber: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/reading/logs`, { planId, dayNumber });
+  }
+
+  unmarkReadingDay(planId: number, dayNumber: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/reading/logs/${planId}/${dayNumber}`);
   }
 
   // ── AI: Perguntas pontuais por domínio (stateless) ──────────────────────────

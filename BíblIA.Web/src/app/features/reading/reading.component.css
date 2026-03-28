@@ -1,0 +1,286 @@
+.reading-container {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.reading-header {
+  margin-bottom: 2rem;
+}
+
+.reading-header h1 {
+  font-size: 1.8rem;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+
+.reading-header p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.loading-center {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 0;
+}
+
+/* ── Cards dos planos ─────────────────────────────────────────────────────── */
+.plans-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.plan-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.plan-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.plan-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  width: 48px;
+  text-align: center;
+}
+
+.plan-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.plan-desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+.plan-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.plan-days {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--surface-3);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.plan-pct {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.plan-bar { border-radius: 4px; margin-bottom: 4px; }
+
+.plan-progress-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.plan-arrow {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* ── Detalhe do plano ─────────────────────────────────────────────────────── */
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.detail-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-icon { font-size: 2rem; }
+
+.detail-title h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--text);
+}
+
+.detail-pct {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.detail-bar {
+  border-radius: 4px;
+  margin-bottom: 24px;
+  height: 6px;
+}
+
+/* ── Banner do dia atual ──────────────────────────────────────────────────── */
+.today-banner {
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface) 100%);
+  border: 1px solid var(--border-soft);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.today-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.today-chapters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chapter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: var(--surface-3);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  font-size: 0.875rem;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+.chapter-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chapter-chip mat-icon {
+  font-size: 0.9rem;
+  height: 0.9rem;
+  width: 0.9rem;
+}
+
+/* ── Lista de dias ────────────────────────────────────────────────────────── */
+.days-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.day-row {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-soft);
+  transition: background 0.15s;
+}
+
+.day-row:last-child { border-bottom: none; }
+
+.day-row:hover { background: var(--surface-3); }
+
+.day-done { background: color-mix(in srgb, var(--accent) 6%, var(--surface-2)); }
+
+.day-current {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
+  border-left: 3px solid var(--accent);
+}
+
+.day-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-num-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.done-icon {
+  font-size: 1.2rem !important;
+  height: 1.2rem !important;
+  width: 1.2rem !important;
+  color: var(--accent);
+}
+
+.day-chapters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.day-chapter-label {
+  white-space: nowrap;
+}
+
+.day-chapter-label:not(:last-child)::after {
+  content: ' ·';
+  color: var(--text-dim);
+}
+
+.day-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+@media (max-width: 600px) {
+  .reading-container { padding: 1rem; }
+
+  .plan-card {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .day-row {
+    grid-template-columns: 40px 1fr auto;
+    gap: 8px;
+  }
+}

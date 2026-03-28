@@ -29,10 +29,14 @@ public class AppDbContext : DbContext
     // Escatologia
     public DbSet<EschatologyView> EschatologyViews { get; set; }
 
-    // Dados do usuário (session-based, sem auth obrigatória)
+    // Dados do usuário
     public DbSet<UserProgress> UserProgress { get; set; }
     public DbSet<ChatSession> ChatSessions { get; set; }
     public DbSet<BookmarkVerse> BookmarkVerses { get; set; }
+
+    // Planos de leitura
+    public DbSet<ReadingPlan> ReadingPlans { get; set; }
+    public DbSet<ReadingLog> ReadingLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -117,5 +121,24 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<BookmarkVerse>()
             .HasIndex(b => b.UserId);
+
+        // User → ReadingLogs
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.ReadingLogs)
+            .WithOne(l => l.User)
+            .HasForeignKey(l => l.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ReadingPlan → ReadingLogs
+        modelBuilder.Entity<ReadingPlan>()
+            .HasMany(p => p.Logs)
+            .WithOne(l => l.Plan)
+            .HasForeignKey(l => l.PlanId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Um dia por plano por usuário
+        modelBuilder.Entity<ReadingLog>()
+            .HasIndex(l => new { l.UserId, l.PlanId, l.DayNumber })
+            .IsUnique();
     }
 }

@@ -1,0 +1,175 @@
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ApiService, BibleBook, ReadingPlan, ReadingLog } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
+
+// ── Tipos do cronograma ───────────────────────────────────────────────────────
+
+interface ChapterEntry { bookId: number; bookName: string; chapter: number; }
+interface DayReading   { day: number; chapters: ChapterEntry[]; }
+
+// ── Componente ────────────────────────────────────────────────────────────────
+
+@Component({
+  selector: 'app-reading',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule
+  ],
+  templateUrl: './reading.component.html',
+  styleUrls: ['./reading.component.css']
+})
+export class ReadingComponent implements OnInit {
+  private api  = inject(ApiService);
+  private auth = inject(AuthService);
+
+  readonly isLoggedIn = this.auth.isLoggedIn;
+
+  // Estado de carregamento
+  loading = signal(true);
+
+  // Dados do servidor
+  plans    = signal<ReadingPlan[]>([]);
+  books    = signal<BibleBook[]>([]);
+  // Set de "planId:dayNumber" para lookup O(1)
+  doneSet  = signal<Set<string>>(new Set());
+
+  // Plano aberto para detalhe
+  activePlan = signal<ReadingPlan | null>(null);
+
+  // Cronograma gerado do plano ativo (calculado quando activePlan muda)
+  schedule = signal<DayReading[]>([]);
+
+  // Dia atual do plano ativo (próximo dia a ser lido)
+  currentDay = computed(() => {
+    const plan = this.activePlan();
+    if (!plan) return 1;
+    // Encontra o maior dia concluído neste plano e avança 1
+    const done = this.doneSet();
+    let max = 0;
+    for (let d = 1; d <= plan.totalDays; d++) {
+      if (done.has(`${plan.id}:${d}`)) max = d;
+      else break; // Para no primeiro buraco — evita pular dias
+    }
+    return Math.min(max + 1, plan.totalDays);
+  });
+
+  ngOnInit(): void {
+    const plans$    = this.api.getReadingPlans().pipe(catchError(() => of([] as ReadingPlan[])));
+    const books$    = this.api.getBooks().pipe(catchError(() => of([] as BibleBook[])));
+    const logs$     = this.isLoggedIn()
+      ? this.api.getReadingLogs().pipe(catchError(() => of([] as ReadingLog[])))
+      : of([] as ReadingLog[]);
+
+    forkJoin({ plans: plans$, books: books$, logs: logs$ }).subscribe(({ plans, books, logs }) => {
+      this.plans.set(plans);
+      this.books.set(books);
+      this.doneSet.set(new Set(logs.map(l => `${l.planId}:${l.dayNumber}`)));
+      this.loading.set(false);
+    });
+  }
+
+  openPlan(plan: ReadingPlan): void {
+    this.activePlan.set(plan);
+    this.schedule.set(this.buildSchedule(plan));
+  }
+
+  closePlan(): void {
+    this.activePlan.set(null);
+    this.schedule.set([]);
+  }
+
+  // ── Marcar / desmarcar ────────────────────────────────────────────────────
+
+  toggleDay(day: number): void {
+    const plan = this.activePlan();
+    if (!plan) return;
+    const key = `${plan.id}:${day}`;
+    const set  = new Set(this.doneSet());
+
+    if (set.has(key)) {
+      this.api.unmarkReadingDay(plan.id, day).subscribe();
+      set.delete(key);
+    } else {
+      this.api.markReadingDay(plan.id, day).subscribe();
+      set.add(key);
+    }
+    this.doneSet.set(set);
+
+    // Atualiza completedDays no plano local
+    this.plans.update(list =>
+      list.map(p => p.id === plan.id
+        ? { ...p, completedDays: [...set].filter(k => k.startsWith(`${p.id}:`)).length }
+        : p)
+    );
+    // Reflete no activePlan também
+    this.activePlan.update(p => p
+      ? { ...p, completedDays: [...set].filter(k => k.startsWith(`${p!.id}:`)).length }
+      : p);
+  }
+
+  isDone(day: number): boolean {
+    const plan = this.activePlan();
+    return !!plan && this.doneSet().has(`${plan.id}:${day}`);
+  }
+
+  progressPct(plan: ReadingPlan): number {
+    return Math.round((plan.completedDays / plan.totalDays) * 100);
+  }
+
+  // ── Deep link para a Bíblia ────────────────────────────────────────────────
+
+  bibleParams(chapter: ChapterEntry): Record<string, number> {
+    return { bookId: chapter.bookId, chapter: chapter.chapter };
+  }
+
+  // ── Geração do cronograma ─────────────────────────────────────────────────
+  //
+  // O algoritmo distribui os capítulos da lista de forma linear pelos dias.
+  // Math.round nos índices garante que nenhum capítulo seja pulado ou duplicado.
+
+  private buildSchedule(plan: ReadingPlan): DayReading[] {
+    const books    = this.filterBooks(plan.strategy);
+    const chapters = this.flatChapters(books);
+    const total    = chapters.length;
+    const days:    DayReading[] = [];
+
+    for (let d = 1; d <= plan.totalDays; d++) {
+      const start = Math.round(((d - 1) / plan.totalDays) * total);
+      const end   = Math.round((d       / plan.totalDays) * total);
+      days.push({ day: d, chapters: chapters.slice(start, end) });
+    }
+    return days;
+  }
+
+  private filterBooks(strategy: string): BibleBook[] {
+    const all = [...this.books()].sort((a, b) => a.orderIndex - b.orderIndex);
+    if (strategy === 'new_testament') return all.filter(b => b.testament === 'NT');
+    if (strategy === 'gospels')       return all.filter(b => b.orderIndex >= 40 && b.orderIndex <= 43);
+    return all; // 'full_bible'
+  }
+
+  private flatChapters(books: BibleBook[]): ChapterEntry[] {
+    const result: ChapterEntry[] = [];
+    for (const b of books) {
+      for (let c = 1; c <= b.chapterCount; c++) {
+        result.push({ bookId: b.id, bookName: b.name, chapter: c });
+      }
+    }
+    return result;
+  }
+}

@@ -1,0 +1,137 @@
+<div class="reading-container">
+
+  <!-- ── Cabeçalho ─────────────────────────────────────────────────────────── -->
+  @if (!activePlan()) {
+    <header class="reading-header">
+      <h1>Planos de Leitura</h1>
+      <p>Escolha um plano e acompanhe seu progresso capítulo a capítulo.</p>
+    </header>
+  }
+
+  @if (loading()) {
+    <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
+  }
+
+  <!-- ── Lista de planos ────────────────────────────────────────────────────── -->
+  @if (!loading() && !activePlan()) {
+    <div class="plans-grid">
+      @for (plan of plans(); track plan.id) {
+        <div class="plan-card" (click)="openPlan(plan)">
+          <div class="plan-icon">{{ plan.icon }}</div>
+          <div class="plan-body">
+            <h2 class="plan-name">{{ plan.name }}</h2>
+            <p class="plan-desc">{{ plan.description }}</p>
+            <div class="plan-meta">
+              <span class="plan-days">{{ plan.totalDays }} dias</span>
+              @if (isLoggedIn()) {
+                <span class="plan-pct">{{ progressPct(plan) }}%</span>
+              }
+            </div>
+            @if (isLoggedIn()) {
+              <mat-progress-bar
+                mode="determinate"
+                [value]="progressPct(plan)"
+                class="plan-bar">
+              </mat-progress-bar>
+              <span class="plan-progress-label">
+                {{ plan.completedDays }} / {{ plan.totalDays }} dias concluídos
+              </span>
+            }
+          </div>
+          <mat-icon class="plan-arrow">chevron_right</mat-icon>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Detalhe do plano ───────────────────────────────────────────────────── -->
+  @if (!loading() && activePlan(); as plan) {
+    <div class="plan-detail">
+
+      <!-- Cabeçalho da view -->
+      <div class="detail-header">
+        <button mat-icon-button (click)="closePlan()" matTooltip="Voltar">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="detail-title">
+          <span class="detail-icon">{{ plan.icon }}</span>
+          <div>
+            <h2>{{ plan.name }}</h2>
+            @if (isLoggedIn()) {
+              <span class="detail-pct">{{ progressPct(plan) }}% — {{ plan.completedDays }}/{{ plan.totalDays }} dias</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      @if (isLoggedIn()) {
+        <mat-progress-bar mode="determinate" [value]="progressPct(plan)" class="detail-bar"></mat-progress-bar>
+      }
+
+      <!-- Banner do dia atual -->
+      @if (isLoggedIn()) {
+        <div class="today-banner">
+          <div class="today-label">
+            <mat-icon>today</mat-icon>
+            Dia {{ currentDay() }} — Leitura de hoje
+          </div>
+          <div class="today-chapters">
+            @for (ch of schedule()[currentDay() - 1]?.chapters ?? []; track ch.bookId + ':' + ch.chapter) {
+              <a class="chapter-chip"
+                 routerLink="/bible"
+                 [queryParams]="bibleParams(ch)"
+                 matTooltip="Abrir na Bíblia">
+                <mat-icon>open_in_new</mat-icon>
+                {{ ch.bookName }} {{ ch.chapter }}
+              </a>
+            }
+          </div>
+          <button mat-flat-button
+                  [color]="isDone(currentDay()) ? 'accent' : 'primary'"
+                  (click)="toggleDay(currentDay())">
+            <mat-icon>{{ isDone(currentDay()) ? 'check_circle' : 'check_circle_outline' }}</mat-icon>
+            {{ isDone(currentDay()) ? 'Lido ✓' : 'Marcar como lido' }}
+          </button>
+        </div>
+      }
+
+      <!-- Lista de todos os dias -->
+      <div class="days-list">
+        @for (dayReading of schedule(); track dayReading.day) {
+          <div class="day-row" [class.day-done]="isDone(dayReading.day)" [class.day-current]="dayReading.day === currentDay()">
+            <div class="day-number">
+              @if (isDone(dayReading.day)) {
+                <mat-icon class="done-icon">check_circle</mat-icon>
+              } @else {
+                <span class="day-num-text">{{ dayReading.day }}</span>
+              }
+            </div>
+            <div class="day-chapters">
+              @for (ch of dayReading.chapters; track ch.bookId + ':' + ch.chapter) {
+                <span class="day-chapter-label">{{ ch.bookName }} {{ ch.chapter }}</span>
+              }
+            </div>
+            <div class="day-actions">
+              @if (isLoggedIn()) {
+                <button mat-icon-button
+                        (click)="toggleDay(dayReading.day)"
+                        [matTooltip]="isDone(dayReading.day) ? 'Desmarcar' : 'Marcar como lido'">
+                  <mat-icon>{{ isDone(dayReading.day) ? 'remove_done' : 'check' }}</mat-icon>
+                </button>
+              }
+              @if (dayReading.chapters.length > 0) {
+                <a mat-icon-button
+                   routerLink="/bible"
+                   [queryParams]="bibleParams(dayReading.chapters[0])"
+                   matTooltip="Ir para o primeiro capítulo">
+                  <mat-icon>book</mat-icon>
+                </a>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+</div>

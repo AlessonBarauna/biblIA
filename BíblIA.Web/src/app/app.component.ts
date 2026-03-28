@@ -51,6 +51,7 @@ export class AppComponent {
     { label: 'Chat',       route: '/chat',         icon: 'chat' },
     { label: 'Bíblia',     route: '/bible',        icon: 'book' },
     { label: 'Favoritos',  route: '/bookmarks',    icon: 'bookmark' },
+    { label: 'Leitura',    route: '/reading',      icon: 'auto_stories' },
     { label: 'Teologia',   route: '/theology',     icon: 'school' },
     { label: 'Escatologia',route: '/eschatology',  icon: 'public' },
     { label: 'História',   route: '/history',      icon: 'history' }
