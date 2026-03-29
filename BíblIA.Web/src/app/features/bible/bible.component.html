@@ -253,6 +253,40 @@
                 </div>
               </div>
             }
+            <!-- Painel Ask AI por versículo -->
+            @if (askAiVerse() === v.verse) {
+              <div class="ask-ai-panel">
+                <div class="ask-ai-header">
+                  <mat-icon class="ask-ai-icon">psychology</mat-icon>
+                  <span>Perguntar à IA — {{ selectedBook()?.name }} {{ selectedChapter() }}:{{ v.verse }}</span>
+                  <button mat-icon-button class="ask-ai-close" (click)="closeAskAi()">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+                <div class="ask-ai-input-row">
+                  <input class="ask-ai-input"
+                         type="text"
+                         placeholder="O que você quer entender sobre este versículo?"
+                         [ngModel]="askAiQuery()"
+                         (ngModelChange)="askAiQuery.set($event)"
+                         (keyup.enter)="submitAskAi(v)"
+                         autofocus>
+                  <button mat-flat-button color="primary"
+                          (click)="submitAskAi(v)"
+                          [disabled]="!askAiQuery().trim() || askAiLoading()">
+                    @if (askAiLoading()) {
+                      <mat-spinner diameter="16"></mat-spinner>
+                    } @else {
+                      <mat-icon>send</mat-icon>
+                    }
+                  </button>
+                </div>
+                @if (askAiAnswer()) {
+                  <div class="ask-ai-answer">{{ askAiAnswer() }}</div>
+                }
+              </div>
+            }
+
             <!-- Painel de versículos relacionados -->
             @if (relatedVersesVerse() === v.verse) {
               <div class="related-verses-panel">
@@ -301,6 +335,13 @@
               } @else {
                 <mat-icon>account_tree</mat-icon>
               }
+            </button>
+            <!-- Botão Ask AI por versículo — abre chat contextualizado -->
+            <button mat-icon-button class="ask-ai-btn"
+              [class.ask-ai-active]="askAiVerse() === v.verse"
+              (click)="openAskAi(v)"
+              matTooltip="Perguntar à IA sobre este versículo">
+              <mat-icon>psychology</mat-icon>
             </button>
             @if (isLoggedIn()) {
               <button mat-icon-button class="note-btn"

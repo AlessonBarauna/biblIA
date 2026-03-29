@@ -119,6 +119,12 @@ export class BibleComponent implements OnInit {
   relatedVersesLoading = signal(false);
   relatedVersesList    = signal<{ ref: string; text: string }[]>([]);
 
+  // ── Ask AI por versículo ───────────────────────────────────────────────────
+  askAiVerse   = signal<number | null>(null);
+  askAiQuery   = signal('');
+  askAiAnswer  = signal<string | null>(null);
+  askAiLoading = signal(false);
+
   readonly isLoggedIn = this.auth.isLoggedIn;
 
   // Computed para navegação entre capítulos
@@ -294,6 +300,51 @@ export class BibleComponent implements OnInit {
 
   enterReadingMode(): void  { this.readingMode.set(true);  }
   exitReadingMode(): void   { this.readingMode.set(false); }
+
+  // ── Ask AI por versículo ──────────────────────────────────────────────────
+  //
+  // Abre um painel inline abaixo do versículo com campo de pergunta.
+  // O contexto do versículo é enviado junto com a pergunta para a IA.
+
+  openAskAi(v: BibleVerse): void {
+    if (this.askAiVerse() === v.verse) {
+      this.closeAskAi();
+      return;
+    }
+    this.askAiVerse.set(v.verse);
+    this.askAiQuery.set('');
+    this.askAiAnswer.set(null);
+  }
+
+  closeAskAi(): void {
+    this.askAiVerse.set(null);
+    this.askAiQuery.set('');
+    this.askAiAnswer.set(null);
+  }
+
+  submitAskAi(v: BibleVerse): void {
+    const question = this.askAiQuery().trim();
+    if (!question || this.askAiLoading()) return;
+
+    const book    = this.selectedBook()!;
+    const ref     = `${book.name} ${this.selectedChapter()}:${v.verse}`;
+    const text    = this.verseText(v);
+    const context = `Versículo: ${ref} — "${text}"`;
+
+    this.askAiLoading.set(true);
+    this.askAiAnswer.set(null);
+
+    this.api.askAi(question, 'bible', context).subscribe({
+      next: res => {
+        this.askAiAnswer.set(res.answer);
+        this.askAiLoading.set(false);
+      },
+      error: () => {
+        this.askAiAnswer.set('Erro ao consultar a IA. Tente novamente.');
+        this.askAiLoading.set(false);
+      }
+    });
+  }
 
   // ── Modo comparação ───────────────────────────────────────────────────────
 
@@ -605,6 +656,7 @@ export class BibleComponent implements OnInit {
     this.noteMap.set(new Map());
     this.relatedVersesVerse.set(null);
     this.relatedVersesList.set([]);
+    this.closeAskAi();
 
     this.api.getChapter(book.id, chapter).subscribe({
       next: verses => {
