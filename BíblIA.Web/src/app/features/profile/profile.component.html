@@ -120,6 +120,46 @@
       }
     </div>
 
+    <!-- ── Lembretes de leitura ──────────────────────────────────────────── -->
+    @if (notifications.isSupported) {
+      <div class="profile-section">
+        <div class="notify-header">
+          <div class="section-title-row">
+            <mat-icon>notifications</mat-icon>
+            <h3 class="section-title">Lembretes de leitura</h3>
+          </div>
+          <mat-slide-toggle
+            [checked]="notifications.reminderEnabled()"
+            [disabled]="notifications.permission() === 'denied'"
+            (change)="onReminderToggle($event.checked)">
+          </mat-slide-toggle>
+        </div>
+
+        @if (notifications.permission() === 'denied') {
+          <p class="section-desc notify-denied">
+            <mat-icon>block</mat-icon>
+            Notificações bloqueadas pelo navegador. Habilite nas configurações do site.
+          </p>
+        } @else {
+          <p class="section-desc">Receba uma notificação diária para não perder sua leitura.</p>
+
+          @if (notifications.reminderEnabled()) {
+            <div class="notify-time-row">
+              <label class="field-label">Horário do lembrete</label>
+              <input class="field-input notify-time-input"
+                     type="time"
+                     [value]="notifications.reminderTime()"
+                     (change)="onReminderTimeChange($any($event.target).value)">
+            </div>
+            <button mat-stroked-button (click)="notifications.testNotification()">
+              <mat-icon>notifications_active</mat-icon>
+              Testar notificação
+            </button>
+          }
+        }
+      </div>
+    }
+
     <!-- ── Exportar dados ─────────────────────────────────────────────────── -->
     <div class="profile-section">
       <h3 class="section-title">

@@ -13,6 +13,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from './services/auth.service';
 import { ThemeService } from './services/theme.service';
+import { NotificationService } from './services/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -33,10 +34,11 @@ import { ThemeService } from './services/theme.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  protected auth  = inject(AuthService);
-  protected theme = inject(ThemeService);
-  private router  = inject(Router);
-  private destroyRef = inject(DestroyRef);
+  protected auth         = inject(AuthService);
+  protected theme        = inject(ThemeService);
+  private notifications  = inject(NotificationService);
+  private router         = inject(Router);
+  private destroyRef     = inject(DestroyRef);
 
   // Esconde toolbar e nav na rota de autenticação para uma página de login limpa
   readonly isAuthRoute = signal(this.router.url.startsWith('/auth'));
@@ -44,6 +46,8 @@ export class AppComponent {
   title = 'BíblIA';
 
   constructor() {
+    this.notifications.checkAndNotify();
+
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       takeUntilDestroyed(this.destroyRef)

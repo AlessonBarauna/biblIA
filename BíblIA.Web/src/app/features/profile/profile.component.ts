@@ -5,8 +5,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ApiService, UserProfile, VerseNote } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-profile',
@@ -17,14 +19,16 @@ import { AuthService } from '../../services/auth.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatSlideToggleModule
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
-  private api  = inject(ApiService);
-  private auth = inject(AuthService);
+  private api   = inject(ApiService);
+  private auth  = inject(AuthService);
+  readonly notifications = inject(NotificationService);
 
   loading = signal(true);
   profile = signal<UserProfile | null>(null);
@@ -179,6 +183,27 @@ export class ProfileComponent implements OnInit {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  // ── Lembretes de leitura ──────────────────────────────────────────────────
+
+  async enableNotifications(): Promise<void> {
+    await this.notifications.requestPermission();
+    if (this.notifications.permission() === 'granted') {
+      this.notifications.saveSettings(true, this.notifications.reminderTime());
+    }
+  }
+
+  onReminderToggle(checked: boolean): void {
+    if (checked && this.notifications.permission() !== 'granted') {
+      this.enableNotifications();
+    } else {
+      this.notifications.saveSettings(checked, this.notifications.reminderTime());
+    }
+  }
+
+  onReminderTimeChange(time: string): void {
+    this.notifications.saveSettings(this.notifications.reminderEnabled(), time);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
