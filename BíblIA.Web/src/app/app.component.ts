@@ -89,6 +89,7 @@ export class AppComponent {
     { label: 'Teologia',   route: '/theology',     icon: 'school' },
     { label: 'Escatologia',route: '/eschatology',  icon: 'public' },
     { label: 'História',   route: '/history',      icon: 'history' },
-    { label: 'Linha do Tempo', route: '/timeline', icon: 'timeline' }
+    { label: 'Linha do Tempo', route: '/timeline', icon: 'timeline' },
+    { label: 'Glossário',      route: '/glossary', icon: 'menu_book' }
   ];
 }

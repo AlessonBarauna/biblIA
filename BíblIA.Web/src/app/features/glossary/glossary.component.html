@@ -1,0 +1,98 @@
+<div class="glossary-container">
+
+  <header class="glossary-header">
+    <h1>Glossário Teológico</h1>
+    <p>{{ terms.length }} termos essenciais explicados pela IA sob demanda</p>
+  </header>
+
+  <!-- Filtros por categoria -->
+  <div class="filter-row">
+    <button class="filter-chip" [class.active]="activeFilter() === 'all'" (click)="activeFilter.set('all')">
+      Todos
+    </button>
+    @for (cat of categories; track cat) {
+      <button class="filter-chip" [class.active]="activeFilter() === cat" (click)="activeFilter.set(cat)">
+        {{ cat }}
+      </button>
+    }
+  </div>
+
+  <!-- Busca -->
+  <div class="search-row">
+    <input class="gloss-search"
+           type="text"
+           placeholder="Buscar termo ou definição…"
+           [value]="searchQuery()"
+           (input)="searchQuery.set($any($event.target).value)">
+  </div>
+
+  <!-- Lista de termos -->
+  <div class="terms-list">
+    @for (term of filteredTerms(); track term.term) {
+      <div class="term-card" [class.expanded]="selectedTerm()?.term === term.term" (click)="selectTerm(term)">
+
+        <div class="term-header">
+          <div class="term-main">
+            <span class="term-name">{{ term.term }}</span>
+            <span class="term-cat">{{ term.category }}</span>
+          </div>
+          <mat-icon class="term-arrow">
+            {{ selectedTerm()?.term === term.term ? 'expand_less' : 'expand_more' }}
+          </mat-icon>
+        </div>
+
+        <p class="term-short">{{ term.shortDef }}</p>
+
+        @if (selectedTerm()?.term === term.term) {
+          <div class="term-detail" (click)="$event.stopPropagation()">
+
+            <!-- Termos relacionados -->
+            @if (term.relatedTerms && term.relatedTerms.length > 0) {
+              <div class="related-row">
+                <span class="related-label">Relacionados:</span>
+                @for (rel of term.relatedTerms; track rel) {
+                  <button class="related-chip" (click)="jumpToRelated(rel)">{{ rel }}</button>
+                }
+              </div>
+            }
+
+            <!-- Botão Explicar com IA -->
+            <button mat-flat-button color="primary" class="ai-explain-btn"
+                    [disabled]="aiLoading()"
+                    (click)="explainWithAi(term)">
+              @if (aiLoading()) {
+                <mat-spinner diameter="16" style="display:inline-block"></mat-spinner>
+                Gerando explicação…
+              } @else {
+                <mat-icon>psychology</mat-icon>
+                Explicar com IA
+              }
+            </button>
+
+            <!-- Resposta da IA -->
+            @if (aiAnswer()) {
+              <div class="ai-answer">
+                <div class="ai-answer-header">
+                  <mat-icon>auto_awesome</mat-icon>
+                  Explicação gerada pela IA
+                </div>
+                <p>{{ aiAnswer() }}</p>
+              </div>
+            }
+
+          </div>
+        }
+
+      </div>
+    }
+
+    @if (filteredTerms().length === 0) {
+      <div class="empty-state">
+        <mat-icon>search_off</mat-icon>
+        <p>Nenhum termo encontrado para "{{ searchQuery() }}".</p>
+        <button mat-button (click)="searchQuery.set(''); activeFilter.set('all')">Limpar filtros</button>
+      </div>
+    }
+  </div>
+
+</div>
