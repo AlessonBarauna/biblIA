@@ -1,5 +1,6 @@
 import { Injectable, PLATFORM_ID, inject, signal, computed } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
 // ── Tipos de ação enfileirável ───────────────────────────────────────────────
@@ -113,7 +114,7 @@ export class OfflineSyncService {
     }
   }
 
-  private observableFor(action: SyncAction) {
+  private observableFor(action: SyncAction): Observable<unknown> {
     switch (action.type) {
       case 'mark_day':    return this.api.markReadingDay(action.planId, action.dayNumber);
       case 'unmark_day':  return this.api.unmarkReadingDay(action.planId, action.dayNumber);
