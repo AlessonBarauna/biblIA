@@ -138,6 +138,12 @@
         <button mat-icon-button (click)="enterReadingMode()" matTooltip="Modo leitura">
           <mat-icon>chrome_reader_mode</mat-icon>
         </button>
+        <button mat-icon-button
+                (click)="toggleCompareMode()"
+                [class.compare-active]="compareMode()"
+                matTooltip="Comparar traduções">
+          <mat-icon>compare</mat-icon>
+        </button>
       </div>
     }
   </div>
@@ -215,7 +221,7 @@
   }
 
   <!-- ── Vista: Versículos do capítulo ──────────────────────────────────── -->
-  @if (view() === 'verses' && !loading()) {
+  @if (view() === 'verses' && !loading() && !compareMode()) {
     <div class="verses-list">
       @if (verses().length === 0) {
         <p class="empty-state">Nenhum versículo cadastrado neste capítulo ainda.</p>
@@ -365,6 +371,43 @@
         </div>
       </mat-expansion-panel>
     }
+  }
+
+  <!-- ── Vista: Comparação de traduções ────────────────────────────────── -->
+  @if (view() === 'verses' && !loading() && compareMode()) {
+
+    <!-- Seletor de traduções -->
+    <div class="compare-selector">
+      @for (t of translations; track t.key) {
+        <button class="compare-chip"
+                [class.active]="compareTranslations().includes(t.key)"
+                (click)="toggleCompareTranslation(t.key)"
+                [title]="t.name">
+          {{ t.label }}
+          @if (compareTranslations().includes(t.key)) {
+            <mat-icon>check</mat-icon>
+          }
+        </button>
+      }
+    </div>
+
+    <!-- Colunas de comparação -->
+    <div class="compare-grid" [style.--cols]="compareTranslations().length">
+      @for (key of compareTranslations(); track key) {
+        <div class="compare-col">
+          <div class="compare-col-header">
+            {{ translations.find(t => t.key === key)?.label }} —
+            <span class="compare-col-name">{{ translations.find(t => t.key === key)?.name }}</span>
+          </div>
+          @for (v of verses(); track v.id) {
+            <div class="compare-verse">
+              <span class="compare-verse-num">{{ v.verse }}</span>
+              <span class="compare-verse-text">{{ verseTextFor(v, key) }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
   }
 
   <app-ai-panel

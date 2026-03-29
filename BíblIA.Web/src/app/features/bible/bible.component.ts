@@ -97,6 +97,10 @@ export class BibleComponent implements OnInit {
 
   // Modo leitura — overlay fullscreen sem distrações
   readingMode = signal(false);
+
+  // Modo comparação — exibe traduções selecionadas em colunas lado a lado
+  compareMode         = signal(false);
+  compareTranslations = signal<TranslationKey[]>(['kjv', 'acf']);
   // Índice do tamanho de fonte no array abaixo (padrão = 1 → 1rem)
   fontSizeIdx = signal(1);
   readonly fontSizes = [0.9, 1.0, 1.15, 1.3, 1.55];
@@ -288,6 +292,32 @@ export class BibleComponent implements OnInit {
 
   enterReadingMode(): void  { this.readingMode.set(true);  }
   exitReadingMode(): void   { this.readingMode.set(false); }
+
+  // ── Modo comparação ───────────────────────────────────────────────────────
+
+  toggleCompareMode(): void {
+    this.compareMode.update(v => !v);
+  }
+
+  // Liga/desliga uma tradução no modo comparação.
+  // Regra: mínimo 2 traduções sempre selecionadas.
+  toggleCompareTranslation(key: TranslationKey): void {
+    const current = this.compareTranslations();
+    if (current.includes(key)) {
+      if (current.length <= 2) return; // não deixa desmarcar abaixo de 2
+      this.compareTranslations.set(current.filter(k => k !== key));
+    } else {
+      this.compareTranslations.set([...current, key]);
+    }
+  }
+
+  // Texto de um verso para uma tradução específica (usado no modo comparação)
+  verseTextFor(v: BibleVerse, key: TranslationKey): string {
+    const map: Record<TranslationKey, string> = {
+      kjv: v.textKJV, aa: v.textAA, acf: v.textACF, nvi: v.textNVI
+    };
+    return map[key] || v.textKJV;
+  }
 
   increaseFontSize(): void {
     if (this.fontSizeIdx() < this.fontSizes.length - 1)
@@ -597,6 +627,7 @@ export class BibleComponent implements OnInit {
       this.view.set('chapters');
       this.studyNote.set(null);
       this.noteExpanded.set(false);
+      this.compareMode.set(false);
     } else if (this.view() === 'chapters') {
       this.view.set('books');
     }

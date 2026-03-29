@@ -826,3 +826,115 @@
   color: var(--text-muted);
   line-height: 1.4;
 }
+
+/* ── Modo comparação ─────────────────────────────────────────────────────── */
+.compare-active mat-icon {
+  color: var(--accent);
+}
+
+.compare-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+}
+
+.compare-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 14px;
+  background: var(--surface-3);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.compare-chip mat-icon {
+  font-size: 0.9rem;
+  height: 0.9rem;
+  width: 0.9rem;
+  color: var(--accent);
+}
+
+.compare-chip.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-3));
+  color: var(--text);
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 2), 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.compare-col {
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.compare-col-header {
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border-soft);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.compare-col-name {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.compare-verse {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.compare-verse:last-child {
+  border-bottom: none;
+}
+
+.compare-verse-num {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent);
+  padding-top: 3px;
+  text-align: right;
+}
+
+.compare-verse-text {
+  color: var(--text);
+}
+
+@media (max-width: 700px) {
+  .compare-grid {
+    grid-template-columns: 1fr;
+  }
+}
