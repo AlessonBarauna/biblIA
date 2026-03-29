@@ -191,6 +191,11 @@
             }
           </div>
         </div>
+        @if (isLoggedIn()) {
+          <button mat-icon-button (click)="shareProgress()" matTooltip="Compartilhar progresso">
+            <mat-icon>share</mat-icon>
+          </button>
+        }
       </div>
 
       @if (isLoggedIn()) {

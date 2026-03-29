@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
@@ -63,8 +64,9 @@ interface HeatDay {
   styleUrls: ['./reading.component.css']
 })
 export class ReadingComponent implements OnInit {
-  private api    = inject(ApiService);
-  private auth   = inject(AuthService);
+  private api      = inject(ApiService);
+  private auth     = inject(AuthService);
+  private platform = inject(PLATFORM_ID);
   readonly offline = inject(OfflineSyncService);
 
   readonly isLoggedIn = this.auth.isLoggedIn;
@@ -367,6 +369,113 @@ export class ReadingComponent implements OnInit {
 
   bibleParams(chapter: ChapterEntry): Record<string, number> {
     return { bookId: chapter.bookId, chapter: chapter.chapter };
+  }
+
+  // ── Compartilhar progresso ────────────────────────────────────────────────
+  //
+  // Desenha um card 600×320 no Canvas, converte para PNG e usa a Web Share API
+  // (se disponível) ou faz download direto.
+
+  shareProgress(): void {
+    if (!isPlatformBrowser(this.platform)) return;
+    const plan = this.activePlan();
+    if (!plan) return;
+
+    const W = 600, H = 320;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d')!;
+
+    const pct = this.progressPct(plan);
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    // Fundo
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    if (isDark) {
+      bg.addColorStop(0, '#1a1a2e');
+      bg.addColorStop(1, '#16213e');
+    } else {
+      bg.addColorStop(0, '#f0f4ff');
+      bg.addColorStop(1, '#e8f0fe');
+    }
+    ctx.fillStyle = bg;
+    ctx.roundRect(0, 0, W, H, 20);
+    ctx.fill();
+
+    const textColor    = isDark ? '#e8eaf6' : '#1a237e';
+    const mutedColor   = isDark ? '#90a4ae' : '#546e7a';
+    const accentColor  = '#5c6bc0';
+    const accentLight  = isDark ? 'rgba(92,107,192,0.3)' : 'rgba(92,107,192,0.15)';
+
+    // Ícone + título do app
+    ctx.font = 'bold 18px system-ui, sans-serif';
+    ctx.fillStyle = accentColor;
+    ctx.fillText('📖 BíblIA', 36, 52);
+
+    // Ícone e nome do plano
+    ctx.font = 'bold 28px system-ui, sans-serif';
+    ctx.fillStyle = textColor;
+    ctx.fillText(`${plan.icon}  ${plan.name}`, 36, 110);
+
+    // Descrição (truncada)
+    const desc = plan.description.length > 70 ? plan.description.substring(0, 68) + '…' : plan.description;
+    ctx.font = '15px system-ui, sans-serif';
+    ctx.fillStyle = mutedColor;
+    ctx.fillText(desc, 36, 138);
+
+    // Barra de progresso — fundo
+    const barY = 168, barH = 14, barW = W - 72;
+    ctx.fillStyle = accentLight;
+    ctx.beginPath();
+    ctx.roundRect(36, barY, barW, barH, 7);
+    ctx.fill();
+
+    // Barra de progresso — preenchimento
+    if (pct > 0) {
+      const fillW = Math.max(barH, (pct / 100) * barW); // pelo menos o raio
+      ctx.fillStyle = accentColor;
+      ctx.beginPath();
+      ctx.roundRect(36, barY, fillW, barH, 7);
+      ctx.fill();
+    }
+
+    // Percentual sobre a barra
+    ctx.font = 'bold 15px system-ui, sans-serif';
+    ctx.fillStyle = accentColor;
+    ctx.fillText(`${pct}%`, 36 + barW + 10, barY + 11);
+
+    // Dias concluídos / total
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.fillStyle = mutedColor;
+    ctx.fillText(`${plan.completedDays} de ${plan.totalDays} dias concluídos`, 36, barY + 38);
+
+    // Streak
+    if (this.streak() > 0) {
+      ctx.font = 'bold 15px system-ui, sans-serif';
+      ctx.fillStyle = '#ef6c00';
+      ctx.fillText(`🔥 ${this.streak()} dia${this.streak() !== 1 ? 's' : ''} consecutivo${this.streak() !== 1 ? 's' : ''}`, 36, barY + 64);
+    }
+
+    // Rodapé
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.fillStyle = mutedColor;
+    const today = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    ctx.fillText(today, 36, H - 24);
+
+    // Exportar
+    canvas.toBlob(blob => {
+      if (!blob) return;
+      const file = new File([blob], 'progresso-biblia.png', { type: 'image/png' });
+
+      if (navigator.canShare?.({ files: [file] })) {
+        navigator.share({ files: [file], title: 'Meu progresso na BíblIA' }).catch(() => {});
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'progresso-biblia.png'; a.click();
+        URL.revokeObjectURL(url);
+      }
+    }, 'image/png');
   }
 
   // ── Streak ────────────────────────────────────────────────────────────────
