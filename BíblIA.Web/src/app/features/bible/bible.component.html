@@ -85,68 +85,56 @@
     <p class="empty-state">Nenhum versículo encontrado para "{{ searchQuery() }}".</p>
   }
 
-  <!-- ── Cabeçalho com navegação breadcrumb ─────────────────────────────── -->
-  <div class="bible-header">
-    @if (view() !== 'books') {
-      <button mat-icon-button (click)="goBack()" matTooltip="Voltar">
-        <mat-icon>arrow_back</mat-icon>
-      </button>
-    }
-
-    <div class="breadcrumb">
-      <span class="breadcrumb-item" [class.active]="view() === 'books'">Bíblia</span>
-      @if (selectedBook()) {
-        <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
-        <span class="breadcrumb-item" [class.active]="view() === 'chapters'"
-              (click)="view() === 'verses' && goBack()">
-          {{ selectedBook()!.name }}
-        </span>
+  <!-- ── Cabeçalho: breadcrumb (livros/capítulos) ───────────────────────── -->
+  @if (view() !== 'verses') {
+    <div class="bible-header">
+      @if (view() !== 'books') {
+        <button mat-icon-button (click)="goBack()" matTooltip="Voltar">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
       }
-      @if (selectedChapter()) {
-        <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
-        <span class="breadcrumb-item active">Capítulo {{ selectedChapter() }}</span>
-      }
-    </div>
-
-    @if (view() === 'verses') {
-      <div class="version-tabs">
-        @for (t of translations; track t.key) {
-          <button mat-button
-            class="version-btn"
-            [class.active]="activeTranslation() === t.key"
-            (click)="activeTranslation.set(t.key)"
-            [title]="t.name">
-            {{ t.label }}
-          </button>
+      <div class="breadcrumb">
+        <span class="breadcrumb-item" [class.active]="view() === 'books'">Bíblia</span>
+        @if (selectedBook()) {
+          <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
+          <span class="breadcrumb-item" [class.active]="view() === 'chapters'">
+            {{ selectedBook()!.name }}
+          </span>
         }
       </div>
+    </div>
+  }
 
-      <!-- Navegação entre capítulos -->
-      <div class="chapter-nav">
-        <button mat-icon-button
-                [disabled]="!hasPrevChapter()"
-                (click)="prevChapter()"
-                matTooltip="Capítulo anterior (←)">
-          <mat-icon>chevron_left</mat-icon>
+  <!-- ── Top bar do leitor (apenas na view de versículos) ───────────────── -->
+  @if (view() === 'verses') {
+    <div class="reader-top-bar">
+      <button mat-icon-button class="rtb-back" (click)="goBack()" matTooltip="Voltar">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+
+      <div class="rtb-location">
+        <button class="rtb-book-btn" (click)="openBookSheet()" matTooltip="Trocar livro">
+          {{ selectedBook()!.name }}
         </button>
-        <button mat-icon-button
-                [disabled]="!hasNextChapter()"
-                (click)="nextChapter()"
-                matTooltip="Próximo capítulo (→)">
-          <mat-icon>chevron_right</mat-icon>
+        <button class="rtb-chapter-btn" (click)="openChapterSheet()" matTooltip="Trocar capítulo">
+          {{ selectedChapter() }}
+        </button>
+      </div>
+
+      <div class="rtb-actions">
+        <button class="rtb-version-btn" (click)="toggleVersion()" [matTooltip]="versionLabel()">
+          {{ versionLabel() }}
+        </button>
+        <button mat-icon-button (click)="toggleCompareMode()"
+                [class.rtb-active]="compareMode()" matTooltip="Comparar traduções">
+          <mat-icon>compare</mat-icon>
         </button>
         <button mat-icon-button (click)="enterReadingMode()" matTooltip="Modo leitura">
           <mat-icon>chrome_reader_mode</mat-icon>
         </button>
-        <button mat-icon-button
-                (click)="toggleCompareMode()"
-                [class.compare-active]="compareMode()"
-                matTooltip="Comparar traduções">
-          <mat-icon>compare</mat-icon>
-        </button>
       </div>
-    }
-  </div>
+    </div>
+  }
 
   <!-- ── Loading ─────────────────────────────────────────────────────────── -->
   @if (loading()) {
@@ -458,6 +446,100 @@
   </app-ai-panel>
 
 </div>
+
+<!-- ── Barra inferior do leitor (fixa na tela) ───────────────────────────── -->
+@if (view() === 'verses' && !readingMode()) {
+  <div class="reader-bottom-bar">
+
+    <!-- Capítulo anterior -->
+    <button class="rbb-nav rbb-prev"
+            [disabled]="!hasPrevChapter()"
+            (click)="prevChapter()"
+            [attr.aria-label]="'Capítulo anterior'">
+      <mat-icon>chevron_left</mat-icon>
+      <span class="rbb-label">
+        @if (hasPrevChapter()) { Cap. {{ (selectedChapter() ?? 1) - 1 }} }
+      </span>
+    </button>
+
+    <!-- Botão de play central -->
+    <button class="rbb-play" (click)="toggleAudio()"
+            [matTooltip]="isPlaying() ? 'Parar leitura' : 'Ouvir capítulo'">
+      <mat-icon>{{ isPlaying() ? 'stop' : 'play_arrow' }}</mat-icon>
+    </button>
+
+    <!-- Próximo capítulo -->
+    <button class="rbb-nav rbb-next"
+            [disabled]="!hasNextChapter()"
+            (click)="nextChapter()"
+            [attr.aria-label]="'Próximo capítulo'">
+      <span class="rbb-label">
+        @if (hasNextChapter()) { Cap. {{ (selectedChapter() ?? 1) + 1 }} }
+      </span>
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+  </div>
+}
+
+<!-- ── Sheet: seleção de livro ───────────────────────────────────────────── -->
+@if (showBookSheet()) {
+  <div class="sheet-overlay" (click)="closeBookSheet()">
+    <div class="sheet-panel" (click)="$event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <span class="sheet-title">Escolher Livro</span>
+        <button mat-icon-button (click)="closeBookSheet()"><mat-icon>close</mat-icon></button>
+      </div>
+      <div class="sheet-body">
+        <div class="sheet-section-label">Antigo Testamento</div>
+        <div class="sheet-books-grid">
+          @for (b of otBooks(); track b.id) {
+            <button class="sheet-book-btn"
+                    [class.sheet-book-active]="selectedBook()?.id === b.id"
+                    (click)="selectBookFromSheet(b)">
+              {{ b.abbreviation }}
+            </button>
+          }
+        </div>
+        <div class="sheet-section-label">Novo Testamento</div>
+        <div class="sheet-books-grid">
+          @for (b of ntBooks(); track b.id) {
+            <button class="sheet-book-btn"
+                    [class.sheet-book-active]="selectedBook()?.id === b.id"
+                    (click)="selectBookFromSheet(b)">
+              {{ b.abbreviation }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Sheet: seleção de capítulo ────────────────────────────────────────── -->
+@if (showChapterSheet()) {
+  <div class="sheet-overlay" (click)="closeChapterSheet()">
+    <div class="sheet-panel" (click)="$event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <span class="sheet-title">{{ selectedBook()?.name }} — Capítulo</span>
+        <button mat-icon-button (click)="closeChapterSheet()"><mat-icon>close</mat-icon></button>
+      </div>
+      <div class="sheet-body">
+        <div class="sheet-chapters-grid">
+          @for (ch of chapterNumbers(); track ch) {
+            <button class="sheet-chapter-btn"
+                    [class.sheet-chapter-active]="selectedChapter() === ch"
+                    (click)="selectChapterFromSheet(ch)">
+              {{ ch }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
 
 <!-- ── Modo Leitura (overlay fullscreen) ──────────────────────────────────── -->
 @if (readingMode()) {

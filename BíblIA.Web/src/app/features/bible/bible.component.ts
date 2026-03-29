@@ -58,8 +58,9 @@ export class BibleComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private platform   = inject(PLATFORM_ID);
 
-  private readonly HISTORY_KEY = 'bible_search_history';
-  private readonly HISTORY_MAX = 10;
+  private readonly HISTORY_KEY  = 'bible_search_history';
+  private readonly HISTORY_MAX  = 10;
+  private readonly POSITION_KEY = 'bible_last_position';
 
   private searchSubject = new Subject<string>();
 
@@ -99,6 +100,13 @@ export class BibleComponent implements OnInit {
 
   // Modo leitura — overlay fullscreen sem distrações
   readingMode = signal(false);
+
+  // Sheets de seleção de livro / capítulo
+  showBookSheet    = signal(false);
+  showChapterSheet = signal(false);
+
+  // Áudio — Web Speech API
+  isPlaying = signal(false);
 
   // Modo comparação — exibe traduções selecionadas em colunas lado a lado
   compareMode         = signal(false);
@@ -622,13 +630,13 @@ export class BibleComponent implements OnInit {
         this.books.set(books);
         this.loading.set(false);
 
-        // Auto-navega quando o componente foi aberto via link de favorito
         if (deepBookId && deepChapter) {
+          // Deep link vindo de favorito ou plano de leitura
           const book = books.find(b => b.id === deepBookId);
-          if (book) {
-            this.selectedBook.set(book);
-            this.selectChapter(deepChapter);
-          }
+          if (book) { this.selectedBook.set(book); this.selectChapter(deepChapter); }
+        } else {
+          // Sem deep link: tenta restaurar última posição lida
+          this.restorePosition(books);
         }
       },
       error: () => this.loading.set(false)
@@ -647,6 +655,7 @@ export class BibleComponent implements OnInit {
     if (!book) return;
 
     this.selectedChapter.set(chapter);
+    this.stopAudio();
     this.loading.set(true);
     this.view.set('verses');
     this.studyNote.set(null);
@@ -657,6 +666,7 @@ export class BibleComponent implements OnInit {
     this.relatedVersesVerse.set(null);
     this.relatedVersesList.set([]);
     this.closeAskAi();
+    this.savePosition();
 
     this.api.getChapter(book.id, chapter).subscribe({
       next: verses => {
@@ -690,8 +700,80 @@ export class BibleComponent implements OnInit {
     });
   }
 
+  // ── Posição (última leitura) ──────────────────────────────────────────────
+
+  savePosition(): void {
+    if (!isPlatformBrowser(this.platform)) return;
+    const book = this.selectedBook();
+    const ch   = this.selectedChapter();
+    if (!book || !ch) return;
+    localStorage.setItem(this.POSITION_KEY, JSON.stringify({ bookId: book.id, chapter: ch }));
+  }
+
+  private restorePosition(books: BibleBook[]): void {
+    if (!isPlatformBrowser(this.platform)) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(this.POSITION_KEY) ?? 'null');
+      if (saved?.bookId && saved?.chapter) {
+        const book = books.find(b => b.id === saved.bookId);
+        if (book) { this.selectedBook.set(book); this.selectChapter(saved.chapter); }
+      }
+    } catch {}
+  }
+
+  // ── Sheets de seleção ─────────────────────────────────────────────────────
+
+  openBookSheet(): void  { this.showBookSheet.set(true); }
+  closeBookSheet(): void { this.showBookSheet.set(false); }
+
+  selectBookFromSheet(book: BibleBook): void {
+    this.selectedBook.set(book);
+    this.showBookSheet.set(false);
+    this.showChapterSheet.set(true);
+  }
+
+  openChapterSheet(): void  { this.showChapterSheet.set(true); }
+  closeChapterSheet(): void { this.showChapterSheet.set(false); }
+
+  selectChapterFromSheet(ch: number): void {
+    this.showChapterSheet.set(false);
+    this.selectChapter(ch);
+  }
+
+  // ── Áudio — Web Speech API ────────────────────────────────────────────────
+  //
+  // Usa SpeechSynthesis nativo do browser — sem backend, sem API key.
+  // Lê todos os versículos do capítulo atual na língua da tradução ativa.
+
+  toggleAudio(): void {
+    if (!isPlatformBrowser(this.platform)) return;
+    if (this.isPlaying()) { this.stopAudio(); return; }
+
+    const verses = this.verses();
+    if (!verses.length) return;
+
+    const lang = this.activeTranslation() === 'kjv' ? 'en-US' : 'pt-BR';
+    const text = verses.map(v => `${v.verse}. ${this.verseText(v)}`).join(' ');
+
+    const utterance     = new SpeechSynthesisUtterance(text);
+    utterance.lang      = lang;
+    utterance.rate      = 0.88;
+    utterance.onend     = () => this.isPlaying.set(false);
+    utterance.onerror   = () => this.isPlaying.set(false);
+
+    window.speechSynthesis.speak(utterance);
+    this.isPlaying.set(true);
+  }
+
+  stopAudio(): void {
+    if (!isPlatformBrowser(this.platform)) return;
+    window.speechSynthesis?.cancel();
+    this.isPlaying.set(false);
+  }
+
   goBack(): void {
     if (this.view() === 'verses') {
+      this.stopAudio();
       this.view.set('chapters');
       this.studyNote.set(null);
       this.noteExpanded.set(false);
