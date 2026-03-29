@@ -4,6 +4,17 @@
     <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
   }
 
+  @if (!loading() && loadError()) {
+    <div class="error-state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível carregar o perfil.</p>
+      <button mat-flat-button color="primary" (click)="loadProfile()">
+        <mat-icon>refresh</mat-icon>
+        Tentar novamente
+      </button>
+    </div>
+  }
+
   @if (!loading() && profile(); as p) {
 
     <!-- ── Avatar + identidade ──────────────────────────────────────────────── -->

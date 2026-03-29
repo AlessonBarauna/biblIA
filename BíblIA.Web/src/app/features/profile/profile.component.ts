@@ -30,8 +30,9 @@ export class ProfileComponent implements OnInit {
   private auth  = inject(AuthService);
   readonly notifications = inject(NotificationService);
 
-  loading = signal(true);
-  profile = signal<UserProfile | null>(null);
+  loading   = signal(true);
+  loadError = signal(false);
+  profile   = signal<UserProfile | null>(null);
 
   // ── Edição de nome ────────────────────────────────────────────────────────
   editingName  = signal(false);
@@ -49,9 +50,15 @@ export class ProfileComponent implements OnInit {
   passwordSuccess  = signal('');
 
   ngOnInit(): void {
+    this.loadProfile();
+  }
+
+  loadProfile(): void {
+    this.loading.set(true);
+    this.loadError.set(false);
     this.api.getProfile().subscribe({
       next:  p  => { this.profile.set(p); this.loading.set(false); },
-      error: () => this.loading.set(false)
+      error: () => { this.loadError.set(true); this.loading.set(false); }
     });
   }
 

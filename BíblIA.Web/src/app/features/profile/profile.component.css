@@ -13,6 +13,28 @@
   padding: 4rem 0;
 }
 
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 4rem 0;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.error-state mat-icon {
+  font-size: 3rem;
+  height: 3rem;
+  width: 3rem;
+  color: #ef5350;
+}
+
+.error-state p {
+  margin: 0;
+  font-size: 1rem;
+}
+
 /* ── Card principal ───────────────────────────────────────────────────────── */
 .profile-card {
   display: flex;

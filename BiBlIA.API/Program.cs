@@ -147,6 +147,7 @@ using (var scope = app.Services.CreateScope())
                 ""Verse""       INTEGER NOT NULL,
                 ""VerseText""   TEXT NOT NULL DEFAULT '',
                 ""Note""        TEXT NOT NULL DEFAULT '',
+                ""Tags""        TEXT NOT NULL DEFAULT '',
                 ""CreatedAt""   TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
                 CONSTRAINT ""FK_BookmarkVerses_Users_UserId""
                     FOREIGN KEY (""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE,
