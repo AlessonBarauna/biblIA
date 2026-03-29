@@ -85,6 +85,9 @@ export class BibleComponent implements OnInit {
   // bookmarkMap: Map<verseNumber, bookmarkId> — permite checar e remover em O(1)
   bookmarkMap = signal<Map<number, number>>(new Map());
 
+  // bookAnnotationMap: Map<bookId, Set<chapter>> — capítulos únicos com anotação por livro
+  bookAnnotationMap = signal<Map<number, Set<number>>>(new Map());
+
   // noteMap: Map<verseNumber, VerseNote> — anotações do capítulo atual
   noteMap = signal<Map<number, VerseNote>>(new Map());
   // Verso com o painel de anotação aberto (null = nenhum)
@@ -147,6 +150,7 @@ export class BibleComponent implements OnInit {
     this.loadBooks();
     if (this.auth.isLoggedIn()) {
       this.loadBookmarks();
+      this.loadBookAnnotations();
     }
 
     // Debounce: só dispara request depois de 300ms sem digitar.
@@ -407,8 +411,27 @@ export class BibleComponent implements OnInit {
         bookmarks.forEach(b => map.set(b.verse, b.id));
         this.bookmarkMap.set(map);
       },
-      error: () => {} // silencioso — usuário não-logado recebe 401, esperado
+      error: () => {}
     });
+  }
+
+  loadBookAnnotations(): void {
+    this.api.getAllVerseNotes().subscribe({
+      next: notes => {
+        const map = new Map<number, Set<number>>();
+        for (const n of notes) {
+          if (!map.has(n.bookId)) map.set(n.bookId, new Set());
+          map.get(n.bookId)!.add(n.chapter);
+        }
+        this.bookAnnotationMap.set(map);
+      },
+      error: () => {}
+    });
+  }
+
+  // Retorna quantos capítulos únicos do livro têm anotação
+  annotatedChapterCount(bookId: number): number {
+    return this.bookAnnotationMap().get(bookId)?.size ?? 0;
   }
 
   isBookmarked(v: BibleVerse): boolean {
@@ -473,6 +496,7 @@ export class BibleComponent implements OnInit {
             const map = new Map(this.noteMap());
             map.delete(v.verse);
             this.noteMap.set(map);
+            this.loadBookAnnotations(); // sincroniza badge no livro
           }
         });
       }
@@ -482,6 +506,7 @@ export class BibleComponent implements OnInit {
           const map = new Map(this.noteMap());
           map.set(v.verse, note);
           this.noteMap.set(map);
+          this.loadBookAnnotations(); // sincroniza badge no livro
         }
       });
     }
