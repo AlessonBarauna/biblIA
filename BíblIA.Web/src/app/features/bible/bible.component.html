@@ -122,7 +122,7 @@
       </div>
 
       <div class="rtb-actions">
-        <button class="rtb-version-btn" (click)="toggleVersion()" [matTooltip]="versionLabel()">
+        <button class="rtb-version-btn" (click)="openVersionSheet()" [matTooltip]="versionLabel()">
           {{ versionLabel() }}
         </button>
         <button mat-icon-button (click)="toggleCompareMode()"
@@ -462,12 +462,6 @@
       </span>
     </button>
 
-    <!-- Botão de play central -->
-    <button class="rbb-play" (click)="toggleAudio()"
-            [matTooltip]="isPlaying() ? 'Parar leitura' : 'Ouvir capítulo'">
-      <mat-icon>{{ isPlaying() ? 'stop' : 'play_arrow' }}</mat-icon>
-    </button>
-
     <!-- Próximo capítulo -->
     <button class="rbb-nav rbb-next"
             [disabled]="!hasNextChapter()"
@@ -541,6 +535,34 @@
   </div>
 }
 
+<!-- ── Sheet: seleção de versão ──────────────────────────────────────────── -->
+@if (showVersionSheet()) {
+  <div class="sheet-overlay" (click)="closeVersionSheet()">
+    <div class="sheet-panel sheet-panel-sm" (click)="$event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <span class="sheet-title">Escolher Tradução</span>
+        <button mat-icon-button (click)="closeVersionSheet()"><mat-icon>close</mat-icon></button>
+      </div>
+      <div class="sheet-body">
+        <div class="version-options">
+          @for (t of translations; track t.key) {
+            <button class="version-option-btn"
+                    [class.version-option-active]="activeTranslation() === t.key"
+                    (click)="selectVersion(t.key)">
+              <span class="version-option-label">{{ t.label }}</span>
+              <span class="version-option-name">{{ t.name }}</span>
+              @if (activeTranslation() === t.key) {
+                <mat-icon class="version-option-check">check_circle</mat-icon>
+              }
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
 <!-- ── Modo Leitura (overlay fullscreen) ──────────────────────────────────── -->
 @if (readingMode()) {
   <div class="reader-overlay" [style.font-size.rem]="currentFontSize">
@@ -562,21 +584,46 @@
 
     <!-- Barra de controles flutuante -->
     <div class="reader-controls">
-      <button mat-icon-button (click)="prevChapter()" [disabled]="!hasPrevChapter()" matTooltip="Anterior">
+      <!-- Capítulo anterior com label -->
+      <button class="reader-nav-btn"
+              [disabled]="!hasPrevChapter()"
+              (click)="prevChapter()"
+              matTooltip="Capítulo anterior">
         <mat-icon>chevron_left</mat-icon>
+        <span class="reader-nav-label">
+          @if (hasPrevChapter()) { Cap. {{ (selectedChapter() ?? 1) - 1 }} }
+        </span>
       </button>
-      <div class="reader-font-controls">
-        <button mat-icon-button (click)="decreaseFontSize()" [disabled]="fontSizeIdx() === 0" matTooltip="Diminuir fonte">
-          <mat-icon>text_decrease</mat-icon>
-        </button>
-        <span class="reader-font-label">A</span>
-        <button mat-icon-button (click)="increaseFontSize()" [disabled]="fontSizeIdx() === fontSizes.length - 1" matTooltip="Aumentar fonte">
-          <mat-icon>text_increase</mat-icon>
+
+      <!-- Controles centrais: tamanho de fonte + áudio -->
+      <div class="reader-center-controls">
+        <div class="reader-font-controls">
+          <button mat-icon-button (click)="decreaseFontSize()" [disabled]="fontSizeIdx() === 0" matTooltip="Diminuir fonte">
+            <mat-icon>text_decrease</mat-icon>
+          </button>
+          <span class="reader-font-label">A</span>
+          <button mat-icon-button (click)="increaseFontSize()" [disabled]="fontSizeIdx() === fontSizes.length - 1" matTooltip="Aumentar fonte">
+            <mat-icon>text_increase</mat-icon>
+          </button>
+        </div>
+        <!-- Botão de áudio — Web Speech API -->
+        <button class="reader-play-btn" (click)="toggleAudio()"
+                [matTooltip]="isPlaying() ? 'Parar leitura' : 'Ouvir capítulo'">
+          <mat-icon>{{ isPlaying() ? 'stop' : 'play_arrow' }}</mat-icon>
         </button>
       </div>
-      <button mat-icon-button (click)="nextChapter()" [disabled]="!hasNextChapter()" matTooltip="Próximo">
+
+      <!-- Próximo capítulo com label -->
+      <button class="reader-nav-btn"
+              [disabled]="!hasNextChapter()"
+              (click)="nextChapter()"
+              matTooltip="Próximo capítulo">
+        <span class="reader-nav-label">
+          @if (hasNextChapter()) { Cap. {{ (selectedChapter() ?? 1) + 1 }} }
+        </span>
         <mat-icon>chevron_right</mat-icon>
       </button>
+
       <button mat-icon-button (click)="exitReadingMode()" matTooltip="Fechar (Esc)" class="reader-close">
         <mat-icon>close</mat-icon>
       </button>

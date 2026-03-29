@@ -742,10 +742,6 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  border-left: 1px solid var(--border-soft);
-  border-right: 1px solid var(--border-soft);
-  padding: 0 6px;
-  margin: 0 4px;
 }
 
 .reader-font-label {
@@ -1284,4 +1280,146 @@
 @media (max-width: 600px) {
   .rbb-label { display: none; }
   .rbb-nav   { min-width: 48px; padding: 6px; }
+}
+
+/* ── Modo leitura — navegação com label ──────────────────────────────────── */
+.reader-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 20px;
+  padding: 4px 8px;
+  transition: background 0.12s;
+  font-size: 0.82rem;
+  font-weight: 600;
+  min-width: 80px;
+}
+
+.reader-nav-btn:first-child { justify-content: flex-start; }
+.reader-nav-btn:not(:first-child):not(:last-child) { justify-content: flex-end; }
+
+.reader-nav-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+}
+
+.reader-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.reader-nav-btn mat-icon {
+  font-size: 1.4rem;
+  height: 1.4rem;
+  width: 1.4rem;
+}
+
+.reader-nav-label {
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+/* Controles centrais do modo leitura (fonte + play) */
+.reader-center-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border-left: 1px solid var(--border-soft);
+  border-right: 1px solid var(--border-soft);
+  padding: 4px 12px;
+  margin: 0 6px;
+}
+
+/* Botão de play no modo leitura */
+.reader-play-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: transform 0.12s, box-shadow 0.12s;
+  flex-shrink: 0;
+}
+
+.reader-play-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.reader-play-btn mat-icon {
+  font-size: 1.5rem;
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
+/* ── Sheet de versão ─────────────────────────────────────────────────────── */
+.sheet-panel-sm {
+  max-height: 50vh;
+}
+
+.version-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 8px;
+}
+
+.version-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  background: var(--surface-3);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.12s;
+  text-align: left;
+}
+
+.version-option-btn:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-3));
+}
+
+.version-option-active {
+  border-color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-3)) !important;
+}
+
+.version-option-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 36px;
+}
+
+.version-option-active .version-option-label {
+  color: var(--accent);
+}
+
+.version-option-name {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.version-option-check {
+  color: var(--accent);
+  font-size: 1.2rem;
+  height: 1.2rem;
+  width: 1.2rem;
+  margin-left: auto;
 }

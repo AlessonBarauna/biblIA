@@ -101,9 +101,10 @@ export class BibleComponent implements OnInit {
   // Modo leitura — overlay fullscreen sem distrações
   readingMode = signal(false);
 
-  // Sheets de seleção de livro / capítulo
-  showBookSheet    = signal(false);
-  showChapterSheet = signal(false);
+  // Sheets de seleção de livro / capítulo / versão
+  showBookSheet     = signal(false);
+  showChapterSheet  = signal(false);
+  showVersionSheet  = signal(false);
 
   // Áudio — Web Speech API
   isPlaying = signal(false);
@@ -783,12 +784,14 @@ export class BibleComponent implements OnInit {
     }
   }
 
-  // Avança para a próxima tradução ciclicamente
-  toggleVersion(): void {
-    const keys = this.translations.map(t => t.key);
-    const current = keys.indexOf(this.activeTranslation());
-    const next = (current + 1) % keys.length;
-    this.activeTranslation.set(keys[next]);
+  // ── Sheet de seleção de versão ────────────────────────────────────────────
+
+  openVersionSheet(): void  { this.showVersionSheet.set(true); }
+  closeVersionSheet(): void { this.showVersionSheet.set(false); }
+
+  selectVersion(key: TranslationKey): void {
+    this.activeTranslation.set(key);
+    this.showVersionSheet.set(false);
   }
 
   verseText(v: BibleVerse): string {
