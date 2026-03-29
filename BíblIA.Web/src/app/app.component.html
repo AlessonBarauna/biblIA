@@ -8,6 +8,48 @@
 
     <span class="spacer"></span>
 
+    <!-- ── Busca global ──────────────────────────────────────────────────── -->
+    <div class="global-search-wrapper">
+      <div class="global-search-bar" [class.focused]="globalSearch.open()">
+        <mat-icon class="gs-icon">search</mat-icon>
+        <input #searchInput
+               class="gs-input"
+               type="text"
+               placeholder="Buscar… (Ctrl+K)"
+               autocomplete="off"
+               [value]="globalSearch.query()"
+               (input)="globalSearch.search($any($event.target).value)"
+               (focus)="globalSearch.query().length >= 3 && globalSearch.open.set(true)">
+        @if (globalSearch.loading()) {
+          <mat-spinner diameter="16" class="gs-spinner"></mat-spinner>
+        } @else if (globalSearch.query()) {
+          <button mat-icon-button class="gs-clear" (click)="globalSearch.clear()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </div>
+
+      @if (globalSearch.open()) {
+        <div class="global-search-results">
+          @if (!globalSearch.loading() && globalSearch.groups().length === 0) {
+            <p class="gs-empty">Nenhum resultado para "{{ globalSearch.query() }}".</p>
+          }
+          @for (group of globalSearch.groups(); track group.label) {
+            <div class="gs-group-label">{{ group.label }}</div>
+            @for (result of group.results; track result.title) {
+              <button class="gs-result-item" (click)="globalSearch.navigate(result)">
+                <mat-icon class="gs-result-icon">{{ result.icon }}</mat-icon>
+                <div class="gs-result-body">
+                  <span class="gs-result-title">{{ result.title }}</span>
+                  <span class="gs-result-sub">{{ result.subtitle }}</span>
+                </div>
+              </button>
+            }
+          }
+        </div>
+      }
+    </div>
+
     <button mat-icon-button
             (click)="theme.toggle()"
             [matTooltip]="theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro'"
