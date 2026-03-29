@@ -250,7 +250,7 @@
 
   <!-- ── Quiz pós-leitura ──────────────────────────────────────────────────── -->
   @if (quiz(); as q) {
-    <div class="quiz-overlay" (click.self)="closeQuiz()">
+    <div class="quiz-overlay" (click)="$event.target === $event.currentTarget && closeQuiz()">
       <div class="quiz-card">
 
         <!-- Loading -->
