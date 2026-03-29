@@ -170,6 +170,41 @@ export class ReadingComponent implements OnInit {
 
   totalReadings = computed(() => this.allLogs().length);
 
+  // ── Histórico de atividade ─────────────────────────────────────────────────
+  //
+  // Agrupa os logs por data (desc) e mapeia planId → nome do plano.
+  // Exibe até 30 dias com atividade para não sobrecarregar o DOM.
+
+  activityHistory = computed(() => {
+    const logs  = this.allLogs();
+    const plans = this.plans();
+    const planMap = new Map(plans.map(p => [p.id, p]));
+
+    // Agrupa por data
+    const byDate = new Map<string, ReadingLog[]>();
+    for (const log of logs) {
+      const date = log.completedAt.substring(0, 10);
+      if (!byDate.has(date)) byDate.set(date, []);
+      byDate.get(date)!.push(log);
+    }
+
+    // Ordena datas desc e pega as 30 mais recentes
+    return [...byDate.entries()]
+      .sort(([a], [b]) => b.localeCompare(a))
+      .slice(0, 30)
+      .map(([date, entries]) => ({
+        date,
+        label: new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {
+          weekday: 'short', day: 'numeric', month: 'short'
+        }),
+        entries: entries.map(e => ({
+          planIcon: planMap.get(e.planId)?.icon ?? '📖',
+          planName: planMap.get(e.planId)?.name ?? `Plano #${e.planId}`,
+          day:      e.dayNumber
+        }))
+      }));
+  });
+
   ngOnInit(): void {
     const plans$    = this.api.getReadingPlans().pipe(catchError(() => of([] as ReadingPlan[])));
     const books$    = this.api.getBooks().pipe(catchError(() => of([] as BibleBook[])));

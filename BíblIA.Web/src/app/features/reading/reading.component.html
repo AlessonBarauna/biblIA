@@ -149,6 +149,27 @@
         }
       </div>
 
+      <!-- Histórico de atividade -->
+      @if (activityHistory().length > 0) {
+        <div class="activity-history">
+          <h3 class="stats-plans-title">Histórico de Leitura</h3>
+          @for (group of activityHistory(); track group.date) {
+            <div class="history-group">
+              <span class="history-date">{{ group.label }}</span>
+              <div class="history-entries">
+                @for (entry of group.entries; track entry.day) {
+                  <div class="history-entry">
+                    <span class="history-icon">{{ entry.planIcon }}</span>
+                    <span class="history-plan">{{ entry.planName }}</span>
+                    <span class="history-day">Dia {{ entry.day }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
     </div>
   }
 
