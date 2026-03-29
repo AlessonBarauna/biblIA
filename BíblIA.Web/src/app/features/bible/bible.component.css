@@ -706,10 +706,23 @@
   display: inline;
   line-height: 2;
   color: var(--text);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.15s;
 }
 
 .reader-verse::after {
   content: ' ';
+}
+
+/* Seleção com toque — anel de foco sutil */
+.reader-verse-selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.reader-verse:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .reader-verse-num {
@@ -1422,4 +1435,150 @@
   height: 1.2rem;
   width: 1.2rem;
   margin-left: auto;
+}
+
+/* ── Destaque de versículo (modo normal) ─────────────────────────────────── */
+.verse-has-highlight {
+  border-left: 3px solid var(--hl-color, transparent);
+  background: color-mix(in srgb, var(--hl-color, transparent) 10%, transparent);
+  border-radius: 0 6px 6px 0;
+  padding-left: 10px;
+}
+
+/* ── Barra de ações do versículo selecionado (modo leitura) ─────────────── */
+.reading-action-bar {
+  position: fixed;
+  bottom: 160px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 680px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  z-index: 1210;
+  animation: rab-slide-up 0.18s ease-out;
+}
+
+@keyframes rab-slide-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.rab-ref {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rab-highlighted-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 1px 7px;
+}
+
+.rab-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Bolinhas de cor */
+.rab-color-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.12s, border-color 0.12s;
+  outline: none;
+}
+
+.rab-color-btn:hover {
+  transform: scale(1.2);
+}
+
+.rab-color-active {
+  border-color: var(--text) !important;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px var(--surface-2), 0 0 0 4px currentColor;
+}
+
+/* Botão de limpar destaque */
+.rab-clear-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border-soft);
+  background: var(--surface-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+
+.rab-clear-btn:hover {
+  background: color-mix(in srgb, #ff4444 15%, var(--surface-3));
+  color: #ff4444;
+}
+
+.rab-clear-btn mat-icon {
+  font-size: 1rem;
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Separador vertical */
+.rab-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--border-soft);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Botões de ação */
+.rab-action {
+  color: var(--text-muted) !important;
+  transition: color 0.12s !important;
+}
+
+.rab-action:hover {
+  color: var(--text) !important;
+}
+
+.rab-action-active {
+  color: var(--accent) !important;
+}
+
+/* Controles sobem quando a barra de ações está visível */
+.reader-controls-shifted {
+  bottom: 340px;
+  transition: bottom 0.18s ease-out;
+}
+
+@media (max-width: 600px) {
+  .reading-action-bar {
+    bottom: 120px;
+    border-radius: 12px;
+    padding: 8px 10px;
+  }
+
+  .rab-color-btn { width: 24px; height: 24px; }
+  .rab-clear-btn { width: 24px; height: 24px; }
 }

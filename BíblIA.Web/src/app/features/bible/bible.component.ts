@@ -58,9 +58,10 @@ export class BibleComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private platform   = inject(PLATFORM_ID);
 
-  private readonly HISTORY_KEY  = 'bible_search_history';
-  private readonly HISTORY_MAX  = 10;
-  private readonly POSITION_KEY = 'bible_last_position';
+  private readonly HISTORY_KEY     = 'bible_search_history';
+  private readonly HISTORY_MAX     = 10;
+  private readonly POSITION_KEY    = 'bible_last_position';
+  private readonly HIGHLIGHTS_PREFIX = 'bible_hl_';
 
   private searchSubject = new Subject<string>();
 
@@ -100,6 +101,20 @@ export class BibleComponent implements OnInit {
 
   // Modo leitura — overlay fullscreen sem distrações
   readingMode = signal(false);
+  // Versículo selecionado no modo leitura (barra de ações)
+  selectedReadingVerse = signal<number | null>(null);
+  // Destaques: Map<verseNumber, hexColor> — persiste em localStorage
+  readingHighlights = signal<Map<number, string>>(new Map());
+
+  // Paleta de destaques — hex armazenado, bg semitransparente para overlay no texto
+  readonly highlightColors = [
+    { hex: '#FFD600', bg: 'rgba(255,214,0,0.38)',  name: 'Amarelo' },
+    { hex: '#FF6D00', bg: 'rgba(255,109,0,0.32)',  name: 'Laranja' },
+    { hex: '#00C853', bg: 'rgba(0,200,83,0.28)',   name: 'Verde'   },
+    { hex: '#00B0FF', bg: 'rgba(0,176,255,0.30)',  name: 'Azul'    },
+    { hex: '#AA00FF', bg: 'rgba(170,0,255,0.24)',  name: 'Roxo'    },
+    { hex: '#FF4081', bg: 'rgba(255,64,129,0.30)', name: 'Rosa'    },
+  ];
 
   // Sheets de seleção de livro / capítulo / versão
   showBookSheet     = signal(false);
@@ -308,7 +323,7 @@ export class BibleComponent implements OnInit {
   // ── Modo leitura ──────────────────────────────────────────────────────────
 
   enterReadingMode(): void  { this.readingMode.set(true);  }
-  exitReadingMode(): void   { this.readingMode.set(false); }
+  exitReadingMode(): void   { this.readingMode.set(false); this.selectedReadingVerse.set(null); }
 
   // ── Ask AI por versículo ──────────────────────────────────────────────────
   //
@@ -666,8 +681,10 @@ export class BibleComponent implements OnInit {
     this.noteMap.set(new Map());
     this.relatedVersesVerse.set(null);
     this.relatedVersesList.set([]);
+    this.selectedReadingVerse.set(null);
     this.closeAskAi();
     this.savePosition();
+    this.loadHighlights();
 
     this.api.getChapter(book.id, chapter).subscribe({
       next: verses => {
@@ -792,6 +809,123 @@ export class BibleComponent implements OnInit {
   selectVersion(key: TranslationKey): void {
     this.activeTranslation.set(key);
     this.showVersionSheet.set(false);
+  }
+
+  // ── Destaques de versículo ────────────────────────────────────────────────
+  //
+  // Cada capítulo tem sua própria chave no localStorage.
+  // Armazena Map<verseNumber, hexColor>.
+
+  private highlightsKey(): string {
+    return `${this.HIGHLIGHTS_PREFIX}${this.selectedBook()?.id}_${this.selectedChapter()}`;
+  }
+
+  loadHighlights(): void {
+    if (!isPlatformBrowser(this.platform)) return;
+    try {
+      const raw = localStorage.getItem(this.highlightsKey());
+      if (!raw) { this.readingHighlights.set(new Map()); return; }
+      const obj = JSON.parse(raw) as Record<string, string>;
+      this.readingHighlights.set(new Map(Object.entries(obj).map(([k, v]) => [Number(k), v])));
+    } catch {
+      this.readingHighlights.set(new Map());
+    }
+  }
+
+  private saveHighlights(): void {
+    if (!isPlatformBrowser(this.platform)) return;
+    const obj = Object.fromEntries(this.readingHighlights());
+    if (Object.keys(obj).length === 0) {
+      localStorage.removeItem(this.highlightsKey());
+    } else {
+      localStorage.setItem(this.highlightsKey(), JSON.stringify(obj));
+    }
+  }
+
+  // Retorna a cor de fundo semitransparente do destaque (para o inline highlight)
+  verseHighlightBg(verse: number): string {
+    const hex = this.readingHighlights().get(verse);
+    if (!hex) return '';
+    return this.highlightColors.find(c => c.hex === hex)?.bg ?? '';
+  }
+
+  // Retorna o hex sólido (para borda na view normal)
+  verseHighlightHex(verse: number): string {
+    return this.readingHighlights().get(verse) ?? '';
+  }
+
+  setHighlight(verse: number, hex: string): void {
+    const map = new Map(this.readingHighlights());
+    // Clicar na mesma cor remove o destaque (toggle)
+    if (map.get(verse) === hex) {
+      map.delete(verse);
+    } else {
+      map.set(verse, hex);
+    }
+    this.readingHighlights.set(map);
+    this.saveHighlights();
+  }
+
+  clearHighlight(verse: number): void {
+    const map = new Map(this.readingHighlights());
+    map.delete(verse);
+    this.readingHighlights.set(map);
+    this.saveHighlights();
+  }
+
+  // ── Seleção de versículo no modo leitura ──────────────────────────────────
+
+  selectReadingVerse(verse: number): void {
+    // Toque no mesmo verso fecha a barra de ações
+    this.selectedReadingVerse.set(this.selectedReadingVerse() === verse ? null : verse);
+  }
+
+  dismissReadingSelection(): void {
+    this.selectedReadingVerse.set(null);
+  }
+
+  copyReadingVerse(): void {
+    const verse = this.selectedReadingVerse();
+    if (verse === null) return;
+    const v = this.verses().find(v => v.verse === verse);
+    if (v) { this.copyVerse(v); this.selectedReadingVerse.set(null); }
+  }
+
+  shareReadingVerse(): void {
+    const verse = this.selectedReadingVerse();
+    if (verse === null) return;
+    const v = this.verses().find(v => v.verse === verse);
+    if (v) { this.shareVerse(v); this.selectedReadingVerse.set(null); }
+  }
+
+  openNoteFromReading(): void {
+    const verse = this.selectedReadingVerse();
+    if (verse === null) return;
+    const v = this.verses().find(v => v.verse === verse);
+    if (!v) return;
+    this.exitReadingMode();
+    // Pequeno delay para o overlay fechar antes de abrir o editor
+    setTimeout(() => this.openNoteEditor(v), 150);
+  }
+
+  askAiFromReading(): void {
+    const verse = this.selectedReadingVerse();
+    if (verse === null) return;
+    const v = this.verses().find(v => v.verse === verse);
+    if (!v) return;
+    this.exitReadingMode();
+    setTimeout(() => this.openAskAi(v), 150);
+  }
+
+  toggleBookmarkFromReading(): void {
+    const verse = this.selectedReadingVerse();
+    if (verse === null) return;
+    const v = this.verses().find(v => v.verse === verse);
+    if (v) this.toggleBookmark(v);
+  }
+
+  isBookmarkedByVerse(verse: number): boolean {
+    return this.bookmarkMap().has(verse);
   }
 
   verseText(v: BibleVerse): string {

@@ -215,7 +215,10 @@
         <p class="empty-state">Nenhum versículo cadastrado neste capítulo ainda.</p>
       }
       @for (v of verses(); track v.id) {
-        <div class="verse-row" [class.verse-highlighted]="highlightedVerse() === v.verse">
+        <div class="verse-row"
+             [class.verse-highlighted]="highlightedVerse() === v.verse"
+             [class.verse-has-highlight]="!!verseHighlightHex(v.verse)"
+             [style.--hl-color]="verseHighlightHex(v.verse)">
           <span class="verse-number">{{ v.verse }}</span>
           <div class="verse-content">
             <span class="verse-text">{{ verseText(v) }}</span>
@@ -573,17 +576,87 @@
       <span class="reader-translation">{{ versionLabel() }}</span>
     </div>
 
-    <!-- Versículos -->
-    <div class="reader-body">
+    <!-- Versículos — toque para selecionar / destacar -->
+    <div class="reader-body" (click)="dismissReadingSelection()">
       @for (v of verses(); track v.id) {
-        <p class="reader-verse">
+        <p class="reader-verse"
+           [class.reader-verse-selected]="selectedReadingVerse() === v.verse"
+           [style.background]="verseHighlightBg(v.verse)"
+           [style.border-radius.px]="verseHighlightBg(v.verse) ? 3 : 0"
+           (click)="$event.stopPropagation(); selectReadingVerse(v.verse)">
           <sup class="reader-verse-num">{{ v.verse }}</sup>{{ verseText(v) }}
         </p>
       }
     </div>
 
+    <!-- ── Barra de ações do versículo selecionado ───────────────────────── -->
+    @if (selectedReadingVerse() !== null) {
+      <div class="reading-action-bar" (click)="$event.stopPropagation()">
+        <div class="rab-ref">
+          {{ selectedBook()?.name }} {{ selectedChapter() }}:{{ selectedReadingVerse() }}
+          @if (verseHighlightHex(selectedReadingVerse()!)) {
+            <span class="rab-highlighted-badge">destacado</span>
+          }
+        </div>
+        <div class="rab-row">
+          <!-- Paleta de cores -->
+          @for (c of highlightColors; track c.hex) {
+            <button class="rab-color-btn"
+                    [style.background]="c.hex"
+                    [class.rab-color-active]="verseHighlightHex(selectedReadingVerse()!) === c.hex"
+                    (click)="setHighlight(selectedReadingVerse()!, c.hex)"
+                    [matTooltip]="c.name">
+            </button>
+          }
+          <!-- Limpar destaque -->
+          <button class="rab-clear-btn"
+                  (click)="clearHighlight(selectedReadingVerse()!)"
+                  matTooltip="Remover destaque">
+            <mat-icon>format_color_reset</mat-icon>
+          </button>
+
+          <div class="rab-sep"></div>
+
+          <!-- Copiar -->
+          <button mat-icon-button class="rab-action"
+                  (click)="copyReadingVerse()"
+                  [matTooltip]="copiedVerse() === selectedReadingVerse() ? 'Copiado!' : 'Copiar'">
+            <mat-icon>{{ copiedVerse() === selectedReadingVerse() ? 'check' : 'content_copy' }}</mat-icon>
+          </button>
+          <!-- Compartilhar -->
+          <button mat-icon-button class="rab-action"
+                  (click)="shareReadingVerse()"
+                  matTooltip="Compartilhar">
+            <mat-icon>share</mat-icon>
+          </button>
+          @if (isLoggedIn()) {
+            <!-- Anotação -->
+            <button mat-icon-button class="rab-action"
+                    [class.rab-action-active]="hasNote(selectedReadingVerse()!)"
+                    (click)="openNoteFromReading()"
+                    [matTooltip]="hasNote(selectedReadingVerse()!) ? 'Editar anotação' : 'Adicionar anotação'">
+              <mat-icon>{{ hasNote(selectedReadingVerse()!) ? 'sticky_note_2' : 'note_add' }}</mat-icon>
+            </button>
+            <!-- Favorito -->
+            <button mat-icon-button class="rab-action"
+                    [class.rab-action-active]="isBookmarkedByVerse(selectedReadingVerse()!)"
+                    (click)="toggleBookmarkFromReading()"
+                    [matTooltip]="isBookmarkedByVerse(selectedReadingVerse()!) ? 'Remover favorito' : 'Adicionar favorito'">
+              <mat-icon>{{ isBookmarkedByVerse(selectedReadingVerse()!) ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+            </button>
+          }
+          <!-- Ask AI -->
+          <button mat-icon-button class="rab-action"
+                  (click)="askAiFromReading()"
+                  matTooltip="Perguntar à IA">
+            <mat-icon>psychology</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+
     <!-- Barra de controles flutuante -->
-    <div class="reader-controls">
+    <div class="reader-controls" [class.reader-controls-shifted]="selectedReadingVerse() !== null">
       <!-- Capítulo anterior com label -->
       <button class="reader-nav-btn"
               [disabled]="!hasPrevChapter()"
