@@ -2,7 +2,6 @@ import { Component, inject, signal, computed, OnInit, PLATFORM_ID } from '@angul
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -20,7 +19,6 @@ import { ChatStateService } from '../../services/chat-state.service';
   imports: [
     CommonModule,
     MatButtonModule,
-    MatCardModule,
     MatIconModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
@@ -65,14 +63,6 @@ export class HomeComponent implements OnInit {
   progressPct(plan: ReadingPlan): number {
     return Math.round((plan.completedDays / plan.totalDays) * 100);
   }
-
-  features = [
-    { title: 'Chat com IA',   description: 'Converse com uma IA especializada em teologia bíblica', route: '/chat',        icon: '💬' },
-    { title: 'Bíblia',        description: 'Acesse versículos bíblicos de diferentes versões',      route: '/bible',       icon: '📖' },
-    { title: 'Teologia',      description: 'Explore conceitos teológicos profundos',                route: '/theology',    icon: '⛪' },
-    { title: 'Escatologia',   description: 'Entenda os últimos tempos e profecias',                 route: '/eschatology', icon: '🔮' },
-    { title: 'História',      description: 'Contexto histórico dos livros bíblicos',               route: '/history',     icon: '📚' }
-  ];
 
   ngOnInit(): void {
     this.api.getVerseOfDay().subscribe({

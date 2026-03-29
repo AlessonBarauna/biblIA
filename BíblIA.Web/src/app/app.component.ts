@@ -92,4 +92,13 @@ export class AppComponent {
     { label: 'Linha do Tempo', route: '/timeline', icon: 'timeline' },
     { label: 'Glossário',      route: '/glossary', icon: 'menu_book' }
   ];
+
+  // Apenas os 5 itens principais exibidos na bottom nav do mobile
+  bottomNavItems = [
+    { label: 'Início',   route: '/',       icon: 'home' },
+    { label: 'Chat',     route: '/chat',   icon: 'chat' },
+    { label: 'Bíblia',   route: '/bible',  icon: 'book' },
+    { label: 'Leitura',  route: '/reading',icon: 'auto_stories' },
+    { label: 'Mais',     route: '/theology',icon: 'apps' },
+  ];
 }

@@ -284,42 +284,19 @@
   background: var(--bg);
 }
 
+/* ── Bottom nav (mobile) ─────────────────────────────────────────────────── */
+.app-bottom-nav {
+  display: none; /* escondido no desktop */
+}
+
 @media (max-width: 768px) {
-  .app-container {
-    flex-direction: column;
-  }
-
-  /* Nav vira uma barra horizontal rolável no mobile (padrão de tabs) */
   .app-nav {
-    width: 100%;
-    height: auto;
-    max-height: none;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    overflow-y: hidden;
-    flex-shrink: 0;
-    scrollbar-width: none; /* Firefox */
+    display: none; /* sidebar oculta no mobile */
   }
 
-  .app-nav::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
-  }
-
-  /* Força os itens de nav em linha horizontal */
-  .app-nav ::ng-deep .mat-mdc-list-base {
-    display: flex !important;
-    flex-direction: row !important;
-    padding: 4px 8px !important;
-    width: max-content;
-    min-width: 100%;
-  }
-
-  .app-nav mat-list-item {
-    flex-shrink: 0 !important;
-    width: auto !important;
-    min-width: 80px !important;
-    border-radius: 8px !important;
+  .app-main {
+    /* Espaço para a bottom nav não cobrir o conteúdo */
+    padding-bottom: 64px;
   }
 
   .user-name {
@@ -328,5 +305,58 @@
 
   .global-search-wrapper {
     display: none;
+  }
+
+  /* Bottom nav fixa */
+  .app-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  .bnav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    font-weight: 600;
+    transition: color 0.15s;
+    padding: 6px 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bnav-item:hover {
+    color: var(--text);
+  }
+
+  .bnav-item.bnav-active {
+    color: var(--accent);
+  }
+
+  .bnav-icon {
+    font-size: 1.4rem;
+    height: 1.4rem;
+    width: 1.4rem;
+    transition: transform 0.15s;
+  }
+
+  .bnav-item.bnav-active .bnav-icon {
+    transform: scale(1.15);
+  }
+
+  .bnav-label {
+    line-height: 1;
   }
 }

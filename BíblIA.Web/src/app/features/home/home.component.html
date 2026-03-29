@@ -131,21 +131,4 @@
     </section>
   }
 
-  <!-- ── Features ─────────────────────────────────────────────────────── -->
-  <div class="features-grid">
-    <mat-card *ngFor="let feature of features" class="feature-card">
-      <div class="feature-icon">{{ feature.icon }}</div>
-      <mat-card-header>
-        <mat-card-title>{{ feature.title }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>{{ feature.description }}</p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-raised-button color="primary" [routerLink]="feature.route">
-          Explorar
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  </div>
 </div>
