@@ -76,6 +76,27 @@ public class BookmarksController : ControllerBase
         return CreatedAtAction(nameof(GetBookmarks), MapToDto(bookmark));
     }
 
+    [HttpPatch("{id}")]
+    public async Task<ActionResult<BookmarkDto>> UpdateTags(int id, UpdateBookmarkTagsDto dto)
+    {
+        var userId = GetUserId();
+        var bookmark = await _context.BookmarkVerses
+            .Include(b => b.Book)
+            .FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
+
+        if (bookmark == null) return NotFound();
+
+        // Normaliza: minúsculas, sem duplicatas, sem vazios
+        bookmark.Tags = string.Join(',',
+            dto.Tags
+               .Select(t => t.Trim().ToLower())
+               .Where(t => t.Length > 0)
+               .Distinct());
+
+        await _context.SaveChangesAsync();
+        return Ok(MapToDto(bookmark));
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> RemoveBookmark(int id)
     {
@@ -104,6 +125,9 @@ public class BookmarksController : ControllerBase
         Verse = b.Verse,
         VerseText = b.VerseText,
         Note = b.Note,
+        Tags = string.IsNullOrEmpty(b.Tags)
+            ? []
+            : b.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries),
         CreatedAt = b.CreatedAt
     };
 }

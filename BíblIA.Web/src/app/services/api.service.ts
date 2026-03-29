@@ -180,6 +180,7 @@ export interface Bookmark {
   verse: number;
   verseText: string;
   note: string;
+  tags: string[];
   createdAt: string;
 }
 
@@ -340,6 +341,10 @@ export class ApiService {
 
   removeBookmark(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/bookmarks/${id}`);
+  }
+
+  updateBookmarkTags(id: number, tags: string[]): Observable<Bookmark> {
+    return this.http.patch<Bookmark>(`${this.apiUrl}/bookmarks/${id}`, { tags });
   }
 
   // ── Bible: Busca de versículos ─────────────────────────────────────────────

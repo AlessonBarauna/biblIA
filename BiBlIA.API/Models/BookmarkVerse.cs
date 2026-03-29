@@ -11,5 +11,7 @@ public class BookmarkVerse
     public int Verse { get; set; }
     public string VerseText { get; set; } = string.Empty;
     public string Note { get; set; } = string.Empty;
+    // Tags armazenadas como string comma-separated: "fé,graça,salvação"
+    public string Tags { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

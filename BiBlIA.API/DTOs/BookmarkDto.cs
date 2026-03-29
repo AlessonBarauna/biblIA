@@ -12,6 +12,7 @@ public class BookmarkDto
     public int Verse { get; set; }
     public string VerseText { get; set; } = string.Empty;
     public string Note { get; set; } = string.Empty;
+    public string[] Tags { get; set; } = [];
     public DateTime CreatedAt { get; set; }
 }
 
@@ -31,4 +32,9 @@ public class CreateBookmarkDto
 
     [MaxLength(500)]
     public string Note { get; set; } = string.Empty;
+}
+
+public class UpdateBookmarkTagsDto
+{
+    public string[] Tags { get; set; } = [];
 }

@@ -110,6 +110,8 @@ using (var scope = app.Services.CreateScope())
                 ADD COLUMN IF NOT EXISTS ""ExternalUrl"" TEXT;
             ALTER TABLE ""TheologyCourses""
                 ADD COLUMN IF NOT EXISTS ""Provider""    TEXT;
+            ALTER TABLE ""BookmarkVerses""
+                ADD COLUMN IF NOT EXISTS ""Tags"" TEXT NOT NULL DEFAULT '';
         ");
 
         // Passo 2: CREATE TABLE para tabelas completamente novas.

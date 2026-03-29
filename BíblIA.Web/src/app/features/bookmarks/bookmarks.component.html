@@ -10,9 +10,7 @@
   </header>
 
   @if (loading()) {
-    <div class="loading-center">
-      <mat-spinner diameter="40"></mat-spinner>
-    </div>
+    <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
   } @else if (bookmarks().length === 0) {
     <div class="empty-state">
       <mat-icon class="empty-icon">bookmark_border</mat-icon>
@@ -22,9 +20,29 @@
       </a>
     </div>
   } @else {
+
+    <!-- ── Filtro por tags ────────────────────────────────────────────────── -->
+    @if (allTags().length > 0) {
+      <div class="tag-filter">
+        <button class="tag-chip" [class.active]="activeTag() === null" (click)="activeTag.set(null)">
+          Todos
+        </button>
+        @for (tag of allTags(); track tag) {
+          <button class="tag-chip" [class.active]="activeTag() === tag" (click)="activeTag.set(tag)">
+            # {{ tag }}
+          </button>
+        }
+      </div>
+    }
+
+    @if (filtered().length === 0) {
+      <p class="empty-filter">Nenhum favorito com a tag "{{ activeTag() }}".</p>
+    }
+
     <ul class="bookmark-list">
-      @for (b of bookmarks(); track b.id) {
+      @for (b of filtered(); track b.id) {
         <li class="bookmark-card" [class.removing]="isRemoving(b.id)">
+
           <div class="bookmark-ref">
             <span class="ref-text">{{ b.bookName }} {{ b.chapter }}:{{ b.verse }}</span>
           </div>
@@ -37,6 +55,39 @@
               {{ b.note }}
             </p>
           }
+
+          <!-- ── Tags ──────────────────────────────────────────────────────── -->
+          <div class="tags-row">
+            @for (tag of b.tags; track tag) {
+              <span class="tag-badge">
+                # {{ tag }}
+                <button class="tag-remove" (click)="removeTag(b, tag)" matTooltip="Remover tag">×</button>
+              </span>
+            }
+
+            @if (editingTagsId() === b.id) {
+              <div class="tag-editor">
+                <input class="tag-input"
+                       type="text"
+                       placeholder="fé, graça, salvação"
+                       [ngModel]="editingTagsText()"
+                       (ngModelChange)="editingTagsText.set($event)"
+                       (keyup.enter)="saveTags(b)"
+                       (keyup.escape)="cancelTagEditor()"
+                       autofocus>
+                <button mat-icon-button (click)="saveTags(b)" matTooltip="Salvar">
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="cancelTagEditor()" matTooltip="Cancelar">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            } @else {
+              <button class="add-tag-btn" (click)="openTagEditor(b)" matTooltip="Adicionar tags">
+                <mat-icon>add</mat-icon> tag
+              </button>
+            }
+          </div>
 
           <div class="bookmark-footer">
             <span class="bookmark-date">{{ formatDate(b.createdAt) }}</span>
@@ -56,6 +107,7 @@
               </button>
             </div>
           </div>
+
         </li>
       }
     </ul>
