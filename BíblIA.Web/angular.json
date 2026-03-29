@@ -26,13 +26,8 @@
               }
             ],
             "styles": ["src/material-theme.scss", "src/styles.css"],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
             "security": {
               "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
             }
           },
           "configurations": {
@@ -43,7 +38,6 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "outputMode": "static",
               "serviceWorker": "ngsw-config.json",
               "budgets": [
                 {
@@ -62,7 +56,12 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "server": "src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "src/server.ts"
+              }
             }
           },
           "defaultConfiguration": "production"
