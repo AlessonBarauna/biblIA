@@ -19,6 +19,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService, BibleBook, BibleVerse, BibleStudyNote, Bookmark, VerseNote } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { AiPanelComponent } from '../../shared/ai-panel/ai-panel.component';
+import { OfflineSyncService } from '../../services/offline-sync.service';
 
 // O componente funciona como uma máquina de estados com 3 "vistas":
 //   'books'   → lista de livros do AT/NT
@@ -52,6 +53,7 @@ interface Translation { key: TranslationKey; label: string; name: string; }
 export class BibleComponent implements OnInit {
   private api        = inject(ApiService);
   private auth       = inject(AuthService);
+  readonly offline   = inject(OfflineSyncService);
   private route      = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
   private platform   = inject(PLATFORM_ID);
@@ -518,27 +520,41 @@ export class BibleComponent implements OnInit {
     const book  = this.selectedBook()!;
     const text  = this.editingNoteText().trim();
 
+    const ch = this.selectedChapter()!;
+
     if (!text) {
-      // Texto vazio = apaga a anotação se existia
       if (this.noteMap().has(v.verse)) {
-        this.api.deleteVerseNote(book.id, this.selectedChapter()!, v.verse).subscribe({
-          next: () => {
-            const map = new Map(this.noteMap());
-            map.delete(v.verse);
-            this.noteMap.set(map);
-            this.loadBookAnnotations(); // sincroniza badge no livro
-          }
-        });
+        // Atualiza UI imediatamente
+        const map = new Map(this.noteMap());
+        map.delete(v.verse);
+        this.noteMap.set(map);
+        this.loadBookAnnotations();
+
+        if (this.offline.isOnline()) {
+          this.api.deleteVerseNote(book.id, ch, v.verse).subscribe();
+        } else {
+          this.offline.enqueue({ type: 'delete_note', bookId: book.id, chapter: ch, verse: v.verse });
+        }
       }
     } else {
-      this.api.upsertVerseNote(book.id, this.selectedChapter()!, v.verse, text).subscribe({
-        next: note => {
-          const map = new Map(this.noteMap());
-          map.set(v.verse, note);
-          this.noteMap.set(map);
-          this.loadBookAnnotations(); // sincroniza badge no livro
-        }
-      });
+      // Insere localmente com um objeto temporário (sem id real — substituído no flush)
+      const tempNote: VerseNote = { id: -1, bookId: book.id, bookName: book.name, chapter: ch, verse: v.verse, note: text, updatedAt: new Date().toISOString() };
+      const map = new Map(this.noteMap());
+      map.set(v.verse, tempNote);
+      this.noteMap.set(map);
+      this.loadBookAnnotations();
+
+      if (this.offline.isOnline()) {
+        this.api.upsertVerseNote(book.id, ch, v.verse, text).subscribe({
+          next: note => {
+            const m = new Map(this.noteMap());
+            m.set(v.verse, note); // substitui temporário pelo real
+            this.noteMap.set(m);
+          }
+        });
+      } else {
+        this.offline.enqueue({ type: 'upsert_note', bookId: book.id, chapter: ch, verse: v.verse, note: text });
+      }
     }
     this.cancelNoteEditor();
   }

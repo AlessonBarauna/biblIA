@@ -16,6 +16,7 @@ import { AuthService } from './services/auth.service';
 import { ThemeService } from './services/theme.service';
 import { NotificationService } from './services/notification.service';
 import { GlobalSearchService } from './services/global-search.service';
+import { OfflineSyncService } from './services/offline-sync.service';
 
 @Component({
   selector: 'app-root',
@@ -40,6 +41,7 @@ export class AppComponent {
   protected auth         = inject(AuthService);
   protected theme        = inject(ThemeService);
   protected globalSearch = inject(GlobalSearchService);
+  protected offlineSync  = inject(OfflineSyncService);
   private notifications  = inject(NotificationService);
   private router         = inject(Router);
   private destroyRef     = inject(DestroyRef);

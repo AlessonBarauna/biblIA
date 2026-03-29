@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ApiService, BibleBook, ReadingPlan, ReadingLog } from '../../services/api.service';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/auth.service';
+import { OfflineSyncService } from '../../services/offline-sync.service';
 
 // ── Tipos do cronograma ───────────────────────────────────────────────────────
 
@@ -62,8 +63,9 @@ interface HeatDay {
   styleUrls: ['./reading.component.css']
 })
 export class ReadingComponent implements OnInit {
-  private api  = inject(ApiService);
-  private auth = inject(AuthService);
+  private api    = inject(ApiService);
+  private auth   = inject(AuthService);
+  readonly offline = inject(OfflineSyncService);
 
   readonly isLoggedIn = this.auth.isLoggedIn;
 
@@ -282,20 +284,26 @@ export class ReadingComponent implements OnInit {
     const set  = new Set(this.doneSet());
 
     if (set.has(key)) {
-      this.api.unmarkReadingDay(plan.id, day).subscribe();
+      if (this.offline.isOnline()) {
+        this.api.unmarkReadingDay(plan.id, day).subscribe();
+      } else {
+        this.offline.enqueue({ type: 'unmark_day', planId: plan.id, dayNumber: day });
+      }
       set.delete(key);
     } else {
-      this.api.markReadingDay(plan.id, day).subscribe({
-        next: () => {
-          // Após confirmação do servidor, busca logs frescos para recalcular streak e heatmap
-          this.api.getReadingLogs().subscribe(logs => {
-            this.allLogs.set(logs);
-            this.streak.set(this.computeStreak(logs));
-          });
-          // Dispara quiz de revisão para o dia marcado
-          this.triggerQuiz(day);
-        }
-      });
+      if (this.offline.isOnline()) {
+        this.api.markReadingDay(plan.id, day).subscribe({
+          next: () => {
+            this.api.getReadingLogs().subscribe(logs => {
+              this.allLogs.set(logs);
+              this.streak.set(this.computeStreak(logs));
+            });
+            this.triggerQuiz(day);
+          }
+        });
+      } else {
+        this.offline.enqueue({ type: 'mark_day', planId: plan.id, dayNumber: day });
+      }
       set.add(key);
     }
     this.doneSet.set(set);

@@ -50,6 +50,23 @@
       }
     </div>
 
+    <!-- Indicador offline / sincronizando -->
+    @if (!offlineSync.isOnline()) {
+      <div class="offline-chip" matTooltip="Sem conexão — ações serão sincronizadas ao voltar online">
+        <mat-icon>cloud_off</mat-icon>
+        <span>Offline</span>
+        @if (offlineSync.pendingCount() > 0) {
+          <span class="offline-count">{{ offlineSync.pendingCount() }}</span>
+        }
+      </div>
+    }
+    @if (offlineSync.isOnline() && offlineSync.flushing()) {
+      <div class="syncing-chip" matTooltip="Sincronizando ações pendentes…">
+        <mat-spinner diameter="14"></mat-spinner>
+        <span>Sincronizando</span>
+      </div>
+    }
+
     <button mat-icon-button
             (click)="theme.toggle()"
             [matTooltip]="theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro'"

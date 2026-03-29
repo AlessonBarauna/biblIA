@@ -80,6 +80,52 @@
   background: var(--bg);
 }
 
+/* ── Offline / sync indicator ────────────────────────────────────────────── */
+.offline-chip,
+.syncing-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.offline-chip {
+  background: color-mix(in srgb, #ff6b6b 20%, transparent);
+  border: 1px solid #ff6b6b;
+  color: #ff6b6b;
+}
+
+.offline-chip mat-icon {
+  font-size: 0.9rem;
+  height: 0.9rem;
+  width: 0.9rem;
+}
+
+.offline-count {
+  background: #ff6b6b;
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  min-width: 16px;
+  text-align: center;
+}
+
+.syncing-chip {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .offline-chip span:not(.offline-count),
+  .syncing-chip span { display: none; }
+}
+
 /* ── Busca global ─────────────────────────────────────────────────────────── */
 .global-search-wrapper {
   position: relative;
