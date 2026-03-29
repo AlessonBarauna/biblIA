@@ -105,6 +105,11 @@ export class BibleComponent implements OnInit {
   // Verso a destacar após navegação pela busca — limpo após 2s + animação CSS
   highlightedVerse = signal<number | null>(null);
 
+  // ── Versículos relacionados (cross-references via IA) ─────────────────────
+  relatedVersesVerse   = signal<number | null>(null);
+  relatedVersesLoading = signal(false);
+  relatedVersesList    = signal<{ ref: string; text: string }[]>([]);
+
   readonly isLoggedIn = this.auth.isLoggedIn;
 
   // Computed para navegação entre capítulos
@@ -320,6 +325,46 @@ export class BibleComponent implements OnInit {
     }
   }
 
+  // ── Versículos relacionados ───────────────────────────────────────────────
+  //
+  // Pede à IA 4 referências cruzadas temáticas para o versículo clicado.
+  // Clicar no mesmo verso novamente fecha o painel (toggle).
+
+  loadRelatedVerses(v: BibleVerse): void {
+    // Toggle: fecha se clicar no mesmo verso
+    if (this.relatedVersesVerse() === v.verse) {
+      this.relatedVersesVerse.set(null);
+      this.relatedVersesList.set([]);
+      return;
+    }
+
+    const book = this.selectedBook()!;
+    const ref  = `${book.name} ${this.selectedChapter()}:${v.verse}`;
+    const text = this.verseText(v).slice(0, 120);
+
+    this.relatedVersesVerse.set(v.verse);
+    this.relatedVersesLoading.set(true);
+    this.relatedVersesList.set([]);
+
+    const prompt =
+      `Liste 4 versículos bíblicos que são referências cruzadas ou tematicamente relacionados a ${ref}: "${text}". ` +
+      `Responda APENAS com JSON válido, sem texto adicional: ` +
+      `[{"ref":"Livro Capítulo:Versículo","text":"texto resumido do versículo em português"}]`;
+
+    this.api.askAi(prompt, 'bible').subscribe({
+      next: res => {
+        try {
+          const match = res.answer.match(/\[[\s\S]*\]/);
+          this.relatedVersesList.set(match ? JSON.parse(match[0]) : []);
+        } catch {
+          this.relatedVersesList.set([]);
+        }
+        this.relatedVersesLoading.set(false);
+      },
+      error: () => this.relatedVersesLoading.set(false)
+    });
+  }
+
   // ── Navegação entre capítulos ─────────────────────────────────────────────
 
   prevChapter(): void {
@@ -487,6 +532,8 @@ export class BibleComponent implements OnInit {
     this.highlightedVerse.set(null);
     this.editingNoteVerse.set(null);
     this.noteMap.set(new Map());
+    this.relatedVersesVerse.set(null);
+    this.relatedVersesList.set([]);
 
     this.api.getChapter(book.id, chapter).subscribe({
       next: verses => {

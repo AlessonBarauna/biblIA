@@ -231,6 +231,30 @@
                 </div>
               </div>
             }
+            <!-- Painel de versículos relacionados -->
+            @if (relatedVersesVerse() === v.verse) {
+              <div class="related-verses-panel">
+                <div class="related-header">
+                  <mat-icon class="related-icon">account_tree</mat-icon>
+                  <span>Referências cruzadas</span>
+                </div>
+                @if (relatedVersesLoading()) {
+                  <div class="related-loading">
+                    <mat-spinner diameter="20"></mat-spinner>
+                    <span>Buscando referências…</span>
+                  </div>
+                }
+                @if (!relatedVersesLoading() && relatedVersesList().length === 0) {
+                  <p class="related-empty">Nenhuma referência encontrada.</p>
+                }
+                @for (item of relatedVersesList(); track item.ref) {
+                  <div class="related-item">
+                    <span class="related-ref">{{ item.ref }}</span>
+                    <span class="related-text">{{ item.text }}</span>
+                  </div>
+                }
+              </div>
+            }
           </div>
           <div class="verse-actions">
             <!-- Botão copiar — aparece ao hover; exibe "check" por 2s após copiar -->
@@ -244,6 +268,17 @@
               (click)="shareVerse(v)"
               [matTooltip]="sharedVerse() === v.verse ? 'Compartilhado!' : 'Compartilhar versículo'">
               <mat-icon>{{ sharedVerse() === v.verse ? 'check' : 'share' }}</mat-icon>
+            </button>
+            <!-- Botão referências cruzadas via IA — toggle; spinner enquanto carrega -->
+            <button mat-icon-button class="related-btn"
+              [class.related-active]="relatedVersesVerse() === v.verse"
+              (click)="loadRelatedVerses(v)"
+              matTooltip="Versículos relacionados (IA)">
+              @if (relatedVersesLoading() && relatedVersesVerse() === v.verse) {
+                <mat-spinner diameter="18"></mat-spinner>
+              } @else {
+                <mat-icon>account_tree</mat-icon>
+              }
             </button>
             @if (isLoggedIn()) {
               <button mat-icon-button class="note-btn"
