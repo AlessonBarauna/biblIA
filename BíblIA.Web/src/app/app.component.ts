@@ -88,6 +88,7 @@ export class AppComponent {
     { label: 'Leitura',    route: '/reading',      icon: 'auto_stories' },
     { label: 'Teologia',   route: '/theology',     icon: 'school' },
     { label: 'Escatologia',route: '/eschatology',  icon: 'public' },
-    { label: 'História',   route: '/history',      icon: 'history' }
+    { label: 'História',   route: '/history',      icon: 'history' },
+    { label: 'Linha do Tempo', route: '/timeline', icon: 'timeline' }
   ];
 }

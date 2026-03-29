@@ -9,6 +9,7 @@ import { AuthComponent } from './features/auth/auth.component';
 import { BookmarksComponent } from './features/bookmarks/bookmarks.component';
 import { ReadingComponent } from './features/reading/reading.component';
 import { ProfileComponent } from './features/profile/profile.component';
+import { TimelineComponent } from './features/timeline/timeline.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -22,5 +23,6 @@ export const routes: Routes = [
   { path: 'bookmarks',   component: BookmarksComponent,   canActivate: [authGuard] },
   { path: 'reading',     component: ReadingComponent,     canActivate: [authGuard] },
   { path: 'profile',     component: ProfileComponent,     canActivate: [authGuard] },
+  { path: 'timeline',    component: TimelineComponent,    canActivate: [authGuard] },
   { path: '**',          redirectTo: '' }
 ];

@@ -1,0 +1,109 @@
+<div class="timeline-container">
+
+  <header class="timeline-header">
+    <h1>Linha do Tempo Bíblica</h1>
+    <p>25 eras da história da redenção — da Criação ao Novo Testamento</p>
+  </header>
+
+  <!-- Filtro por categoria -->
+  <div class="filter-row">
+    <button class="filter-chip" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">
+      Todas
+    </button>
+    @for (cat of categories; track cat) {
+      <button class="filter-chip"
+              [class.active]="activeFilter() === cat"
+              [style.--chip-color]="colorFor(cat)"
+              (click)="setFilter(cat)">
+        {{ categoryLabels[cat] }}
+      </button>
+    }
+  </div>
+
+  <!-- Busca -->
+  <div class="search-row">
+    <input class="tl-search"
+           type="text"
+           placeholder="Buscar era, personagem…"
+           [value]="searchQuery()"
+           (input)="searchQuery.set($any($event.target).value)">
+  </div>
+
+  <!-- Linha do tempo -->
+  <div class="timeline">
+    @for (era of filteredEras(); track era.id) {
+      <div class="tl-item"
+           [class.selected]="selectedEra()?.id === era.id"
+           [style.--era-color]="colorFor(era.category)"
+           (click)="selectEra(era)">
+
+        <!-- Linha vertical e nó -->
+        <div class="tl-spine">
+          <div class="tl-dot">{{ era.icon }}</div>
+          <div class="tl-line"></div>
+        </div>
+
+        <!-- Conteúdo -->
+        <div class="tl-content">
+          <div class="tl-meta">
+            <span class="tl-era-num">Era {{ era.id }}</span>
+            <span class="tl-period">{{ era.period }}</span>
+            <span class="tl-cat-badge" [style.background]="colorFor(era.category)">
+              {{ categoryLabels[era.category] }}
+            </span>
+          </div>
+
+          <h2 class="tl-title">{{ era.name }}</h2>
+          <p class="tl-summary">{{ era.summary }}</p>
+
+          <!-- Detalhe expandido -->
+          @if (selectedEra()?.id === era.id) {
+            <div class="tl-detail">
+              <div class="tl-detail-grid">
+
+                <div class="tl-detail-section">
+                  <span class="tl-detail-label">Personagens-chave</span>
+                  <div class="tl-tags">
+                    @for (fig of era.keyFigures; track fig) {
+                      <span class="tl-tag tl-tag-person">{{ fig }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="tl-detail-section">
+                  <span class="tl-detail-label">Livros bíblicos</span>
+                  <div class="tl-tags">
+                    @for (book of era.keyBooks; track book) {
+                      <span class="tl-tag tl-tag-book">{{ book }}</span>
+                    }
+                  </div>
+                </div>
+
+              </div>
+
+              <blockquote class="tl-highlight">
+                <mat-icon>format_quote</mat-icon>
+                {{ era.highlight }}
+              </blockquote>
+            </div>
+          }
+
+          <button class="tl-toggle" mat-button>
+            <mat-icon>{{ selectedEra()?.id === era.id ? 'expand_less' : 'expand_more' }}</mat-icon>
+            {{ selectedEra()?.id === era.id ? 'Recolher' : 'Ver detalhes' }}
+          </button>
+        </div>
+
+      </div>
+    }
+
+    @if (filteredEras().length === 0) {
+      <div class="tl-empty">
+        <mat-icon>search_off</mat-icon>
+        <p>Nenhuma era encontrada para "{{ searchQuery() }}".</p>
+        <button mat-button (click)="searchQuery.set(''); setFilter('all')">Limpar filtros</button>
+      </div>
+    }
+  </div>
+
+</div>
