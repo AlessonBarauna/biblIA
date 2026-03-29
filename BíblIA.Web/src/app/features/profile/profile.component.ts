@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ApiService, UserProfile } from '../../services/api.service';
+import { ApiService, UserProfile, VerseNote } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -116,6 +116,69 @@ export class ProfileComponent implements OnInit {
         this.savingPassword.set(false);
       }
     });
+  }
+
+  // ── Exportar anotações ────────────────────────────────────────────────────
+  //
+  // Busca todas as anotações do usuário, gera um arquivo Markdown agrupado
+  // por livro e capítulo, e dispara o download no browser — sem backend extra.
+
+  exportingNotes = signal(false);
+
+  exportNotes(): void {
+    this.exportingNotes.set(true);
+    this.api.getAllVerseNotes().subscribe({
+      next: notes => {
+        this.exportingNotes.set(false);
+        if (notes.length === 0) return;
+        const md = this.buildMarkdown(notes);
+        this.downloadFile(md, 'anotacoes-biblicas.md', 'text/markdown;charset=utf-8');
+      },
+      error: () => this.exportingNotes.set(false)
+    });
+  }
+
+  private buildMarkdown(notes: VerseNote[]): string {
+    const date = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const lines: string[] = [`# Minhas Anotações Bíblicas`, `*Exportado em ${date}*`, ``];
+
+    // Agrupa por livro
+    const byBook = new Map<string, VerseNote[]>();
+    for (const n of notes) {
+      const key = n.bookName || `Livro ${n.bookId}`;
+      if (!byBook.has(key)) byBook.set(key, []);
+      byBook.get(key)!.push(n);
+    }
+
+    for (const [book, bookNotes] of byBook) {
+      lines.push(`---`, ``, `## ${book}`, ``);
+
+      // Agrupa por capítulo dentro do livro
+      const byChapter = new Map<number, VerseNote[]>();
+      for (const n of bookNotes) {
+        if (!byChapter.has(n.chapter)) byChapter.set(n.chapter, []);
+        byChapter.get(n.chapter)!.push(n);
+      }
+
+      for (const [ch, chNotes] of byChapter) {
+        lines.push(`### Capítulo ${ch}`, ``);
+        for (const n of chNotes) {
+          lines.push(`**Versículo ${n.verse}**`, `> ${n.note}`, ``);
+        }
+      }
+    }
+
+    return lines.join('\n');
+  }
+
+  private downloadFile(content: string, filename: string, mimeType: string): void {
+    const blob = new Blob([content], { type: mimeType });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

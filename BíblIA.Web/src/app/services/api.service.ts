@@ -164,6 +164,7 @@ export interface ReadingLog {
 export interface VerseNote {
   id: number;
   bookId: number;
+  bookName: string;
   chapter: number;
   verse: number;
   note: string;
@@ -390,6 +391,10 @@ export class ApiService {
 
   getVerseNotes(bookId: number, chapter: number): Observable<VerseNote[]> {
     return this.http.get<VerseNote[]>(`${this.apiUrl}/verse-notes`, { params: { bookId, chapter } });
+  }
+
+  getAllVerseNotes(): Observable<VerseNote[]> {
+    return this.http.get<VerseNote[]>(`${this.apiUrl}/verse-notes`);
   }
 
   upsertVerseNote(bookId: number, chapter: number, verse: number, note: string): Observable<VerseNote> {

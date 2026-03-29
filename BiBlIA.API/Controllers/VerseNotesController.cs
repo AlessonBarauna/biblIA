@@ -36,11 +36,25 @@ public class VerseNotesController : ControllerBase
         if (bookId.HasValue)   query = query.Where(n => n.BookId  == bookId.Value);
         if (chapter.HasValue)  query = query.Where(n => n.Chapter == chapter.Value);
 
+        // Join com BibleBooks para incluir bookName no DTO
         var notes = await query
+            .Join(_context.BibleBooks,
+                  n => n.BookId,
+                  b => b.Id,
+                  (n, b) => new VerseNoteDto
+                  {
+                      Id        = n.Id,
+                      BookId    = n.BookId,
+                      BookName  = b.Name,
+                      Chapter   = n.Chapter,
+                      Verse     = n.Verse,
+                      Note      = n.Note,
+                      UpdatedAt = n.UpdatedAt
+                  })
             .OrderBy(n => n.BookId).ThenBy(n => n.Chapter).ThenBy(n => n.Verse)
             .ToListAsync();
 
-        return Ok(notes.Select(Map));
+        return Ok(notes);
     }
 
     // PUT /api/verse-notes/{bookId}/{chapter}/{verse}
@@ -99,6 +113,7 @@ public class VerseNotesController : ControllerBase
     {
         Id        = n.Id,
         BookId    = n.BookId,
+        BookName  = "",   // não disponível sem join — usado apenas no Upsert
         Chapter   = n.Chapter,
         Verse     = n.Verse,
         Note      = n.Note,

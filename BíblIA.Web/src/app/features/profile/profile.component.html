@@ -120,6 +120,24 @@
       }
     </div>
 
+    <!-- ── Exportar dados ─────────────────────────────────────────────────── -->
+    <div class="profile-section">
+      <h3 class="section-title">
+        <mat-icon>download</mat-icon>
+        Exportar seus dados
+      </h3>
+      <p class="section-desc">Baixe todas as suas anotações pessoais em formato Markdown.</p>
+      <button mat-stroked-button (click)="exportNotes()" [disabled]="exportingNotes()">
+        @if (exportingNotes()) {
+          <mat-spinner diameter="18"></mat-spinner>
+          Gerando arquivo...
+        } @else {
+          <mat-icon>sticky_note_2</mat-icon>
+          Exportar anotações (.md)
+        }
+      </button>
+    </div>
+
   }
 
 </div>

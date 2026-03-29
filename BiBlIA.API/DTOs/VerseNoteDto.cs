@@ -4,6 +4,7 @@ public class VerseNoteDto
 {
     public int Id { get; set; }
     public int BookId { get; set; }
+    public string BookName { get; set; } = "";
     public int Chapter { get; set; }
     public int Verse { get; set; }
     public string Note { get; set; } = "";
