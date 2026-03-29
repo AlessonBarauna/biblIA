@@ -248,4 +248,73 @@
     </div>
   }
 
+  <!-- ── Quiz pós-leitura ──────────────────────────────────────────────────── -->
+  @if (quiz(); as q) {
+    <div class="quiz-overlay" (click.self)="closeQuiz()">
+      <div class="quiz-card">
+
+        <!-- Loading -->
+        @if (q.loading) {
+          <div class="quiz-loading">
+            <mat-spinner diameter="36"></mat-spinner>
+            <p>Gerando quiz para <strong>{{ q.chapterList }}</strong>…</p>
+          </div>
+        }
+
+        <!-- Perguntas -->
+        @if (!q.loading && !q.finished && q.questions.length > 0) {
+          <div class="quiz-header">
+            <span class="quiz-badge">Quiz · Dia {{ q.dayNumber }}</span>
+            <button mat-icon-button class="quiz-close" (click)="closeQuiz()" matTooltip="Fechar">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <p class="quiz-chapters">{{ q.chapterList }}</p>
+          <div class="quiz-progress-bar">
+            <div class="quiz-progress-fill" [style.width.%]="((q.currentQ) / q.questions.length) * 100"></div>
+          </div>
+          <p class="quiz-counter">{{ q.currentQ + 1 }} / {{ q.questions.length }}</p>
+
+          <p class="quiz-question">{{ q.questions[q.currentQ].question }}</p>
+
+          <div class="quiz-options">
+            @for (opt of q.questions[q.currentQ].options; track $index) {
+              <button class="quiz-option"
+                      [class.selected]="q.selectedOption === $index"
+                      [class.correct]="q.selectedOption !== null && $index === q.questions[q.currentQ].correct"
+                      [class.wrong]="q.selectedOption === $index && $index !== q.questions[q.currentQ].correct"
+                      [disabled]="q.selectedOption !== null"
+                      (click)="selectAnswer($index)">
+                <span class="option-letter">{{ 'ABCD'[$index] }}</span>
+                {{ opt }}
+              </button>
+            }
+          </div>
+
+          @if (q.selectedOption !== null) {
+            <button mat-flat-button color="primary" class="quiz-next-btn" (click)="nextQuestion()">
+              {{ q.currentQ + 1 < q.questions.length ? 'Próxima' : 'Ver resultado' }}
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          }
+        }
+
+        <!-- Resultado final -->
+        @if (!q.loading && q.finished) {
+          <div class="quiz-result">
+            <div class="result-emoji">
+              {{ q.score === q.questions.length ? '🏆' : q.score >= q.questions.length / 2 ? '👍' : '📖' }}
+            </div>
+            <h3 class="result-title">
+              {{ q.score === q.questions.length ? 'Perfeito!' : q.score >= q.questions.length / 2 ? 'Bom trabalho!' : 'Continue estudando!' }}
+            </h3>
+            <p class="result-score">{{ q.score }} de {{ q.questions.length }} corretas</p>
+            <button mat-flat-button color="primary" (click)="closeQuiz()">Fechar</button>
+          </div>
+        }
+
+      </div>
+    </div>
+  }
+
 </div>

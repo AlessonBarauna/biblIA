@@ -9,12 +9,27 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ApiService, BibleBook, ReadingPlan, ReadingLog } from '../../services/api.service';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/auth.service';
 
 // ── Tipos do cronograma ───────────────────────────────────────────────────────
 
 interface ChapterEntry { bookId: number; bookName: string; chapter: number; }
 interface DayReading   { day: number; chapters: ChapterEntry[]; }
+
+// ── Tipos do quiz ────────────────────────────────────────────────────────────
+
+interface QuizQuestion { question: string; options: string[]; correct: number; }
+interface QuizState {
+  loading:        boolean;
+  dayNumber:      number;
+  chapterList:    string;   // "Gênesis 1, Gênesis 2" — exibido no header do quiz
+  questions:      QuizQuestion[];
+  currentQ:       number;
+  selectedOption: number | null;
+  score:          number;
+  finished:       boolean;
+}
 
 // ── Tipos do heatmap ─────────────────────────────────────────────────────────
 // Cada célula representa um dia calendario com contagem de leituras naquele dia.
@@ -40,7 +55,8 @@ interface HeatDay {
     MatIconModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatSnackBarModule
   ],
   templateUrl: './reading.component.html',
   styleUrls: ['./reading.component.css']
@@ -65,6 +81,9 @@ export class ReadingComponent implements OnInit {
 
   // View de estatísticas
   showStats = signal(false);
+
+  // Quiz pós-leitura
+  quiz = signal<QuizState | null>(null);
 
   // Plano aberto para detalhe
   activePlan = signal<ReadingPlan | null>(null);
@@ -195,6 +214,65 @@ export class ReadingComponent implements OnInit {
     return 3;
   }
 
+  // ── Quiz pós-leitura ──────────────────────────────────────────────────────
+  //
+  // Após marcar um dia como lido, pede à IA 3 perguntas de múltipla escolha
+  // sobre os capítulos do dia. A resposta é JSON puro — parseamos e exibimos
+  // o quiz num overlay sem sair do plano de leitura.
+
+  triggerQuiz(day: number): void {
+    const chapters = this.schedule()[day - 1]?.chapters ?? [];
+    if (chapters.length === 0) return;
+
+    const chapterList = chapters.map(c => `${c.bookName} ${c.chapter}`).join(', ');
+
+    this.quiz.set({
+      loading: true, dayNumber: day, chapterList,
+      questions: [], currentQ: 0, selectedOption: null, score: 0, finished: false
+    });
+
+    const prompt =
+      `Crie exatamente 3 perguntas de múltipla escolha sobre os seguintes capítulos bíblicos: ${chapterList}. ` +
+      `Responda APENAS com um array JSON válido, sem texto adicional, neste formato exato: ` +
+      `[{"question":"...","options":["A","B","C","D"],"correct":0}] ` +
+      `onde "correct" é o índice (0-3) da resposta correta. As perguntas devem testar compreensão do texto bíblico.`;
+
+    this.api.askAi(prompt, 'bible').subscribe({
+      next: res => {
+        try {
+          // Extrai o array JSON da resposta (pode ter texto ao redor)
+          const match = res.answer.match(/\[[\s\S]*\]/);
+          const questions: QuizQuestion[] = match ? JSON.parse(match[0]) : [];
+          this.quiz.update(q => q ? { ...q, loading: false, questions } : q);
+        } catch {
+          this.quiz.set(null); // resposta não parseável — descarta silenciosamente
+        }
+      },
+      error: () => this.quiz.set(null)
+    });
+  }
+
+  selectAnswer(idx: number): void {
+    this.quiz.update(q => q && q.selectedOption === null ? { ...q, selectedOption: idx } : q);
+  }
+
+  nextQuestion(): void {
+    this.quiz.update(q => {
+      if (!q) return q;
+      const correct = q.questions[q.currentQ]?.correct ?? -1;
+      const gained  = q.selectedOption === correct ? 1 : 0;
+      const next    = q.currentQ + 1;
+      if (next >= q.questions.length) {
+        return { ...q, score: q.score + gained, selectedOption: null, finished: true };
+      }
+      return { ...q, score: q.score + gained, currentQ: next, selectedOption: null };
+    });
+  }
+
+  closeQuiz(): void {
+    this.quiz.set(null);
+  }
+
   // ── Marcar / desmarcar ────────────────────────────────────────────────────
 
   toggleDay(day: number): void {
@@ -214,6 +292,8 @@ export class ReadingComponent implements OnInit {
             this.allLogs.set(logs);
             this.streak.set(this.computeStreak(logs));
           });
+          // Dispara quiz de revisão para o dia marcado
+          this.triggerQuiz(day);
         }
       });
       set.add(key);
