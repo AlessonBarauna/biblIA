@@ -52,6 +52,26 @@
         </div>
       }
 
+      <!-- Resumo diário por IA -->
+      @if (dailySummaryLoading()) {
+        <div class="daily-summary loading">
+          <mat-spinner diameter="20"></mat-spinner>
+          <span>Gerando resumo da leitura de hoje…</span>
+        </div>
+      }
+      @if (!dailySummaryLoading() && dailySummary()) {
+        <div class="daily-summary">
+          <div class="summary-label">
+            <mat-icon>auto_awesome</mat-icon>
+            <span>Resumo da leitura de hoje</span>
+          </div>
+          <p class="summary-text">{{ dailySummary() }}</p>
+          <a mat-stroked-button routerLink="/reading" class="summary-cta">
+            <mat-icon>auto_stories</mat-icon> Ir para o plano
+          </a>
+        </div>
+      }
+
       <!-- Stats cards -->
       <div class="stats-row">
         <a class="stat-card" routerLink="/bookmarks">

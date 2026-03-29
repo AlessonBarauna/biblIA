@@ -327,3 +327,53 @@ mat-card-actions {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Resumo diário por IA ─────────────────────────────────────────────────── */
+.daily-summary {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 8%, var(--surface-2)),
+    var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.daily-summary.loading {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.summary-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.summary-label mat-icon {
+  font-size: 1rem;
+  height: 1rem;
+  width: 1rem;
+}
+
+.summary-text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.summary-cta {
+  align-self: flex-start;
+}

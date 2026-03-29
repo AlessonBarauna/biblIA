@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -33,6 +34,9 @@ export class HomeComponent implements OnInit {
   private api       = inject(ApiService);
   private auth      = inject(AuthService);
   private chatState = inject(ChatStateService);
+  private platform  = inject(PLATFORM_ID);
+
+  private readonly SUMMARY_KEY = 'daily_summary_cache';
 
   verseOfDay    = signal<BibleVerse | null>(null);
   loadingVerse  = signal(true);
@@ -45,6 +49,10 @@ export class HomeComponent implements OnInit {
 
   readonly isLoggedIn   = this.auth.isLoggedIn;
   readonly activeChatId = this.chatState.activeChatId;
+
+  // ── Resumo diário ─────────────────────────────────────────────────────────
+  dailySummary        = signal<string | null>(null);
+  dailySummaryLoading = signal(false);
 
   // Planos com progresso > 0, ordenados por % mais avançado
   activePlans = computed(() =>
@@ -90,6 +98,7 @@ export class HomeComponent implements OnInit {
       this.plans.set(plans);
       this.streak.set(this.computeStreak(logs));
       this.loadingStats.set(false);
+      this.loadDailySummary(plans, logs);
     });
   }
 
@@ -109,6 +118,68 @@ export class HomeComponent implements OnInit {
       if (diff === 1) streak++; else break;
     }
     return streak;
+  }
+
+  // ── Resumo diário por IA ─────────────────────────────────────────────────
+  //
+  // Escolhe o plano mais avançado, calcula o dia atual e pede à IA um resumo
+  // motivador dos capítulos. Cacheia em localStorage para não re-gerar no mesmo dia.
+
+  private loadDailySummary(plans: ReadingPlan[], logs: ReadingLog[]): void {
+    if (!isPlatformBrowser(this.platform)) return;
+
+    const best = [...plans]
+      .filter(p => p.completedDays > 0)
+      .sort((a, b) => (b.completedDays / b.totalDays) - (a.completedDays / a.totalDays))[0];
+
+    if (!best) return;
+
+    // Calcula dia atual (mesmo algoritmo do ReadingComponent)
+    const doneSet = new Set(logs.map(l => `${l.planId}:${l.dayNumber}`));
+    let max = 0;
+    for (let d = 1; d <= best.totalDays; d++) {
+      if (doneSet.has(`${best.id}:${d}`)) max = d; else break;
+    }
+    const currentDay = Math.min(max + 1, best.totalDays);
+
+    // Verifica cache: { date, planId, day, summary }
+    const today = new Date().toISOString().substring(0, 10);
+    try {
+      const cached = JSON.parse(localStorage.getItem(this.SUMMARY_KEY) ?? 'null');
+      if (cached?.date === today && cached?.planId === best.id && cached?.day === currentDay) {
+        this.dailySummary.set(cached.summary);
+        return;
+      }
+    } catch { /* ignora cache corrompido */ }
+
+    // Gera novo resumo
+    this.dailySummaryLoading.set(true);
+
+    const strategyLabel: Record<string, string> = {
+      full_bible:    'Bíblia Completa',
+      new_testament: 'Novo Testamento',
+      gospels:       'Evangelhos'
+    };
+
+    const prompt =
+      `Estou no dia ${currentDay} de ${best.totalDays} do plano de leitura "${best.name}" ` +
+      `(${strategyLabel[best.strategy] ?? best.strategy}). ` +
+      `Escreva um parágrafo motivador de 3 a 4 linhas resumindo o que provavelmente estou lendo ` +
+      `neste ponto do plano e qual é a mensagem espiritual central deste trecho. ` +
+      `Seja específico sobre os livros/personagens bíblicos prováveis para este ponto do plano.`;
+
+    this.api.askAi(prompt, 'bible').subscribe({
+      next: res => {
+        this.dailySummary.set(res.answer);
+        this.dailySummaryLoading.set(false);
+        try {
+          localStorage.setItem(this.SUMMARY_KEY, JSON.stringify({
+            date: today, planId: best.id, day: currentDay, summary: res.answer
+          }));
+        } catch { /* quota exceeded — ignora */ }
+      },
+      error: () => this.dailySummaryLoading.set(false)
+    });
   }
 
   get todayLabel(): string {
