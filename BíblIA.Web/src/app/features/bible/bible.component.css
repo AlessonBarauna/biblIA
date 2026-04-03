@@ -682,13 +682,30 @@
   color: var(--text);
 }
 
-.reader-translation {
+.reader-translation-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
   font-size: 0.75em;
   font-weight: 600;
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
-  padding: 2px 10px;
+  border: none;
+  padding: 4px 10px;
   border-radius: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.reader-translation-btn:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.reader-translation-icon {
+  font-size: 1em;
+  width: 1em;
+  height: 1em;
 }
 
 /* Área de texto: ocupa o espaço restante, scroll independente */

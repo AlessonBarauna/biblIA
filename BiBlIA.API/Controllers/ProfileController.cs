@@ -29,12 +29,10 @@ public class ProfileController : ControllerBase
         var user   = await _context.Users.FindAsync(userId);
         if (user == null) return NotFound();
 
-        // As três queries são independentes — executadas em paralelo com Task.WhenAll
-        var bookmarks = _context.BookmarkVerses.CountAsync(b => b.UserId == userId);
-        var modules   = _context.UserProgress.CountAsync(p => p.UserId == userId && p.Completed);
-        var readDays  = _context.ReadingLogs.CountAsync(l => l.UserId == userId);
-
-        await Task.WhenAll(bookmarks, modules, readDays);
+        // EF Core DbContext não é thread-safe — queries devem ser sequenciais
+        var bookmarkCount = await _context.BookmarkVerses.CountAsync(b => b.UserId == userId);
+        var moduleCount   = await _context.UserProgress.CountAsync(p => p.UserId == userId && p.Completed);
+        var readDaysCount = await _context.ReadingLogs.CountAsync(l => l.UserId == userId);
 
         return Ok(new ProfileDto
         {
@@ -42,9 +40,9 @@ public class ProfileController : ControllerBase
             Name                 = user.Name,
             Email                = user.Email,
             CreatedAt            = user.CreatedAt,
-            BookmarkCount        = await bookmarks,
-            CompletedModuleCount = await modules,
-            ReadingDaysCount     = await readDays
+            BookmarkCount        = bookmarkCount,
+            CompletedModuleCount = moduleCount,
+            ReadingDaysCount     = readDaysCount
         });
     }
 

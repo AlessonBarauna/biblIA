@@ -573,7 +573,10 @@
     <!-- Cabeçalho minimalista -->
     <div class="reader-header">
       <span class="reader-ref">{{ selectedBook()?.name }} {{ selectedChapter() }}</span>
-      <span class="reader-translation">{{ versionLabel() }}</span>
+      <button class="reader-translation-btn" (click)="openVersionSheet()">
+        {{ versionLabel() }}
+        <mat-icon class="reader-translation-icon">expand_more</mat-icon>
+      </button>
     </div>
 
     <!-- Versículos — toque para selecionar / destacar -->
@@ -583,7 +586,7 @@
            [class.reader-verse-selected]="selectedReadingVerse() === v.verse"
            [style.background]="verseHighlightBg(v.verse)"
            [style.border-radius.px]="verseHighlightBg(v.verse) ? 3 : 0"
-           (click)="$event.stopPropagation(); openReadingNoteSheet(v.verse)">
+           (click)="$event.stopPropagation(); selectReadingVerse(v.verse)">
           <sup class="reader-verse-num">{{ v.verse }}</sup>{{ verseText(v) }}
         </p>
       }
