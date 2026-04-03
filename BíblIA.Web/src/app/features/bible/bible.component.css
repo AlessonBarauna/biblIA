@@ -1188,7 +1188,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.55);
-  z-index: 200;
+  z-index: 1300;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1581,4 +1581,82 @@
 
   .rab-color-btn { width: 24px; height: 24px; }
   .rab-clear-btn { width: 24px; height: 24px; }
+}
+
+/* ── Sheet de anotação inline no modo leitura ────────────────────────────── */
+.reading-note-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1220;
+}
+
+.reading-note-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface-2);
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--border);
+  padding: 12px 16px 32px;
+  z-index: 1221;
+  animation: sheet-slide-up 0.22s ease-out;
+}
+
+.reading-note-sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  margin: 0 auto 12px;
+}
+
+.reading-note-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.reading-note-sheet-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.reading-note-sheet-title mat-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--accent);
+}
+
+.reading-note-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 0.95rem;
+  padding: 10px 12px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.reading-note-textarea:focus {
+  border-color: var(--accent);
+}
+
+.reading-note-sheet-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
 }

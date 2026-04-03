@@ -17,7 +17,7 @@ dist/
 .env
 appsettings.*.json
 !appsettings.json
-!appsettings.Development.json
+appsettings.Development.json
 
 # OS
 .DS_Store

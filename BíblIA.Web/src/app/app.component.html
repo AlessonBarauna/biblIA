@@ -132,7 +132,28 @@
         <span class="bnav-label">{{ item.label }}</span>
       </a>
     }
+    <button class="bnav-item bnav-more-btn" (click)="openMoreSheet()"
+            [class.bnav-active]="showMoreSheet()">
+      <mat-icon class="bnav-icon">apps</mat-icon>
+      <span class="bnav-label">Mais</span>
+    </button>
   </nav>
+
+  <!-- ── More sheet (mobile) ──────────────────────────────────────────── -->
+  @if (showMoreSheet()) {
+    <div class="more-sheet-backdrop" (click)="closeMoreSheet()"></div>
+    <div class="more-sheet">
+      <div class="more-sheet-handle"></div>
+      <div class="more-sheet-grid">
+        @for (item of moreMenuItems; track item.route) {
+          <button class="more-sheet-item" (click)="navigateMore(item.route)">
+            <mat-icon class="more-sheet-icon">{{ item.icon }}</mat-icon>
+            <span class="more-sheet-label">{{ item.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
 
 } @else {
 

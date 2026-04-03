@@ -103,6 +103,9 @@ export class BibleComponent implements OnInit {
   readingMode = signal(false);
   // Versículo selecionado no modo leitura (barra de ações)
   selectedReadingVerse = signal<number | null>(null);
+  // Sheet de anotação inline no modo leitura (não sai do reader)
+  readingNoteVerse = signal<number | null>(null);
+  readingNoteText  = signal('');
   // Destaques: Map<verseNumber, hexColor> — persiste em localStorage
   readingHighlights = signal<Map<number, string>>(new Map());
 
@@ -906,6 +909,28 @@ export class BibleComponent implements OnInit {
     this.exitReadingMode();
     // Pequeno delay para o overlay fechar antes de abrir o editor
     setTimeout(() => this.openNoteEditor(v), 150);
+  }
+
+  openReadingNoteSheet(verse: number): void {
+    const existing = this.noteMap().get(verse);
+    this.readingNoteText.set(existing?.note ?? '');
+    this.readingNoteVerse.set(verse);
+  }
+
+  closeReadingNoteSheet(): void {
+    this.readingNoteVerse.set(null);
+    this.readingNoteText.set('');
+  }
+
+  saveReadingNote(): void {
+    const verse = this.readingNoteVerse();
+    if (verse === null) return;
+    const v = this.verses().find(v => v.verse === verse);
+    if (!v) return;
+    this.editingNoteText.set(this.readingNoteText());
+    this.editingNoteVerse.set(verse);
+    this.saveNote(v);
+    this.closeReadingNoteSheet();
   }
 
   askAiFromReading(): void {

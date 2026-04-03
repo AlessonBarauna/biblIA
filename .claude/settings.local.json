@@ -5,7 +5,11 @@
       "Bash(findstr /v \"node_modules bin obj .git\")",
       "Bash(npm run:*)",
       "Bash(dotnet build:*)",
-      "Bash(powershell -Command \"Get-Process -Id 29044 | Select-Object Name, StartTime\" 2>&1)"
+      "Bash(powershell -Command \"Get-Process -Id 29044 | Select-Object Name, StartTime\" 2>&1)",
+      "Read(//c/Users/alesson.rodrigues/source/repos/Estudos/BíblIA.Web/src/app/**)",
+      "Read(//c/Users/alesson.rodrigues/source/repos/Estudos/**)",
+      "Bash(npx ng:*)",
+      "Bash(dotnet ef:*)"
     ]
   }
 }

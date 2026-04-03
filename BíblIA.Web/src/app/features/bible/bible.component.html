@@ -583,11 +583,38 @@
            [class.reader-verse-selected]="selectedReadingVerse() === v.verse"
            [style.background]="verseHighlightBg(v.verse)"
            [style.border-radius.px]="verseHighlightBg(v.verse) ? 3 : 0"
-           (click)="$event.stopPropagation(); selectReadingVerse(v.verse)">
+           (click)="$event.stopPropagation(); openReadingNoteSheet(v.verse)">
           <sup class="reader-verse-num">{{ v.verse }}</sup>{{ verseText(v) }}
         </p>
       }
     </div>
+
+    <!-- ── Sheet de anotação inline (modo leitura) ──────────────────────── -->
+    @if (readingNoteVerse() !== null) {
+      <div class="reading-note-backdrop" (click)="closeReadingNoteSheet()"></div>
+      <div class="reading-note-sheet">
+        <div class="reading-note-sheet-handle"></div>
+        <div class="reading-note-sheet-header">
+          <span class="reading-note-sheet-title">
+            <mat-icon>sticky_note_2</mat-icon>
+            {{ selectedBook()?.name }} {{ selectedChapter() }}:{{ readingNoteVerse() }}
+          </span>
+          <button mat-icon-button (click)="closeReadingNoteSheet()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <textarea class="reading-note-textarea"
+                  [ngModel]="readingNoteText()"
+                  (ngModelChange)="readingNoteText.set($event)"
+                  placeholder="Escreva sua anotação..."
+                  rows="4"
+                  autofocus></textarea>
+        <div class="reading-note-sheet-actions">
+          <button mat-button (click)="closeReadingNoteSheet()">Cancelar</button>
+          <button mat-flat-button color="primary" (click)="saveReadingNote()">Salvar</button>
+        </div>
+      </div>
+    }
 
     <!-- ── Barra de ações do versículo selecionado ───────────────────────── -->
     @if (selectedReadingVerse() !== null) {

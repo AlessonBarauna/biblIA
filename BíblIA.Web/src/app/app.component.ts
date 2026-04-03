@@ -95,10 +95,34 @@ export class AppComponent {
 
   // Apenas os 5 itens principais exibidos na bottom nav do mobile
   bottomNavItems = [
-    { label: 'Início',   route: '/',       icon: 'home' },
-    { label: 'Chat',     route: '/chat',   icon: 'chat' },
-    { label: 'Bíblia',   route: '/bible',  icon: 'book' },
-    { label: 'Leitura',  route: '/reading',icon: 'auto_stories' },
-    { label: 'Mais',     route: '/theology',icon: 'apps' },
+    { label: 'Início',   route: '/',        icon: 'home' },
+    { label: 'Chat',     route: '/chat',    icon: 'chat' },
+    { label: 'Bíblia',   route: '/bible',   icon: 'book' },
+    { label: 'Leitura',  route: '/reading', icon: 'auto_stories' },
   ];
+
+  moreMenuItems = [
+    { label: 'Teologia',       route: '/theology',    icon: 'school' },
+    { label: 'Escatologia',    route: '/eschatology', icon: 'public' },
+    { label: 'História',       route: '/history',     icon: 'history' },
+    { label: 'Linha do Tempo', route: '/timeline',    icon: 'timeline' },
+    { label: 'Glossário',      route: '/glossary',    icon: 'menu_book' },
+    { label: 'Favoritos',      route: '/bookmarks',   icon: 'bookmark' },
+    { label: 'Perfil',         route: '/profile',     icon: 'manage_accounts' },
+  ];
+
+  showMoreSheet = signal(false);
+
+  openMoreSheet(): void {
+    this.showMoreSheet.set(true);
+  }
+
+  closeMoreSheet(): void {
+    this.showMoreSheet.set(false);
+  }
+
+  navigateMore(route: string): void {
+    this.router.navigateByUrl(route);
+    this.closeMoreSheet();
+  }
 }
