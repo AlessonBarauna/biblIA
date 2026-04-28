@@ -111,10 +111,10 @@ public static class DataSeeder
             return;
 
         // Busca livros por OrderIndex para obter os Ids corretos
-        var genesis  = await db.BibleBooks.FirstAsync(b => b.OrderIndex == 1);
-        var psalms   = await db.BibleBooks.FirstAsync(b => b.OrderIndex == 19);
-        var john     = await db.BibleBooks.FirstAsync(b => b.OrderIndex == 43);
-        var romans   = await db.BibleBooks.FirstAsync(b => b.OrderIndex == 45);
+        var genesis = await db.BibleBooks.FirstAsync(b => b.OrderIndex == 1);
+        var psalms = await db.BibleBooks.FirstAsync(b => b.OrderIndex == 19);
+        var john = await db.BibleBooks.FirstAsync(b => b.OrderIndex == 43);
+        var romans = await db.BibleBooks.FirstAsync(b => b.OrderIndex == 45);
 
         var verses = new List<BibleVerse>();
 
@@ -175,13 +175,13 @@ public static class DataSeeder
         // Guard por entrada: verifica (BookId, Chapter) individualmente.
         // Assim novos capítulos podem ser adicionados sem recriar o banco.
         var books = await db.BibleBooks
-            .Where(b => new[] { 1,2,19,23,27,40,43,45,46,48,49,58,66 }.Contains(b.OrderIndex))
+            .Where(b => new[] { 1, 2, 19, 23, 27, 40, 43, 45, 46, 48, 49, 58, 66 }.Contains(b.OrderIndex))
             .ToDictionaryAsync(b => b.OrderIndex);
 
         if (!books.ContainsKey(1)) return; // livros ainda não seedados
 
-        books.TryGetValue(1,  out var genesis);
-        books.TryGetValue(2,  out var exodus);
+        books.TryGetValue(1, out var genesis);
+        books.TryGetValue(2, out var exodus);
         books.TryGetValue(19, out var psalms);
         books.TryGetValue(23, out var isaiah);
         books.TryGetValue(27, out var daniel);
@@ -199,298 +199,298 @@ public static class DataSeeder
         // ── Gênesis 1 ─────────────────────────────────────────────────────────
         notes.Add(new BibleStudyNote
         {
-            BookId  = genesis.Id,
+            BookId = genesis.Id,
             Chapter = 1,
-            Title   = "A Criação — Fundamentos da Existência",
+            Title = "A Criação — Fundamentos da Existência",
             Context = "Gênesis 1 abre as Escrituras com uma declaração teológica, não um tratado científico moderno. O texto foi escrito por Moisés para Israel recém-libertado do Egito, um povo cercado por cosmovisões politeístas onde os astros eram deuses, a criação era luta entre divindades e o ser humano era escravo dos deuses. O Gênesis desmonta tudo isso: há um único Deus soberano, a criação é boa e ordenada, e o ser humano é portador da imagem divina.",
             TheologicalSignificance = "Este capítulo estabelece os dois pilares da antropologia cristã: (1) Criação ex nihilo — Deus cria do nada por sua Palavra soberana, não a partir de matéria pré-existente (Hb 11:3); (2) Imago Dei — o ser humano, homem e mulher, é criado à imagem e semelhança de Deus (v. 26-27), o que confere dignidade inalienável a todo ser humano independente de raça, sexo ou condição. Calvino chamou o Gênesis 1 de 'o teatro da glória de Deus'.",
-            KeyThemes      = "Criação ex nihilo · Imago Dei · Soberania divina · Bondade da criação · Mandato cultural · Monoteísmo",
+            KeyThemes = "Criação ex nihilo · Imago Dei · Soberania divina · Bondade da criação · Mandato cultural · Monoteísmo",
             CrossReferences = "João 1:1-3; Hebreus 11:3; Colossenses 1:15-17; Salmos 33:6,9; Provérbios 8:22-31",
-            Commentary      = "O padrão estrutural do capítulo — 'E disse Deus... e assim se fez... e viu Deus que era bom' — revela a criação como ato de palavra soberana e avaliação. Os dias 1-3 formam 'reinos' e os dias 4-6 seus 'governantes': luz/trevas → astros; céu/mar → aves/peixes; terra/vegetação → animais/homem. A criação é funcional e ordenada, com o sábado (dia 7, Gn 2:1-3) como clímax e sinal da aliança.",
-            AuthorNote      = "Baseado em Calvino (Commentaries on Genesis), Matthew Henry (Commentary), Wayne Grudem (Teologia Sistemática, cap. 15) e John Walton (The Lost World of Genesis One)"
+            Commentary = "O padrão estrutural do capítulo — 'E disse Deus... e assim se fez... e viu Deus que era bom' — revela a criação como ato de palavra soberana e avaliação. Os dias 1-3 formam 'reinos' e os dias 4-6 seus 'governantes': luz/trevas → astros; céu/mar → aves/peixes; terra/vegetação → animais/homem. A criação é funcional e ordenada, com o sábado (dia 7, Gn 2:1-3) como clímax e sinal da aliança.",
+            AuthorNote = "Baseado em Calvino (Commentaries on Genesis), Matthew Henry (Commentary), Wayne Grudem (Teologia Sistemática, cap. 15) e John Walton (The Lost World of Genesis One)"
         });
 
         // ── Gênesis 3 ─────────────────────────────────────────────────────────
         notes.Add(new BibleStudyNote
         {
-            BookId  = genesis.Id,
+            BookId = genesis.Id,
             Chapter = 3,
-            Title   = "A Queda — Origem do Pecado e a Protoevangelium",
+            Title = "A Queda — Origem do Pecado e a Protoevangelium",
             Context = "Gênesis 3 narra a entrada do pecado na criação perfeita. A serpente, instrumento de Satanás (Ap 12:9), questiona a Palavra de Deus ('É assim que Deus disse?') e ataca o caráter divino ('Deus sabe que...'), as duas estratégias permanentes da tentação: duvidar da Palavra e difamar o caráter de Deus. Adão, presente e passivo (v. 6), falha em sua responsabilidade como guardião do jardim.",
             TheologicalSignificance = "A Queda explica a condição humana: (1) Separação de Deus — expulsão do jardim, quebra da comunhão; (2) Pecado original — todos em Adão pecaram (Rm 5:12); (3) Consequências: trabalho difícil, dor no parto, morte física e espiritual. Mas v. 15 contém a Protoevangelium ('primeiro evangelho'): 'Porei inimizade entre ti e a mulher, entre a tua descendência e a dela; esta te ferirá a cabeça, e tu lhe ferirás o calcanhar.' — a primeira promessa messiânica, cumprida na cruz e ressurreição de Cristo.",
-            KeyThemes      = "Origem do pecado · Tentação · Responsabilidade humana · Consequências da queda · Protoevangelium · Graça preveniente",
+            KeyThemes = "Origem do pecado · Tentação · Responsabilidade humana · Consequências da queda · Protoevangelium · Graça preveniente",
             CrossReferences = "Romanos 5:12-21; 1 Coríntios 15:21-22; 2 Coríntios 11:3; Apocalipse 12:9; João 8:44",
-            Commentary      = "A sequência da tentação em 1 João 2:16 encontra eco em Gênesis 3:6: 'a mulher viu que a árvore era boa para comer' (concupiscência da carne), 'agradável aos olhos' (concupiscência dos olhos), 'desejável para dar entendimento' (soberba da vida). Jesus resistiu às mesmas três tentações no deserto (Mt 4) — o Segundo Adão onde o primeiro falhou.",
-            AuthorNote      = "Baseado em Matthew Henry, Calvino (Commentaries), e Derek Kidner (Genesis, Tyndale OT Commentary)"
+            Commentary = "A sequência da tentação em 1 João 2:16 encontra eco em Gênesis 3:6: 'a mulher viu que a árvore era boa para comer' (concupiscência da carne), 'agradável aos olhos' (concupiscência dos olhos), 'desejável para dar entendimento' (soberba da vida). Jesus resistiu às mesmas três tentações no deserto (Mt 4) — o Segundo Adão onde o primeiro falhou.",
+            AuthorNote = "Baseado em Matthew Henry, Calvino (Commentaries), e Derek Kidner (Genesis, Tyndale OT Commentary)"
         });
 
         // ── Êxodo 20 ──────────────────────────────────────────────────────────
         if (exodus != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = exodus.Id,
-            Chapter = 20,
-            Title   = "Os Dez Mandamentos — A Lei da Aliança",
-            Context = "Êxodo 20 é o coração da aliança mosaica, promulgada no monte Sinai após a libertação do Egito. Importante: os mandamentos são dados APÓS a redenção, não como condição para ela — 'Eu sou o Senhor teu Deus, que te tirei do Egito' (v. 2) precede todos os mandamentos. A lei revela quem é o Deus redentor e como o povo redimido deve viver.",
-            TheologicalSignificance = "Os Dez Mandamentos (Decálogo) estruturam-se em dois grupos: (1) Tábua 1 (v. 3-11) — deveres para com Deus: sem outros deuses, sem ídolos, não usar o nome em vão, guardar o sábado; (2) Tábua 2 (v. 12-17) — deveres para com o próximo: honrar pais, não matar, não adulterar, não furtar, não dar falso testemunho, não cobiçar. Jesus resumiu em dois mandamentos (Mt 22:37-40) e cumpriu plenamente a Lei (Mt 5:17). Paulo ensina que a Lei revela o pecado (Rm 3:20) e aponta para Cristo (Gl 3:24).",
-            KeyThemes      = "Decálogo · Lei e graça · Aliança mosaica · Adoração exclusiva · Ética social · Sábado",
-            CrossReferences = "Deuteronômio 5:6-21; Mateus 5:17-20; 22:37-40; Romanos 3:20; 7:7-12; Gálatas 3:24",
-            Commentary      = "A proibição de imagens (v. 4-6) não proíbe toda arte — mas qualquer representação de Deus, pois Deus é Espírito (Jo 4:24) e transcende toda representação. A promessa anexa ao quinto mandamento ('para que se prolonguem os teus dias', v. 12) é citada por Paulo como o 'primeiro mandamento com promessa' (Ef 6:2-3).",
-            AuthorNote      = "Baseado em Calvino (Institutes II.8), Matthew Henry, e John Durham (Exodus, Word Biblical Commentary)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = exodus.Id,
+                Chapter = 20,
+                Title = "Os Dez Mandamentos — A Lei da Aliança",
+                Context = "Êxodo 20 é o coração da aliança mosaica, promulgada no monte Sinai após a libertação do Egito. Importante: os mandamentos são dados APÓS a redenção, não como condição para ela — 'Eu sou o Senhor teu Deus, que te tirei do Egito' (v. 2) precede todos os mandamentos. A lei revela quem é o Deus redentor e como o povo redimido deve viver.",
+                TheologicalSignificance = "Os Dez Mandamentos (Decálogo) estruturam-se em dois grupos: (1) Tábua 1 (v. 3-11) — deveres para com Deus: sem outros deuses, sem ídolos, não usar o nome em vão, guardar o sábado; (2) Tábua 2 (v. 12-17) — deveres para com o próximo: honrar pais, não matar, não adulterar, não furtar, não dar falso testemunho, não cobiçar. Jesus resumiu em dois mandamentos (Mt 22:37-40) e cumpriu plenamente a Lei (Mt 5:17). Paulo ensina que a Lei revela o pecado (Rm 3:20) e aponta para Cristo (Gl 3:24).",
+                KeyThemes = "Decálogo · Lei e graça · Aliança mosaica · Adoração exclusiva · Ética social · Sábado",
+                CrossReferences = "Deuteronômio 5:6-21; Mateus 5:17-20; 22:37-40; Romanos 3:20; 7:7-12; Gálatas 3:24",
+                Commentary = "A proibição de imagens (v. 4-6) não proíbe toda arte — mas qualquer representação de Deus, pois Deus é Espírito (Jo 4:24) e transcende toda representação. A promessa anexa ao quinto mandamento ('para que se prolonguem os teus dias', v. 12) é citada por Paulo como o 'primeiro mandamento com promessa' (Ef 6:2-3).",
+                AuthorNote = "Baseado em Calvino (Institutes II.8), Matthew Henry, e John Durham (Exodus, Word Biblical Commentary)"
+            });
 
         // ── Salmos 23 ─────────────────────────────────────────────────────────
         notes.Add(new BibleStudyNote
         {
-            BookId  = psalms.Id,
+            BookId = psalms.Id,
             Chapter = 23,
-            Title   = "O Senhor é Meu Pastor — Confiança Total em Deus",
+            Title = "O Senhor é Meu Pastor — Confiança Total em Deus",
             Context = "Escrito por Davi, pastor e rei de Israel, este salmo reflete tanto sua experiência pessoal com o pastoreio quanto sua fé profunda em Yahweh como pastor da nação (Sl 80:1). É o mais amado dos Salmos e foi cantado no leito de morte de incontáveis crentes ao longo de séculos.",
             TheologicalSignificance = "O salmo progride em duas metáforas: (1) v. 1-4: Yahweh como Pastor — provisão (pastos, águas tranquilas), restauração, guia, proteção no vale da sombra da morte; (2) v. 5-6: Yahweh como Anfitrião — banquete diante dos inimigos, unção de honra, bondade e misericórdia como companheiras permanentes. Jesus se identifica como o 'Bom Pastor' (Jo 10:11,14), cumprindo este salmo — ele dá a vida pelas ovelhas.",
-            KeyThemes      = "Cuidado divino · Provisão · Proteção · Morte sem medo · Hospitalidade divina · Pastoreio messiânico",
+            KeyThemes = "Cuidado divino · Provisão · Proteção · Morte sem medo · Hospitalidade divina · Pastoreio messiânico",
             CrossReferences = "João 10:11,14; Ezequiel 34:11-16; Isaías 40:11; Hebreus 13:20; 1 Pedro 2:25; Apocalipse 7:17",
-            Commentary      = "'Vale da sombra da morte' (v. 4, tzalmaveth) pode ser traduzido como 'vale de trevas densas' — seja morte literal ou circunstâncias opressoras. 'Teu cajado e teu bordão me consolam': o cajado (shebet) servia para defender contra predadores; o bordão (misheneth) para apoiar o pastor e guiar as ovelhas. Ambos falam do cuidado protetor e guiador de Deus.",
-            AuthorNote      = "Baseado em Spurgeon (The Treasury of David), Matthew Henry, e Derek Kidner (Psalms 1-72, Tyndale)"
+            Commentary = "'Vale da sombra da morte' (v. 4, tzalmaveth) pode ser traduzido como 'vale de trevas densas' — seja morte literal ou circunstâncias opressoras. 'Teu cajado e teu bordão me consolam': o cajado (shebet) servia para defender contra predadores; o bordão (misheneth) para apoiar o pastor e guiar as ovelhas. Ambos falam do cuidado protetor e guiador de Deus.",
+            AuthorNote = "Baseado em Spurgeon (The Treasury of David), Matthew Henry, e Derek Kidner (Psalms 1-72, Tyndale)"
         });
 
         // ── Isaías 53 ─────────────────────────────────────────────────────────
         if (isaiah != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = isaiah.Id,
-            Chapter = 53,
-            Title   = "O Servo Sofredor — A Profecia da Expiação",
-            Context = "Isaías 53 faz parte do quarto e último 'Cântico do Servo' (52:13-53:12), escrito 700 anos antes de Cristo. É o capítulo mais citado no NT (mais de 40 referências). Os judeus do primeiro século esperavam um Messias conquistador; Isaías profetiza um Messias sofredor. O capítulo começa com espanto universal ('a quem foi revelado o braço do Senhor?') e termina com a exaltação do Servo.",
-            TheologicalSignificance = "Este capítulo é o locus classicus da substituição penal no AT: 'ele foi ferido pelas nossas transgressões, moído pelas nossas iniquidades' (v. 5); 'o Senhor fez cair sobre ele a iniquidade de nós todos' (v. 6); 'pelo seu conhecimento o meu servo justo justificará a muitos, e as iniquidades deles ele mesmo suportará' (v. 11). Philip apologize ensinou que Filipe leu este capítulo ao eunuco etíope (At 8:32-35), que reconheceu Jesus. É impossível ler sem ver a cruz.",
-            KeyThemes      = "Substituição penal · Sofrimento vicário · Exaltação após humilhação · Justiça divina · Missão messiânica · Profecia cumprida",
-            CrossReferences = "Atos 8:32-35; Romanos 4:25; 1 Pedro 2:22-25; 2 Coríntios 5:21; Hebreus 9:28; 1 João 2:2",
-            Commentary      = "A estrutura quiástica do capítulo é notável: A (exaltação, 52:13-15) — B (rejeição humana, 53:1-3) — C (sofrimento vicário, 53:4-6) — B' (silêncio ante o sofrimento, 53:7-9) — A' (exaltação e fruto, 53:10-12). 'Pela sua ferida fomos sarados' (v. 5) é o versículo mais citado para a doutrina da expiação substitutiva em toda a Escritura.",
-            AuthorNote      = "Baseado em Calvino (Commentary on Isaiah), Matthew Henry, e John Oswalt (Isaiah, NICOT)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = isaiah.Id,
+                Chapter = 53,
+                Title = "O Servo Sofredor — A Profecia da Expiação",
+                Context = "Isaías 53 faz parte do quarto e último 'Cântico do Servo' (52:13-53:12), escrito 700 anos antes de Cristo. É o capítulo mais citado no NT (mais de 40 referências). Os judeus do primeiro século esperavam um Messias conquistador; Isaías profetiza um Messias sofredor. O capítulo começa com espanto universal ('a quem foi revelado o braço do Senhor?') e termina com a exaltação do Servo.",
+                TheologicalSignificance = "Este capítulo é o locus classicus da substituição penal no AT: 'ele foi ferido pelas nossas transgressões, moído pelas nossas iniquidades' (v. 5); 'o Senhor fez cair sobre ele a iniquidade de nós todos' (v. 6); 'pelo seu conhecimento o meu servo justo justificará a muitos, e as iniquidades deles ele mesmo suportará' (v. 11). Philip apologize ensinou que Filipe leu este capítulo ao eunuco etíope (At 8:32-35), que reconheceu Jesus. É impossível ler sem ver a cruz.",
+                KeyThemes = "Substituição penal · Sofrimento vicário · Exaltação após humilhação · Justiça divina · Missão messiânica · Profecia cumprida",
+                CrossReferences = "Atos 8:32-35; Romanos 4:25; 1 Pedro 2:22-25; 2 Coríntios 5:21; Hebreus 9:28; 1 João 2:2",
+                Commentary = "A estrutura quiástica do capítulo é notável: A (exaltação, 52:13-15) — B (rejeição humana, 53:1-3) — C (sofrimento vicário, 53:4-6) — B' (silêncio ante o sofrimento, 53:7-9) — A' (exaltação e fruto, 53:10-12). 'Pela sua ferida fomos sarados' (v. 5) é o versículo mais citado para a doutrina da expiação substitutiva em toda a Escritura.",
+                AuthorNote = "Baseado em Calvino (Commentary on Isaiah), Matthew Henry, e John Oswalt (Isaiah, NICOT)"
+            });
 
         // ── Mateus 5 ──────────────────────────────────────────────────────────
         if (matthew != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = matthew.Id,
-            Chapter = 5,
-            Title   = "O Sermão do Monte — A Ética do Reino",
-            Context = "Mateus 5-7 contém o mais longo discurso de Jesus registrado nos Evangelhos. Jesus sobe ao monte (como Moisés ao Sinai) e estabelece a ética do Reino. O capítulo 5 começa com as Bem-aventuranças (v. 3-12) — retrato do caráter do cidadão do Reino — e continua com a relação entre Jesus e a Lei (v. 17-20) e seis antíteses ('Ouvistes que foi dito... mas eu vos digo', v. 21-48).",
-            TheologicalSignificance = "As Bem-aventuranças invertem os valores do mundo: os pobres de espírito, os que choram, os mansos, os que têm fome de justiça, os misericordiosos, os puros de coração, os pacificadores e os perseguidos são os bem-aventurados. As antíteses mostram que Jesus não aboliu a Lei mas a cumpriu e aprofundou — do externo ao interno (ira = assassinato no coração; lascívia = adultério no coração). A demanda ética é impossível por forças humanas: só é cumprida naqueles que nasceram de novo.",
-            KeyThemes      = "Bem-aventuranças · Ética do Reino · Lei e graça · Radicalidade do discipulado · Sal e luz · Justiça que excede a dos fariseus",
-            CrossReferences = "Lucas 6:20-49 (Sermão na Planície); Romanos 8:3-4; Gálatas 5:22-23; Tiago 3:13-18; Miquéias 6:8",
-            Commentary      = "'Bem-aventurados os pobres de espírito' (v. 3) — não os economicamente pobres, mas os que reconhecem sua bancarrota espiritual diante de Deus. É o oposto da autoconfiança religiosa. 'Sede, pois, vós perfeitos, como é perfeito o vosso Pai celestial' (v. 48) — não perfeição sinless nesta vida, mas teleios = completo, maduro, íntegro; o padrão é o caráter do Pai.",
-            AuthorNote      = "Baseado em D. A. Carson (The Sermon on the Mount), John Stott (O Sermão do Monte), Matthew Henry"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = matthew.Id,
+                Chapter = 5,
+                Title = "O Sermão do Monte — A Ética do Reino",
+                Context = "Mateus 5-7 contém o mais longo discurso de Jesus registrado nos Evangelhos. Jesus sobe ao monte (como Moisés ao Sinai) e estabelece a ética do Reino. O capítulo 5 começa com as Bem-aventuranças (v. 3-12) — retrato do caráter do cidadão do Reino — e continua com a relação entre Jesus e a Lei (v. 17-20) e seis antíteses ('Ouvistes que foi dito... mas eu vos digo', v. 21-48).",
+                TheologicalSignificance = "As Bem-aventuranças invertem os valores do mundo: os pobres de espírito, os que choram, os mansos, os que têm fome de justiça, os misericordiosos, os puros de coração, os pacificadores e os perseguidos são os bem-aventurados. As antíteses mostram que Jesus não aboliu a Lei mas a cumpriu e aprofundou — do externo ao interno (ira = assassinato no coração; lascívia = adultério no coração). A demanda ética é impossível por forças humanas: só é cumprida naqueles que nasceram de novo.",
+                KeyThemes = "Bem-aventuranças · Ética do Reino · Lei e graça · Radicalidade do discipulado · Sal e luz · Justiça que excede a dos fariseus",
+                CrossReferences = "Lucas 6:20-49 (Sermão na Planície); Romanos 8:3-4; Gálatas 5:22-23; Tiago 3:13-18; Miquéias 6:8",
+                Commentary = "'Bem-aventurados os pobres de espírito' (v. 3) — não os economicamente pobres, mas os que reconhecem sua bancarrota espiritual diante de Deus. É o oposto da autoconfiança religiosa. 'Sede, pois, vós perfeitos, como é perfeito o vosso Pai celestial' (v. 48) — não perfeição sinless nesta vida, mas teleios = completo, maduro, íntegro; o padrão é o caráter do Pai.",
+                AuthorNote = "Baseado em D. A. Carson (The Sermon on the Mount), John Stott (O Sermão do Monte), Matthew Henry"
+            });
 
         // ── João 3 ────────────────────────────────────────────────────────────
         notes.Add(new BibleStudyNote
         {
-            BookId  = john.Id,
+            BookId = john.Id,
             Chapter = 3,
-            Title   = "Novo Nascimento e João 3:16 — O Evangelho em Miniatura",
+            Title = "Novo Nascimento e João 3:16 — O Evangelho em Miniatura",
             Context = "Nicodemos era membro do Sinédrio (conselho supremo judeu de 70 líderes) e um fariseu — o mais rigoroso grupo religioso de Israel. Ele vem a Jesus de noite (por medo? por necessidade genuína de conversa privada?). Sua confissão inicial é teológica correta mas incompleta: reconhece Jesus como 'Mestre vindo de Deus' mas não como Messias e Salvador.",
             TheologicalSignificance = "Jesus ensina que o novo nascimento (gennēthē anōthen — nascer de novo/do alto) é necessário e não opcional para 'ver o Reino de Deus' (v. 3). Não é reforma moral ou decisão religiosa — é obra soberana do Espírito (v. 8, 'o vento sopra onde quer'). João 3:16 é chamado de 'o Evangelho em miniatura': Deus (agente), amou (motivação), o mundo (extensão), de tal maneira que deu (ação), o Filho unigênito (dádiva), para que todo aquele que nele crê (condição), não pereça (conseqüência negativa), mas tenha a vida eterna (positiva).",
-            KeyThemes      = "Novo nascimento · Soberania do Espírito · Amor divino · Fé · Vida eterna · Condenação · Luz e trevas",
+            KeyThemes = "Novo nascimento · Soberania do Espírito · Amor divino · Fé · Vida eterna · Condenação · Luz e trevas",
             CrossReferences = "1 Pedro 1:3,23; Tiago 1:18; Efésios 2:4-5; Tito 3:5; 1 João 5:1; Romanos 8:14-16",
-            Commentary      = "'Pois Deus amou o mundo de tal maneira' — o amor de Deus é a causa, não o efeito, da fé humana. 'Unigênito' (monogenēs) significa 'único de seu tipo', não 'gerado no tempo' — aponta para a relação única e eterna do Filho com o Pai. 'Não pereça' (apollymi) é perda total, destruição — a seriedade do julgamento eterno legitima a urgência da missão.",
-            AuthorNote      = "Baseado em Calvino (Commentary on John), Leon Morris (The Gospel According to John, NICNT), Matthew Henry"
+            Commentary = "'Pois Deus amou o mundo de tal maneira' — o amor de Deus é a causa, não o efeito, da fé humana. 'Unigênito' (monogenēs) significa 'único de seu tipo', não 'gerado no tempo' — aponta para a relação única e eterna do Filho com o Pai. 'Não pereça' (apollymi) é perda total, destruição — a seriedade do julgamento eterno legitima a urgência da missão.",
+            AuthorNote = "Baseado em Calvino (Commentary on John), Leon Morris (The Gospel According to John, NICNT), Matthew Henry"
         });
 
         // ── Romanos 3 ─────────────────────────────────────────────────────────
         notes.Add(new BibleStudyNote
         {
-            BookId  = romans.Id,
+            BookId = romans.Id,
             Chapter = 3,
-            Title   = "Justificação pela Fé — O Coração do Evangelho",
+            Title = "Justificação pela Fé — O Coração do Evangelho",
             Context = "Romanos 1-3 é o grande diagnóstico da condição humana: gentios sem a Lei pecaram contra a luz da criação (1:18-32); judeus com a Lei também pecaram (2:1-29); portanto 'todos pecaram e carecem da glória de Deus' (3:23). Romanos 3:21-31 é a virada — a solução divina para a condenação universal: a justiça de Deus revelada pelo evangelho.",
             TheologicalSignificance = "Três conceitos-chave em 3:24-25: (1) Justificação (dikaiōsis) — declaração forense de inocência; Deus não nos torna justos gradualmente, mas nos declara justos instantaneamente ao justificar pela fé; (2) Redenção (apolytrōsis) — libertação mediante pagamento de resgate; (3) Propiciação (hilastērion) — satisfação da ira divina; a mesma palavra usada para a 'tampa da arca da aliança' no AT onde o sangue era aspergido. A cruz é onde a justiça e a misericórdia de Deus se encontram: Deus é 'justo e justificador' (v. 26) simultaneamente.",
-            KeyThemes      = "Pecado universal · Justificação · Propiciação · Redenção · Fé · Obras da Lei · Glória de Deus",
+            KeyThemes = "Pecado universal · Justificação · Propiciação · Redenção · Fé · Obras da Lei · Glória de Deus",
             CrossReferences = "Gálatas 2:16; 3:10-14; Efésios 2:8-9; Filipenses 3:9; 2 Coríntios 5:21; Isaías 53:11; Habacuque 2:4",
-            Commentary      = "'A justiça de Deus' (v. 21) é ambígua — pode ser: (a) atributo de Deus = sua perfeição moral; (b) status que Deus confere = justiça imputada ao crente. Luther descobriu que era ambas: Deus é justo e confere sua justiça ao pecador pela fé — 'a mais doce de todas as doutrinas'. Lutero disse que ao entender v. 17 ('o justo viverá pela fé'), sentiu que havia entrado nas portas do paraíso.",
-            AuthorNote      = "Baseado em Calvino (Commentary on Romans), Douglas Moo (Romans, NICNT), Matthew Henry, Martin Luther (Prefácio a Romanos)"
+            Commentary = "'A justiça de Deus' (v. 21) é ambígua — pode ser: (a) atributo de Deus = sua perfeição moral; (b) status que Deus confere = justiça imputada ao crente. Luther descobriu que era ambas: Deus é justo e confere sua justiça ao pecador pela fé — 'a mais doce de todas as doutrinas'. Lutero disse que ao entender v. 17 ('o justo viverá pela fé'), sentiu que havia entrado nas portas do paraíso.",
+            AuthorNote = "Baseado em Calvino (Commentary on Romans), Douglas Moo (Romans, NICNT), Matthew Henry, Martin Luther (Prefácio a Romanos)"
         });
 
         // ── Romanos 8 ─────────────────────────────────────────────────────────
         notes.Add(new BibleStudyNote
         {
-            BookId  = romans.Id,
+            BookId = romans.Id,
             Chapter = 8,
-            Title   = "Vida no Espírito e Segurança Eterna",
+            Title = "Vida no Espírito e Segurança Eterna",
             Context = "Romanos 8 é o clímax da carta — após o diagnóstico do pecado (1-3), a justificação pela fé (3-5) e a luta interior do crente (7), Paulo descreve a vida abundante no Espírito. Começa com 'Portanto, agora nenhuma condenação há para os que estão em Cristo Jesus' (v. 1) e termina com a inseperabilidade do amor de Deus (v. 31-39). É o capítulo mais completo sobre o Espírito Santo no NT.",
             TheologicalSignificance = "O Espírito Santo aparece 19 vezes no capítulo: ele liberta (v. 2), vivifica (v. 10-11), guia (v. 14), adota (v. 15-16), intercede (v. 26-27), e garante a glorificação futura (v. 17,30). A cadeia de ouro da salvação (v. 29-30) — predestinação → chamado → justificação → glorificação — afirma que todos os que Deus chamou serão glorificados, garantindo a perseverança dos santos. 'Quem nos separará do amor de Cristo?' (v. 35) recebe a resposta mais enfática da Bíblia: nada na criação.",
-            KeyThemes      = "Vida no Espírito · Adoção · Gemidos da criação · Intercessão do Espírito · Cadeia áurea da salvação · Segurança do crente",
+            KeyThemes = "Vida no Espírito · Adoção · Gemidos da criação · Intercessão do Espírito · Cadeia áurea da salvação · Segurança do crente",
             CrossReferences = "João 14:16-17; Gálatas 4:6; Efésios 1:13-14; 1 João 3:1-2; João 10:27-30; Filipenses 1:6",
-            Commentary      = "'O Espírito mesmo intercede por nós com gemidos inexprimíveis' (v. 26) — na oração do crente, o Espírito se une aos nossos gemidos e os apresenta ao Pai de acordo com a vontade divina. Não é que rezamos errado; é que nossa limitação humana é suprida pela intercessão trinitária (Filho intercede no céu, Hb 7:25; Espírito intercede em nós). A segurança do crente não repousa em sua fidelidade, mas na fidelidade de Deus.",
-            AuthorNote      = "Baseado em Calvino (Commentary on Romans), Spurgeon (Romans, sermões), John Murray (Romans, NICNT)"
+            Commentary = "'O Espírito mesmo intercede por nós com gemidos inexprimíveis' (v. 26) — na oração do crente, o Espírito se une aos nossos gemidos e os apresenta ao Pai de acordo com a vontade divina. Não é que rezamos errado; é que nossa limitação humana é suprida pela intercessão trinitária (Filho intercede no céu, Hb 7:25; Espírito intercede em nós). A segurança do crente não repousa em sua fidelidade, mas na fidelidade de Deus.",
+            AuthorNote = "Baseado em Calvino (Commentary on Romans), Spurgeon (Romans, sermões), John Murray (Romans, NICNT)"
         });
 
         // ── 1 Coríntios 13 ────────────────────────────────────────────────────
         if (corinth1 != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = corinth1.Id,
-            Chapter = 13,
-            Title   = "O Hino do Amor — Agapē como Critério de Tudo",
-            Context = "1 Coríntios 13 está inserido na discussão sobre dons espirituais (cap. 12-14). A igreja de Corinto era espiritualmente rica em dons mas moralmente imatura — havia divisões, orgulho, imoralidade. Paulo insere este capítulo como o 'caminho mais excelente' (12:31): sem amor, todos os dons são inúteis. É poesia e teologia ao mesmo tempo.",
-            TheologicalSignificance = "O amor (agapē) descrito não é sentimento romântico (eros) nem amizade (philia), mas amor incondicional, decisão de querer o bem do outro. Paulo primeiro mostra que sem amor os maiores dons (línguas angélicas, profecia, conhecimento, fé para milagres, martírio) 'nada valem' (v. 1-3). Depois descreve 15 características do amor (v. 4-7). Finalmente: fé, esperança e amor permanecem, 'mas o maior destes é o amor' (v. 13) — porque amor é o próprio caráter de Deus (1 Jo 4:8).",
-            KeyThemes      = "Amor ágape · Primazia do amor sobre os dons · Maturidade cristã · Permanência do amor · Fé, esperança e amor",
-            CrossReferences = "1 João 4:8,16; João 13:34-35; Gálatas 5:22; Romanos 13:8-10; Colossenses 3:14; Mateus 22:37-40",
-            Commentary      = "As 15 características do amor em v. 4-7 podem ser divididas: 7 negativas (o que o amor NÃO é: invejoso, arrogante, rude, egoísta, irritável, rancoroso, aprazível com injustiça) e 8 positivas. A tradução literal de v. 7 é: 'tudo cobre, tudo crê, tudo espera, tudo suporta' — quatro verbos absolutos que descrevem amor como cobertura incondicional, confiança resiliente, esperança persistente e suporte inabalável.",
-            AuthorNote      = "Baseado em Spurgeon (sermão sobre 1 Co 13), Matthew Henry, Gordon Fee (1 Corinthians, NICNT)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = corinth1.Id,
+                Chapter = 13,
+                Title = "O Hino do Amor — Agapē como Critério de Tudo",
+                Context = "1 Coríntios 13 está inserido na discussão sobre dons espirituais (cap. 12-14). A igreja de Corinto era espiritualmente rica em dons mas moralmente imatura — havia divisões, orgulho, imoralidade. Paulo insere este capítulo como o 'caminho mais excelente' (12:31): sem amor, todos os dons são inúteis. É poesia e teologia ao mesmo tempo.",
+                TheologicalSignificance = "O amor (agapē) descrito não é sentimento romântico (eros) nem amizade (philia), mas amor incondicional, decisão de querer o bem do outro. Paulo primeiro mostra que sem amor os maiores dons (línguas angélicas, profecia, conhecimento, fé para milagres, martírio) 'nada valem' (v. 1-3). Depois descreve 15 características do amor (v. 4-7). Finalmente: fé, esperança e amor permanecem, 'mas o maior destes é o amor' (v. 13) — porque amor é o próprio caráter de Deus (1 Jo 4:8).",
+                KeyThemes = "Amor ágape · Primazia do amor sobre os dons · Maturidade cristã · Permanência do amor · Fé, esperança e amor",
+                CrossReferences = "1 João 4:8,16; João 13:34-35; Gálatas 5:22; Romanos 13:8-10; Colossenses 3:14; Mateus 22:37-40",
+                Commentary = "As 15 características do amor em v. 4-7 podem ser divididas: 7 negativas (o que o amor NÃO é: invejoso, arrogante, rude, egoísta, irritável, rancoroso, aprazível com injustiça) e 8 positivas. A tradução literal de v. 7 é: 'tudo cobre, tudo crê, tudo espera, tudo suporta' — quatro verbos absolutos que descrevem amor como cobertura incondicional, confiança resiliente, esperança persistente e suporte inabalável.",
+                AuthorNote = "Baseado em Spurgeon (sermão sobre 1 Co 13), Matthew Henry, Gordon Fee (1 Corinthians, NICNT)"
+            });
 
         // ── Apocalipse 21 ─────────────────────────────────────────────────────
         if (rev != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = rev.Id,
-            Chapter = 21,
-            Title   = "A Nova Jerusalém — A Consumação de Todas as Coisas",
-            Context = "Apocalipse 21-22 é o clímax não só do Apocalipse mas de toda a Bíblia — a consumação do plano redentor de Deus. O livro foi escrito por João em Patmos (cerca de 95 d.C.) para igrejas sob perseguição imperial romana. A visão final responde à pergunta de todos os que sofrem: como isso vai terminar? A resposta é triunfante.",
-            TheologicalSignificance = "Três declarações definem a nova criação: (1) 'Eis que faço novas todas as coisas' (v. 5) — não destruição e substituição, mas renovação e transformação; (2) 'E ouvi uma grande voz que dizia: Eis o tabernáculo de Deus com os homens' (v. 3) — o propósito de toda a história: Deus habitando com seu povo; (3) 'Não haverá mais morte, nem luto, nem choro, nem dor' (v. 4) — a reversão total da Queda (Gn 3). A Nova Jerusalém não é lugar para onde vamos, mas realidade que desce — 'descendo do céu de Deus' (v. 2,10).",
-            KeyThemes      = "Nova criação · Habitação de Deus com os homens · Fim do sofrimento · Nova Jerusalém · Noiva de Cristo · Consumação da aliança",
-            CrossReferences = "Gênesis 1-2; Isaías 65:17-25; 2 Pedro 3:13; 1 Coríntios 15:54-55; Ezequiel 37:27; João 14:2-3",
-            Commentary      = "A descrição da Cidade — 12.000 estádios (2.200 km) em cubo perfeito (v. 16) — não é arquitetura literal mas linguagem simbólica de perfeição e completude. O cubo lembra o Santo dos Santos (1 Rs 6:20), sugerindo que a cidade inteira é o lugar da presença divina. 'Não haverá templo' (v. 22) porque Deus e o Cordeiro são o templo — comunhão direta e permanente.",
-            AuthorNote      = "Baseado em Matthew Henry, G. K. Beale (Revelation, NIGTC), e N. T. Wright (Surprised by Hope)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = rev.Id,
+                Chapter = 21,
+                Title = "A Nova Jerusalém — A Consumação de Todas as Coisas",
+                Context = "Apocalipse 21-22 é o clímax não só do Apocalipse mas de toda a Bíblia — a consumação do plano redentor de Deus. O livro foi escrito por João em Patmos (cerca de 95 d.C.) para igrejas sob perseguição imperial romana. A visão final responde à pergunta de todos os que sofrem: como isso vai terminar? A resposta é triunfante.",
+                TheologicalSignificance = "Três declarações definem a nova criação: (1) 'Eis que faço novas todas as coisas' (v. 5) — não destruição e substituição, mas renovação e transformação; (2) 'E ouvi uma grande voz que dizia: Eis o tabernáculo de Deus com os homens' (v. 3) — o propósito de toda a história: Deus habitando com seu povo; (3) 'Não haverá mais morte, nem luto, nem choro, nem dor' (v. 4) — a reversão total da Queda (Gn 3). A Nova Jerusalém não é lugar para onde vamos, mas realidade que desce — 'descendo do céu de Deus' (v. 2,10).",
+                KeyThemes = "Nova criação · Habitação de Deus com os homens · Fim do sofrimento · Nova Jerusalém · Noiva de Cristo · Consumação da aliança",
+                CrossReferences = "Gênesis 1-2; Isaías 65:17-25; 2 Pedro 3:13; 1 Coríntios 15:54-55; Ezequiel 37:27; João 14:2-3",
+                Commentary = "A descrição da Cidade — 12.000 estádios (2.200 km) em cubo perfeito (v. 16) — não é arquitetura literal mas linguagem simbólica de perfeição e completude. O cubo lembra o Santo dos Santos (1 Rs 6:20), sugerindo que a cidade inteira é o lugar da presença divina. 'Não haverá templo' (v. 22) porque Deus e o Cordeiro são o templo — comunhão direta e permanente.",
+                AuthorNote = "Baseado em Matthew Henry, G. K. Beale (Revelation, NIGTC), e N. T. Wright (Surprised by Hope)"
+            });
 
         // ── Novas notas (adicionadas em 2026-03-28) ──────────────────────────
 
         // João 1 — O Verbo eterno
         if (john != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = john.Id,
-            Chapter = 1,
-            Title   = "O Verbo Eterno — O Prólogo de João",
-            Context = "O Prólogo de João (1:1-18) é um dos textos mais profundos do NT, escrito como uma abertura poética e teológica que enquadra todo o Evangelho. João escreve para um público greco-romano familiarizado com o conceito de Logos (razão, palavra) dos filósofos, mas redefine o termo completamente: o Logos não é um princípio abstrato, mas uma Pessoa que 'se fez carne e habitou entre nós'. O paralelismo com Gênesis 1 ('No princípio') é intencional.",
-            TheologicalSignificance = "João 1:1-3 afirma a pré-existência, a distinção pessoal e a plena divindade do Filho: 'o Verbo era Deus' (theos ēn ho logos). O versículo 14 é o texto central da Encarnação: 'O Verbo se fez carne' (sarx egeneto) — Deus assumiu a natureza humana plena sem abandonar a divindade, o que o Concílio de Calcedônia (451) formulou como 'uma pessoa, duas naturezas'. 'Vimos a sua glória' aponta para uma experiência apostólica real, não mitológica.",
-            KeyThemes      = "Logos · Pré-existência de Cristo · Encarnação · Luz e trevas · Testemunho de João Batista · Graça sobre graça",
-            CrossReferences = "Gênesis 1:1; Colossenses 1:15-17; Hebreus 1:1-3; Filipenses 2:6-7; 1 João 1:1-3; Apocalipse 19:13",
-            Commentary      = "'Nele estava a vida, e a vida era a luz dos homens' (v. 4) — vida (zōē) em João é sempre vida divina, eterna, não apenas existência biológica. A metáfora da luz introduz o tema central do Evangelho: Jesus como luz que os homens preferem rejeitar (v. 10-11) mas que ilumina todo crente. 'Cheio de graça e de verdade' (v. 14) — charis kai alētheia é eco do AT hesed we-emet (amor leal e fidelidade) — Yahweh revelado em Cristo.",
-            AuthorNote      = "Baseado em Calvino (Commentary on John), Leon Morris (The Gospel According to John, NICNT), e C.S. Lewis (Mere Christianity, cap. sobre o Filho de Deus)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = john.Id,
+                Chapter = 1,
+                Title = "O Verbo Eterno — O Prólogo de João",
+                Context = "O Prólogo de João (1:1-18) é um dos textos mais profundos do NT, escrito como uma abertura poética e teológica que enquadra todo o Evangelho. João escreve para um público greco-romano familiarizado com o conceito de Logos (razão, palavra) dos filósofos, mas redefine o termo completamente: o Logos não é um princípio abstrato, mas uma Pessoa que 'se fez carne e habitou entre nós'. O paralelismo com Gênesis 1 ('No princípio') é intencional.",
+                TheologicalSignificance = "João 1:1-3 afirma a pré-existência, a distinção pessoal e a plena divindade do Filho: 'o Verbo era Deus' (theos ēn ho logos). O versículo 14 é o texto central da Encarnação: 'O Verbo se fez carne' (sarx egeneto) — Deus assumiu a natureza humana plena sem abandonar a divindade, o que o Concílio de Calcedônia (451) formulou como 'uma pessoa, duas naturezas'. 'Vimos a sua glória' aponta para uma experiência apostólica real, não mitológica.",
+                KeyThemes = "Logos · Pré-existência de Cristo · Encarnação · Luz e trevas · Testemunho de João Batista · Graça sobre graça",
+                CrossReferences = "Gênesis 1:1; Colossenses 1:15-17; Hebreus 1:1-3; Filipenses 2:6-7; 1 João 1:1-3; Apocalipse 19:13",
+                Commentary = "'Nele estava a vida, e a vida era a luz dos homens' (v. 4) — vida (zōē) em João é sempre vida divina, eterna, não apenas existência biológica. A metáfora da luz introduz o tema central do Evangelho: Jesus como luz que os homens preferem rejeitar (v. 10-11) mas que ilumina todo crente. 'Cheio de graça e de verdade' (v. 14) — charis kai alētheia é eco do AT hesed we-emet (amor leal e fidelidade) — Yahweh revelado em Cristo.",
+                AuthorNote = "Baseado em Calvino (Commentary on John), Leon Morris (The Gospel According to John, NICNT), e C.S. Lewis (Mere Christianity, cap. sobre o Filho de Deus)"
+            });
 
         // Gênesis 22 — O sacrifício de Isaque
         if (genesis != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = genesis.Id,
-            Chapter = 22,
-            Title   = "O Sacrifício de Isaque — Fé Radical e Tipologia Cristológica",
-            Context = "Gênesis 22, a Akedah ('ligação' em hebraico), é considerado o clímax espiritual do livro e o ponto mais alto da fé de Abraão. Deus havia prometido que a descendência de Abraão viria por Isaque (21:12) — agora ordena o sacrifício do mesmo filho. A tensão teológica é máxima: como Deus pode contradizer sua própria promessa? Esta é a décima e suprema prova da fé de Abraão.",
-            TheologicalSignificance = "O capítulo é primariamente tipológico: Abraão (pai) oferece seu filho único amado num monte (Moriá = Jerusalém, 2 Cr 3:1); o filho carrega a lenha de seu próprio sacrifício; no último momento, Deus provê um cordeiro substituto. Hebreus 11:17-19 revela a fé de Abraão: ele esperava que Deus ressuscitaria Isaque, pois a promessa estava nele. João 3:16 ecoa deliberadamente a linguagem de Gn 22:2 ('filho único amado'): o que Abraão não precisou fazer, Deus fez — entregou seu próprio Filho.",
-            KeyThemes      = "Fé radical · Obediência incondicional · Providência divina · Tipologia cristológica · Substituição · 'Deus proverá'",
-            CrossReferences = "João 3:16; Hebreus 11:17-19; Romanos 8:32; 2 Crônicas 3:1; Gálatas 3:16; 1 Pedro 1:19-20",
-            Commentary      = "'Deus proverá para si o cordeiro' (v. 8, yireh) — a palavra 'proverá' significa literalmente 'verá, providenciará'. O nome do lugar, 'Jeová-Jirê' (v. 14, 'O Senhor proverá'), tornou-se nome de Deus. A fé de Abraão não era cega — era ancorada no caráter de Deus que havia prometido. Hebreus 11 chama isso de 'ressurreição', pois Abraão raciocinou que Deus poderia ressuscitar Isaque dos mortos.",
-            AuthorNote      = "Baseado em Calvino (Commentaries on Genesis), Derek Kidner (Genesis, Tyndale), e John Walton (Genesis, NIV Application Commentary)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = genesis.Id,
+                Chapter = 22,
+                Title = "O Sacrifício de Isaque — Fé Radical e Tipologia Cristológica",
+                Context = "Gênesis 22, a Akedah ('ligação' em hebraico), é considerado o clímax espiritual do livro e o ponto mais alto da fé de Abraão. Deus havia prometido que a descendência de Abraão viria por Isaque (21:12) — agora ordena o sacrifício do mesmo filho. A tensão teológica é máxima: como Deus pode contradizer sua própria promessa? Esta é a décima e suprema prova da fé de Abraão.",
+                TheologicalSignificance = "O capítulo é primariamente tipológico: Abraão (pai) oferece seu filho único amado num monte (Moriá = Jerusalém, 2 Cr 3:1); o filho carrega a lenha de seu próprio sacrifício; no último momento, Deus provê um cordeiro substituto. Hebreus 11:17-19 revela a fé de Abraão: ele esperava que Deus ressuscitaria Isaque, pois a promessa estava nele. João 3:16 ecoa deliberadamente a linguagem de Gn 22:2 ('filho único amado'): o que Abraão não precisou fazer, Deus fez — entregou seu próprio Filho.",
+                KeyThemes = "Fé radical · Obediência incondicional · Providência divina · Tipologia cristológica · Substituição · 'Deus proverá'",
+                CrossReferences = "João 3:16; Hebreus 11:17-19; Romanos 8:32; 2 Crônicas 3:1; Gálatas 3:16; 1 Pedro 1:19-20",
+                Commentary = "'Deus proverá para si o cordeiro' (v. 8, yireh) — a palavra 'proverá' significa literalmente 'verá, providenciará'. O nome do lugar, 'Jeová-Jirê' (v. 14, 'O Senhor proverá'), tornou-se nome de Deus. A fé de Abraão não era cega — era ancorada no caráter de Deus que havia prometido. Hebreus 11 chama isso de 'ressurreição', pois Abraão raciocinou que Deus poderia ressuscitar Isaque dos mortos.",
+                AuthorNote = "Baseado em Calvino (Commentaries on Genesis), Derek Kidner (Genesis, Tyndale), e John Walton (Genesis, NIV Application Commentary)"
+            });
 
         // Romanos 5 — Justificação e paz, Adão e Cristo
         if (romans != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = romans.Id,
-            Chapter = 5,
-            Title   = "Paz com Deus e o Segundo Adão",
-            Context = "Romanos 5 é a ponte entre a doutrina da justificação (cap. 3-4) e a doutrina da santificação (cap. 6-8). Paulo começa com as bênçãos presentes e futuras do justificado (v. 1-11) e termina com o grande paralelo entre Adão e Cristo (v. 12-21), o fundamento bíblico para a doutrina do pecado original e da imputação da justiça.",
-            TheologicalSignificance = "Os frutos da justificação (v. 1-5): paz com Deus (não apenas paz de Deus), acesso à graça, esperança da glória, e o paradoxo que o sofrimento produz perseverança → caráter → esperança. A base: o amor de Deus derramado no coração pelo Espírito (v. 5). O paralelo Adão-Cristo (v. 12-21) é a base exegética do pecado original: por um homem (Adão), o pecado entrou; por um homem (Cristo), a graça reina. A fórmula 'muito mais' (v. 15,17) indica que o que Cristo deu supera em muito o que Adão perdeu.",
-            KeyThemes      = "Paz com Deus · Justificação · Sofrimento e esperança · Amor de Deus · Adão e Cristo · Pecado original · Imputação",
-            CrossReferences = "Gênesis 3:17-19; 1 Coríntios 15:21-22,45-49; Filipenses 4:7; João 16:33; Romanos 8:17; Efésios 2:4-5",
-            Commentary      = "'Sendo ainda pecadores, Cristo morreu por nós' (v. 8) é a prova suprema do amor de Deus: não morreu por bons, mas por inimigos (v. 10). 'Muito mais agora, sendo justificados pelo seu sangue, seremos salvos por ele da ira' (v. 9) — se a morte de Cristo nos reconciliou quando éramos inimigos, quanto mais sua vida (intercessão contínua, Hb 7:25) nos guardará. A certeza da salvação repousa no amor demonstrado na cruz.",
-            AuthorNote      = "Baseado em Calvino (Commentary on Romans), Douglas Moo (Romans, NICNT), e Martyn Lloyd-Jones (Romans, vol. 4)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = romans.Id,
+                Chapter = 5,
+                Title = "Paz com Deus e o Segundo Adão",
+                Context = "Romanos 5 é a ponte entre a doutrina da justificação (cap. 3-4) e a doutrina da santificação (cap. 6-8). Paulo começa com as bênçãos presentes e futuras do justificado (v. 1-11) e termina com o grande paralelo entre Adão e Cristo (v. 12-21), o fundamento bíblico para a doutrina do pecado original e da imputação da justiça.",
+                TheologicalSignificance = "Os frutos da justificação (v. 1-5): paz com Deus (não apenas paz de Deus), acesso à graça, esperança da glória, e o paradoxo que o sofrimento produz perseverança → caráter → esperança. A base: o amor de Deus derramado no coração pelo Espírito (v. 5). O paralelo Adão-Cristo (v. 12-21) é a base exegética do pecado original: por um homem (Adão), o pecado entrou; por um homem (Cristo), a graça reina. A fórmula 'muito mais' (v. 15,17) indica que o que Cristo deu supera em muito o que Adão perdeu.",
+                KeyThemes = "Paz com Deus · Justificação · Sofrimento e esperança · Amor de Deus · Adão e Cristo · Pecado original · Imputação",
+                CrossReferences = "Gênesis 3:17-19; 1 Coríntios 15:21-22,45-49; Filipenses 4:7; João 16:33; Romanos 8:17; Efésios 2:4-5",
+                Commentary = "'Sendo ainda pecadores, Cristo morreu por nós' (v. 8) é a prova suprema do amor de Deus: não morreu por bons, mas por inimigos (v. 10). 'Muito mais agora, sendo justificados pelo seu sangue, seremos salvos por ele da ira' (v. 9) — se a morte de Cristo nos reconciliou quando éramos inimigos, quanto mais sua vida (intercessão contínua, Hb 7:25) nos guardará. A certeza da salvação repousa no amor demonstrado na cruz.",
+                AuthorNote = "Baseado em Calvino (Commentary on Romans), Douglas Moo (Romans, NICNT), e Martyn Lloyd-Jones (Romans, vol. 4)"
+            });
 
         // Efésios 2 — Por graça sois salvos
         if (ephesians != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = ephesians.Id,
-            Chapter = 2,
-            Title   = "Salvos pela Graça mediante a Fé",
-            Context = "Efésios 2 é o capítulo mais completo sobre a doutrina da graça no NT. Paulo descreve em três movimentos: (1) a condição humana sem Cristo (v. 1-3); (2) a intervenção divina pela graça (v. 4-10); (3) a unidade de judeus e gentios em Cristo (v. 11-22). É escrito para uma igreja majoritariamente gentílica em Éfeso, que precisava entender tanto sua salvação quanto sua identidade no corpo de Cristo.",
-            TheologicalSignificance = "Versículos 8-9 são o texto mais preciso sobre graça e fé no NT: 'Pela graça sois salvos, mediante a fé; e isso não vem de vós, é dom de Deus; não por obras, para que ninguém se glorie.' Três afirmações: (1) A salvação é pela graça (charis — favor imerecido); (2) mediante a fé (pistis — confiança receptiva, não mérito); (3) e nem mesmo a fé é obra humana — 'isso' (touto) é dom de Deus. O v. 10 completa: 'porque somos feitura dele, criados em Cristo Jesus para as boas obras' — obras são fruto, não raiz da salvação.",
-            KeyThemes      = "Graça soberana · Fé como dom · Depravação humana · Vivificação espiritual · Obras como fruto · Unidade de judeus e gentios",
-            CrossReferences = "Romanos 3:24; João 6:44; Filipenses 1:29; Tito 3:5; 1 Pedro 1:3; Colossenses 2:13; Gálatas 2:16",
-            Commentary      = "'Estáveis mortos em vossas transgressões e pecados' (v. 1) — morte espiritual não é fraqueza mas incapacidade total. Um morto não coopera com sua ressurreição. Isso fundamenta a necessidade de uma obra totalmente divina (regeneração) que precede e possibilita a fé. 'Mas Deus, sendo rico em misericórdia' (v. 4) — as duas palavras mais esperançosas da Bíblia: 'mas Deus' interrompem a trajetória de morte com a intervenção graciosa.",
-            AuthorNote      = "Baseado em Calvino (Commentary on Ephesians), John Stott (The Message of Ephesians), e Martyn Lloyd-Jones (Ephesians, vol. 2)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = ephesians.Id,
+                Chapter = 2,
+                Title = "Salvos pela Graça mediante a Fé",
+                Context = "Efésios 2 é o capítulo mais completo sobre a doutrina da graça no NT. Paulo descreve em três movimentos: (1) a condição humana sem Cristo (v. 1-3); (2) a intervenção divina pela graça (v. 4-10); (3) a unidade de judeus e gentios em Cristo (v. 11-22). É escrito para uma igreja majoritariamente gentílica em Éfeso, que precisava entender tanto sua salvação quanto sua identidade no corpo de Cristo.",
+                TheologicalSignificance = "Versículos 8-9 são o texto mais preciso sobre graça e fé no NT: 'Pela graça sois salvos, mediante a fé; e isso não vem de vós, é dom de Deus; não por obras, para que ninguém se glorie.' Três afirmações: (1) A salvação é pela graça (charis — favor imerecido); (2) mediante a fé (pistis — confiança receptiva, não mérito); (3) e nem mesmo a fé é obra humana — 'isso' (touto) é dom de Deus. O v. 10 completa: 'porque somos feitura dele, criados em Cristo Jesus para as boas obras' — obras são fruto, não raiz da salvação.",
+                KeyThemes = "Graça soberana · Fé como dom · Depravação humana · Vivificação espiritual · Obras como fruto · Unidade de judeus e gentios",
+                CrossReferences = "Romanos 3:24; João 6:44; Filipenses 1:29; Tito 3:5; 1 Pedro 1:3; Colossenses 2:13; Gálatas 2:16",
+                Commentary = "'Estáveis mortos em vossas transgressões e pecados' (v. 1) — morte espiritual não é fraqueza mas incapacidade total. Um morto não coopera com sua ressurreição. Isso fundamenta a necessidade de uma obra totalmente divina (regeneração) que precede e possibilita a fé. 'Mas Deus, sendo rico em misericórdia' (v. 4) — as duas palavras mais esperançosas da Bíblia: 'mas Deus' interrompem a trajetória de morte com a intervenção graciosa.",
+                AuthorNote = "Baseado em Calvino (Commentary on Ephesians), John Stott (The Message of Ephesians), e Martyn Lloyd-Jones (Ephesians, vol. 2)"
+            });
 
         // João 14 — A casa do Pai, o Caminho
         if (john != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = john.Id,
-            Chapter = 14,
-            Title   = "A Casa do Pai — Consolação, Caminho e Espírito",
-            Context = "João 14-17 é o Discurso de Despedida, proferido na noite do Getsêmani, horas antes da crucificação. Os discípulos estavam perturbados com o anúncio da partida de Jesus (13:33). O capítulo 14 é o 'sermão da consolação' — Jesus fala ao coração dos que perdem alguém. É o capítulo mais citado em funerais cristãos.",
-            TheologicalSignificance = "'Eu sou o caminho, a verdade e a vida' (v. 6) — o sétimo e mais abrangente dos 'Eu Sou' de João. Caminho (hodos): único acesso ao Pai; Verdade (alētheia): revelação plena e confiável de Deus; Vida (zōē): fonte da vida eterna. 'Ninguém vem ao Pai senão por mim' — exclusividade do evangelho que incomoda o pluralismo mas é afirmado sem ambiguidade. O Paráclito (v. 16-17,26): Espírito da Verdade que habitará nos crentes permanentemente, ensinará e lembrará as palavras de Jesus.",
-            KeyThemes      = "Esperança escatológica · Presença de Cristo · Exclusividade salvífica · Oração em nome de Jesus · Paráclito (Espírito Santo) · Paz de Cristo",
-            CrossReferences = "João 11:25; Atos 4:12; Hebreus 10:19-22; 1 João 2:1; João 16:7; Romanos 8:34; 1 Timóteo 2:5",
-            Commentary      = "'Vou preparar lugar para vós' (v. 2-3) — a linguagem é de hospitalidade oriental: o anfitrião prepara o quarto e depois vai buscar os hóspedes pessoalmente. A promessa não é de um lugar físico mas de comunhão eterna com o Pai e o Filho. 'A paz que vos dou' (v. 27) — shalom judaico em plenitude: não ausência de problemas, mas presença tranquilizante de Deus. 'Não vos turbe o coração' (v. 1,27) — imperativo que supõe perturbação real mas aponta para um recurso real: fé em Deus e em Jesus.",
-            AuthorNote      = "Baseado em Calvino (Commentary on John), Spurgeon (sermões sobre João 14), e F. F. Bruce (The Gospel of John)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = john.Id,
+                Chapter = 14,
+                Title = "A Casa do Pai — Consolação, Caminho e Espírito",
+                Context = "João 14-17 é o Discurso de Despedida, proferido na noite do Getsêmani, horas antes da crucificação. Os discípulos estavam perturbados com o anúncio da partida de Jesus (13:33). O capítulo 14 é o 'sermão da consolação' — Jesus fala ao coração dos que perdem alguém. É o capítulo mais citado em funerais cristãos.",
+                TheologicalSignificance = "'Eu sou o caminho, a verdade e a vida' (v. 6) — o sétimo e mais abrangente dos 'Eu Sou' de João. Caminho (hodos): único acesso ao Pai; Verdade (alētheia): revelação plena e confiável de Deus; Vida (zōē): fonte da vida eterna. 'Ninguém vem ao Pai senão por mim' — exclusividade do evangelho que incomoda o pluralismo mas é afirmado sem ambiguidade. O Paráclito (v. 16-17,26): Espírito da Verdade que habitará nos crentes permanentemente, ensinará e lembrará as palavras de Jesus.",
+                KeyThemes = "Esperança escatológica · Presença de Cristo · Exclusividade salvífica · Oração em nome de Jesus · Paráclito (Espírito Santo) · Paz de Cristo",
+                CrossReferences = "João 11:25; Atos 4:12; Hebreus 10:19-22; 1 João 2:1; João 16:7; Romanos 8:34; 1 Timóteo 2:5",
+                Commentary = "'Vou preparar lugar para vós' (v. 2-3) — a linguagem é de hospitalidade oriental: o anfitrião prepara o quarto e depois vai buscar os hóspedes pessoalmente. A promessa não é de um lugar físico mas de comunhão eterna com o Pai e o Filho. 'A paz que vos dou' (v. 27) — shalom judaico em plenitude: não ausência de problemas, mas presença tranquilizante de Deus. 'Não vos turbe o coração' (v. 1,27) — imperativo que supõe perturbação real mas aponta para um recurso real: fé em Deus e em Jesus.",
+                AuthorNote = "Baseado em Calvino (Commentary on John), Spurgeon (sermões sobre João 14), e F. F. Bruce (The Gospel of John)"
+            });
 
         // Salmos 119 — A Palavra de Deus
         if (psalms != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = psalms.Id,
-            Chapter = 119,
-            Title   = "A Palavra de Deus — O Maior Salmo",
-            Context = "Com 176 versículos, o Salmo 119 é o capítulo mais longo da Bíblia. É um acróstico alfabético perfeito: dividido em 22 estrofes (uma para cada letra do alfabeto hebraico), cada versículo dentro da estrofe começa com aquela letra. Essa estrutura não é ornamento: é arte comunicando que o amor pela Palavra abrange de aleph a tau — de A a Z, o inteiro. O autor é desconhecido; o tema é único: a glória e suficiência da Palavra de Deus.",
-            TheologicalSignificance = "Oito sinônimos são usados para 'Palavra de Deus': lei (torah), testemunho (edut), preceitos (piqqudim), estatutos (huqqim), mandamentos (mitzvot), juízos (mishpatim), palavra (dabar) e promessas (imra). Cada um revela uma faceta: lei (direção), testemunho (revelação), preceitos (encargos específicos), estatutos (decretos gravados), mandamentos (ordens), juízos (decisões judiciais), palavra (comunicação pessoal), promessas (fidelidade de Deus). O salmista afirma que a Palavra traz: libertação (v. 45), consolo (v. 50,52), luz (v. 105), paz (v. 165), vida (v. 50,93).",
-            KeyThemes      = "Amor pela Palavra · Meditação · Obediência · Perseverança na aflição · Suficiência das Escrituras · Iluminação do Espírito",
-            CrossReferences = "Salmos 19:7-11; Josué 1:8; 2 Timóteo 3:16-17; Hebreus 4:12; João 17:17; Mateus 4:4",
-            Commentary      = "'Lâmpada para os meus pés é a tua palavra, e luz para o meu caminho' (v. 105) — não holofote que ilumina o horizonte distante, mas lamparina que ilumina o próximo passo. Fidelidade no imediato, não ansiedade sobre o futuro. 'Quão doces são as tuas palavras ao meu paladar! Mais do que o mel à minha boca' (v. 103) — o salmista desenvolveu gosto espiritual pelas Escrituras. O gosto é cultivado, não natural — vem da meditação constante (v. 15,48,97).",
-            AuthorNote      = "Baseado em Spurgeon (The Treasury of David, vol. 5), Derek Kidner (Psalms 73-150, Tyndale), e Eugene Peterson (A Long Obedience in the Same Direction)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = psalms.Id,
+                Chapter = 119,
+                Title = "A Palavra de Deus — O Maior Salmo",
+                Context = "Com 176 versículos, o Salmo 119 é o capítulo mais longo da Bíblia. É um acróstico alfabético perfeito: dividido em 22 estrofes (uma para cada letra do alfabeto hebraico), cada versículo dentro da estrofe começa com aquela letra. Essa estrutura não é ornamento: é arte comunicando que o amor pela Palavra abrange de aleph a tau — de A a Z, o inteiro. O autor é desconhecido; o tema é único: a glória e suficiência da Palavra de Deus.",
+                TheologicalSignificance = "Oito sinônimos são usados para 'Palavra de Deus': lei (torah), testemunho (edut), preceitos (piqqudim), estatutos (huqqim), mandamentos (mitzvot), juízos (mishpatim), palavra (dabar) e promessas (imra). Cada um revela uma faceta: lei (direção), testemunho (revelação), preceitos (encargos específicos), estatutos (decretos gravados), mandamentos (ordens), juízos (decisões judiciais), palavra (comunicação pessoal), promessas (fidelidade de Deus). O salmista afirma que a Palavra traz: libertação (v. 45), consolo (v. 50,52), luz (v. 105), paz (v. 165), vida (v. 50,93).",
+                KeyThemes = "Amor pela Palavra · Meditação · Obediência · Perseverança na aflição · Suficiência das Escrituras · Iluminação do Espírito",
+                CrossReferences = "Salmos 19:7-11; Josué 1:8; 2 Timóteo 3:16-17; Hebreus 4:12; João 17:17; Mateus 4:4",
+                Commentary = "'Lâmpada para os meus pés é a tua palavra, e luz para o meu caminho' (v. 105) — não holofote que ilumina o horizonte distante, mas lamparina que ilumina o próximo passo. Fidelidade no imediato, não ansiedade sobre o futuro. 'Quão doces são as tuas palavras ao meu paladar! Mais do que o mel à minha boca' (v. 103) — o salmista desenvolveu gosto espiritual pelas Escrituras. O gosto é cultivado, não natural — vem da meditação constante (v. 15,48,97).",
+                AuthorNote = "Baseado em Spurgeon (The Treasury of David, vol. 5), Derek Kidner (Psalms 73-150, Tyndale), e Eugene Peterson (A Long Obedience in the Same Direction)"
+            });
 
         // Hebreus 11 — A galeria da fé
         if (hebrews != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = hebrews.Id,
-            Chapter = 11,
-            Title   = "A Galeria da Fé — Heróis que Não Receberam a Promessa",
-            Context = "Hebreus foi escrito para cristãos judeus tentados a abandonar a fé e retornar ao judaísmo, possivelmente sob perseguição (10:32-34). O capítulo 11 é o clímax do argumento: olhe para esses heróis do AT que perseveraram sem ver o cumprimento — vocês têm mais (Cristo já veio), portanto perseverem mais. É simultaneamente teologia da fé e pedagogia do sofrimento.",
-            TheologicalSignificance = "A definição de fé em v. 1 é única no NT: 'certeza (hypostasis — substância, fundação) de coisas que se esperam, prova (elenchos — evidência, convicção) de coisas que não se veem.' Fé não é crença sem evidência, mas convicção baseada na revelação de Deus sobre realidades ainda não visíveis. O capítulo percorre Gênesis ao período intertestamentário. O verso mais tocante: v. 39-40 — 'todos estes, tendo sido aprovados por sua fé, não receberam o que foi prometido, porque Deus tinha provido algo melhor para nós.'",
-            KeyThemes      = "Definição da fé · Perseverança · Esperança escatológica · Heróis do AT · Sofrimento pela fé · Promessa cumprida em Cristo",
-            CrossReferences = "Hebreus 12:1-2; Gênesis 15:6; Romanos 4:18-21; 2 Coríntios 4:17-18; 1 Pedro 1:8-9; João 20:29",
-            Commentary      = "A estrutura do capítulo repete 'pela fé' (pistei) como refrão — 18 vezes. Cada herói representa uma faceta da fé: Abraão (obediência sem ver o destino, v. 8), Moisés (escolha da reprobridade com Cristo acima dos tesouros do Egito, v. 26), Raabe (fé que ultrapassa identidade étnica, v. 31). A lista termina em silêncio deliberado: os mártires anônimos (v. 36-38) que 'o mundo não era digno de possuir'. A fé não garante prosperidade — garante fidelidade de Deus.",
-            AuthorNote      = "Baseado em F. F. Bruce (Hebrews, NICNT), John Owen (Exposition of Hebrews), e John Piper (By Faith, Not by Sight)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = hebrews.Id,
+                Chapter = 11,
+                Title = "A Galeria da Fé — Heróis que Não Receberam a Promessa",
+                Context = "Hebreus foi escrito para cristãos judeus tentados a abandonar a fé e retornar ao judaísmo, possivelmente sob perseguição (10:32-34). O capítulo 11 é o clímax do argumento: olhe para esses heróis do AT que perseveraram sem ver o cumprimento — vocês têm mais (Cristo já veio), portanto perseverem mais. É simultaneamente teologia da fé e pedagogia do sofrimento.",
+                TheologicalSignificance = "A definição de fé em v. 1 é única no NT: 'certeza (hypostasis — substância, fundação) de coisas que se esperam, prova (elenchos — evidência, convicção) de coisas que não se veem.' Fé não é crença sem evidência, mas convicção baseada na revelação de Deus sobre realidades ainda não visíveis. O capítulo percorre Gênesis ao período intertestamentário. O verso mais tocante: v. 39-40 — 'todos estes, tendo sido aprovados por sua fé, não receberam o que foi prometido, porque Deus tinha provido algo melhor para nós.'",
+                KeyThemes = "Definição da fé · Perseverança · Esperança escatológica · Heróis do AT · Sofrimento pela fé · Promessa cumprida em Cristo",
+                CrossReferences = "Hebreus 12:1-2; Gênesis 15:6; Romanos 4:18-21; 2 Coríntios 4:17-18; 1 Pedro 1:8-9; João 20:29",
+                Commentary = "A estrutura do capítulo repete 'pela fé' (pistei) como refrão — 18 vezes. Cada herói representa uma faceta da fé: Abraão (obediência sem ver o destino, v. 8), Moisés (escolha da reprobridade com Cristo acima dos tesouros do Egito, v. 26), Raabe (fé que ultrapassa identidade étnica, v. 31). A lista termina em silêncio deliberado: os mártires anônimos (v. 36-38) que 'o mundo não era digno de possuir'. A fé não garante prosperidade — garante fidelidade de Deus.",
+                AuthorNote = "Baseado em F. F. Bruce (Hebrews, NICNT), John Owen (Exposition of Hebrews), e John Piper (By Faith, Not by Sight)"
+            });
 
         // Gálatas 5 — Liberdade e fruto do Espírito
         if (galatians != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = galatians.Id,
-            Chapter = 5,
-            Title   = "Liberdade Cristã e o Fruto do Espírito",
-            Context = "Gálatas foi escrita em tom urgente (é a única carta de Paulo sem ação de graças inicial) para igrejas ameaçadas por judaizantes — ensino que a circuncisão e obras da Lei eram necessárias para a justificação. O capítulo 5 aplica a liberdade do evangelho (declarada em 5:1) à vida prática, distinguindo duas possibilidades: andar segundo a carne ou segundo o Espírito.",
-            TheologicalSignificance = "O fruto do Espírito (v. 22-23) não são 'obras' que produzimos, mas 'fruto' que o Espírito produz em nós — a distinção é crucial para entender a santificação. As 9 características formam um todo orgânico: amor (agapē) como raiz, e as demais como expressões. A lista das obras da carne (v. 19-21) é o oposto: fragmentação, divisão, perda de controle. 'Contra estas coisas não há lei' (v. 23) — onde o Espírito produz caráter, a lei é desnecessária porque a intenção da lei é cumprida.",
-            KeyThemes      = "Liberdade cristã · Carne vs. Espírito · Fruto do Espírito · Lei do amor · Crucificação da carne · Andar pelo Espírito",
-            CrossReferences = "Romanos 8:4-9; João 15:4-5; 1 Coríntios 13:4-7; Efésios 5:9; Colossenses 3:12-15; 2 Pedro 1:5-8",
-            Commentary      = "'Andai pelo Espírito e não satisfareis os desejos da carne' (v. 16) — imperativo ativo: não passividade mística mas cooperação deliberada com a obra do Espírito. 'Os que são de Cristo Jesus crucificaram a carne com as suas paixões e concupiscências' (v. 24) — tempo aoristo, ação definida: na conversão, houve uma ruptura decisiva com o 'eu' anterior. A vida cristã é viver conforme essa ruptura já ocorrida — identidade (já crucificados) determina comportamento (portanto andar pelo Espírito).",
-            AuthorNote      = "Baseado em Calvino (Commentary on Galatians), John Stott (The Message of Galatians), e Tim Keller (Galatians for You)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = galatians.Id,
+                Chapter = 5,
+                Title = "Liberdade Cristã e o Fruto do Espírito",
+                Context = "Gálatas foi escrita em tom urgente (é a única carta de Paulo sem ação de graças inicial) para igrejas ameaçadas por judaizantes — ensino que a circuncisão e obras da Lei eram necessárias para a justificação. O capítulo 5 aplica a liberdade do evangelho (declarada em 5:1) à vida prática, distinguindo duas possibilidades: andar segundo a carne ou segundo o Espírito.",
+                TheologicalSignificance = "O fruto do Espírito (v. 22-23) não são 'obras' que produzimos, mas 'fruto' que o Espírito produz em nós — a distinção é crucial para entender a santificação. As 9 características formam um todo orgânico: amor (agapē) como raiz, e as demais como expressões. A lista das obras da carne (v. 19-21) é o oposto: fragmentação, divisão, perda de controle. 'Contra estas coisas não há lei' (v. 23) — onde o Espírito produz caráter, a lei é desnecessária porque a intenção da lei é cumprida.",
+                KeyThemes = "Liberdade cristã · Carne vs. Espírito · Fruto do Espírito · Lei do amor · Crucificação da carne · Andar pelo Espírito",
+                CrossReferences = "Romanos 8:4-9; João 15:4-5; 1 Coríntios 13:4-7; Efésios 5:9; Colossenses 3:12-15; 2 Pedro 1:5-8",
+                Commentary = "'Andai pelo Espírito e não satisfareis os desejos da carne' (v. 16) — imperativo ativo: não passividade mística mas cooperação deliberada com a obra do Espírito. 'Os que são de Cristo Jesus crucificaram a carne com as suas paixões e concupiscências' (v. 24) — tempo aoristo, ação definida: na conversão, houve uma ruptura decisiva com o 'eu' anterior. A vida cristã é viver conforme essa ruptura já ocorrida — identidade (já crucificados) determina comportamento (portanto andar pelo Espírito).",
+                AuthorNote = "Baseado em Calvino (Commentary on Galatians), John Stott (The Message of Galatians), e Tim Keller (Galatians for You)"
+            });
 
         // Daniel 7 — O Filho do Homem
         if (daniel != null)
-        notes.Add(new BibleStudyNote
-        {
-            BookId  = daniel.Id,
-            Chapter = 7,
-            Title   = "O Filho do Homem — A Visão dos Quatro Reinos",
-            Context = "Daniel 7 é o capítulo mais importante do livro e um dos mais citados no NT (especialmente em Marcos e Apocalipse). Daniel está no exílio babilônico. A visão ocorre no primeiro ano de Belsazar (c. 553 a.C.) e é composta de dois elementos: os quatro reinos representados por bestas (v. 1-14) e a interpretação do anjo (v. 15-28). O capítulo faz a transição da narrativa histórica para a apocalíptica profética.",
-            TheologicalSignificance = "A cena do 'Ancião de Dias' (v. 9-10) é uma das descrições mais majestosas de Deus no AT — trono de chamas, rio de fogo, miríades em serviço. O 'Filho do Homem' (v. 13-14) recebe domínio, glória e reino eterno — todos os povos o servem. Jesus adota este título como autorrevelação messiânica preferida (Mc 14:62 — diante do Sinédrio, citando Daniel 7:13). O título une humanidade ('filho do homem') e divindade (recebe adoração universal) — é tanto o representante humano de Israel quanto o Filho divino de Deus.",
-            KeyThemes      = "Soberania de Deus sobre a história · Quatro impérios · Ancião de Dias · Filho do Homem · Reino eterno · Perseguição e vitória",
-            CrossReferences = "Mateus 26:64; Marcos 13:26; Apocalipse 1:7,13-14; 4:2-3; 5:7; João 5:27; Atos 7:56",
-            Commentary      = "Os quatro reinos (Babilônia/Medo-Pérsia/Grécia/Roma, segundo a interpretação clássica) simbolizam impérios humanos que parecem invencíveis mas são temporários. O 'chifre pequeno' (v. 8) que blasfema e persegue os santos tem sido identificado com Antíoco IV Epifânio (2o séc. a.C.) como cumprimento histórico e com o Anticristo como cumprimento escatológico. O ponto central: nenhum reino humano dura; só o reino do Filho do Homem é eterno.",
-            AuthorNote      = "Baseado em John Goldingay (Daniel, Word Biblical Commentary), Joyce Baldwin (Daniel, Tyndale), e N. T. Wright (Jesus and the Victory of God)"
-        });
+            notes.Add(new BibleStudyNote
+            {
+                BookId = daniel.Id,
+                Chapter = 7,
+                Title = "O Filho do Homem — A Visão dos Quatro Reinos",
+                Context = "Daniel 7 é o capítulo mais importante do livro e um dos mais citados no NT (especialmente em Marcos e Apocalipse). Daniel está no exílio babilônico. A visão ocorre no primeiro ano de Belsazar (c. 553 a.C.) e é composta de dois elementos: os quatro reinos representados por bestas (v. 1-14) e a interpretação do anjo (v. 15-28). O capítulo faz a transição da narrativa histórica para a apocalíptica profética.",
+                TheologicalSignificance = "A cena do 'Ancião de Dias' (v. 9-10) é uma das descrições mais majestosas de Deus no AT — trono de chamas, rio de fogo, miríades em serviço. O 'Filho do Homem' (v. 13-14) recebe domínio, glória e reino eterno — todos os povos o servem. Jesus adota este título como autorrevelação messiânica preferida (Mc 14:62 — diante do Sinédrio, citando Daniel 7:13). O título une humanidade ('filho do homem') e divindade (recebe adoração universal) — é tanto o representante humano de Israel quanto o Filho divino de Deus.",
+                KeyThemes = "Soberania de Deus sobre a história · Quatro impérios · Ancião de Dias · Filho do Homem · Reino eterno · Perseguição e vitória",
+                CrossReferences = "Mateus 26:64; Marcos 13:26; Apocalipse 1:7,13-14; 4:2-3; 5:7; João 5:27; Atos 7:56",
+                Commentary = "Os quatro reinos (Babilônia/Medo-Pérsia/Grécia/Roma, segundo a interpretação clássica) simbolizam impérios humanos que parecem invencíveis mas são temporários. O 'chifre pequeno' (v. 8) que blasfema e persegue os santos tem sido identificado com Antíoco IV Epifânio (2o séc. a.C.) como cumprimento histórico e com o Anticristo como cumprimento escatológico. O ponto central: nenhum reino humano dura; só o reino do Filho do Homem é eterno.",
+                AuthorNote = "Baseado em John Goldingay (Daniel, Word Biblical Commentary), Joyce Baldwin (Daniel, Tyndale), e N. T. Wright (Jesus and the Victory of God)"
+            });
 
         // Filtra: insere apenas notas para capítulos sem nota ainda
         var existingKeys = await db.BibleStudyNotes
@@ -529,7 +529,7 @@ public static class DataSeeder
             {
                 // Atualiza apenas os campos novos — não toca em módulos/quizzes já seedados
                 existing.ExternalUrl = seed.ExternalUrl;
-                existing.Provider    = seed.Provider;
+                existing.Provider = seed.Provider;
             }
         }
 
@@ -1053,7 +1053,20 @@ public static class DataSeeder
                 KeyContributions = "Mere Christianity; The Problem of Pain; The Screwtape Letters; As Crônicas de Nárnia; argumento trilemático (louco, mentiroso ou Senhor); argumento do desejo ('Joy') como sinal do transcendente.",
                 FavoriteVerse = "João 14:6 — 'Eu sou o caminho, a verdade e a vida.'",
                 ImageUrl = ""
-            }
+            },
+            new()
+            {
+                Name = "Bakht Singh",
+                Period = "Séc. XX — Avivamento Asiático",
+                BirthYear = 1903,
+                DeathYear = 2000,
+                Nationality = "Indiano (Punjab)",
+                Category = "Evangelist",
+                Biography = "Nascido em família Sikh abastada no Punjab, Bakht Singh partiu para a Inglaterra em 1926 para estudar Engenharia, tornando-se ateu e abraçando os vícios ocidentais. Sua conversão ocorreu em 11 de agosto de 1928, a bordo de um transatlântico rumo ao Canadá, ao participar de um culto e sentir um poder divino envolvê-lo. Em 1929, lendo o Evangelho de João de joelhos num quarto nevado em Winnipeg, ouviu a voz de Cristo confrontá-lo com seus pecados e recebeu a segurança do perdão pelo sangue de Jesus. Batizado em Vancouver em 1932, renunciou à carreira de engenheiro e retornou à Índia em 1933. Tornou-se um dos evangelistas mais poderosos do subcontinente, usado por Deus em grandes avivamentos — incluindo o notável avivamento de 1937 em Martinpur. Em 1941 fundou a primeira igreja 'Jehovah Shammah' em Madras, baseada nos princípios de Atos 2:42, estabelecendo um modelo de igreja neotestamentária que cresceu para centenas de assembléias. Suas Santas Convocações anuais em Hyderabad reuniam até 25.000 pessoas. Ministrou também na Europa, Austrália, América do Norte e África. Comparado por J. Edwin Orr aos maiores evangelistas ocidentais como Finney e Moody, seu conhecimento bíblico impressionou figuras como Martyn Lloyd-Jones. Sofreu da doença de Parkinson nos últimos dez anos de vida. Em seu funeral, mais de 250.000 pessoas marcharam cantando, segurando suas Bíblias no alto.",
+                KeyContributions = "Avivamento de 1937 em Martinpur (Punjab); fundação da rede de igrejas Jehovah Shammah baseadas em Atos 2:42; centro de treinamento Hebrom em Hyderabad; Santas Convocações anuais; indigenização do evangelho sem dependência de missões estrangeiras; princípios de vida por fé sem solicitar apoio humano.",
+                FavoriteVerse = "Atos 2:42 — 'E perseveravam na doutrina dos apóstolos, na comunhão uns com outros, no partir do pão e nas orações.'",
+                ImageUrl = ""
+            },
         };
 
         var revivals = new List<Revival>
